@@ -86,13 +86,11 @@ static void rtl92se_fw_cb(const struct firmware *firmware, void *context)
 	struct ieee80211_hw *hw = context;
 	struct rtl_priv *rtlpriv = rtl_priv(hw);
 	struct rt_firmware *pfirmware = NULL;
-	char *fw_name = "rtlwifi/rtl8192sefw.bin";
 
 	RT_TRACE(rtlpriv, COMP_ERR, DBG_LOUD,
 			 "Firmware callback routine entered!\n");
 	complete(&rtlpriv->firmware_loading_complete);
 	if (!firmware) {
-		pr_err("Firmware %s not available\n", fw_name);
 		rtlpriv->max_fw_size = 0;
 		return;
 	}

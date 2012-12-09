@@ -2098,8 +2098,6 @@ static void azx_firmware_cb(const struct firmware *fw, void *context)
 
 	if (fw)
 		chip->fw = fw;
-	else
-		dev_err(card->dev, "Cannot load firmware, continue without patching\n");
 	if (!chip->disabled) {
 		/* continue probing */
 		azx_probe_continue(chip);
