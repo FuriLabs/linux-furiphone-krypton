@@ -1924,6 +1924,9 @@ extern ssize_t vfs_readv(struct file *, const struct iovec __user *,
 		unsigned long, loff_t *, rwf_t);
 extern ssize_t vfs_copy_file_range(struct file *, loff_t , struct file *,
 				   loff_t, size_t, unsigned int);
+extern ssize_t generic_copy_file_range(struct file *file_in, loff_t pos_in,
+				       struct file *file_out, loff_t pos_out,
+				       size_t len, unsigned int flags);
 extern int vfs_clone_file_prep_inodes(struct inode *inode_in, loff_t pos_in,
 				      struct inode *inode_out, loff_t pos_out,
 				      u64 *len, bool is_dedupe);
