@@ -3911,6 +3911,9 @@ BPF_CALL_5(bpf_setsockopt, struct bpf_sock_ops_kern *, bpf_sock,
 	   int, level, int, optname, char *, optval, int, optlen)
 {
 	struct sock *sk = bpf_sock->sk;
+	char devname[IFNAMSIZ];
+	struct net *net;
+	int ifindex;
 	int ret = 0;
 	int val;
 
@@ -3918,7 +3921,7 @@ BPF_CALL_5(bpf_setsockopt, struct bpf_sock_ops_kern *, bpf_sock,
 		return -EINVAL;
 
 	if (level == SOL_SOCKET) {
-		if (optlen != sizeof(int))
+		if (optlen != sizeof(int) && optname != SO_BINDTODEVICE)
 			return -EINVAL;
 		val = *((int *)optval);
 
@@ -3952,6 +3955,29 @@ BPF_CALL_5(bpf_setsockopt, struct bpf_sock_ops_kern *, bpf_sock,
 				sk->sk_mark = val;
 				sk_dst_reset(sk);
 			}
+			break;
+		case SO_BINDTODEVICE:
+			ret = -ENOPROTOOPT;
+#ifdef CONFIG_NETDEVICES
+			optlen = min_t(long, optlen, IFNAMSIZ - 1);
+			strncpy(devname, optval, optlen);
+			devname[optlen] = 0;
+
+			ifindex = 0;
+			if (devname[0] != '\0') {
+				struct net_device *dev;
+
+				ret = -ENODEV;
+
+				net = sock_net(sk);
+				dev = dev_get_by_name(net, devname);
+				if (!dev)
+					break;
+				ifindex = dev->ifindex;
+				dev_put(dev);
+			}
+			ret = sock_bindtoindex(sk, ifindex, false);
+#endif
 			break;
 		default:
 			ret = -EINVAL;
