@@ -3957,8 +3957,6 @@ BPF_CALL_5(bpf_setsockopt, struct bpf_sock_ops_kern *, bpf_sock,
 			}
 			break;
 		case SO_BINDTODEVICE:
-			ret = -ENOPROTOOPT;
-#ifdef CONFIG_NETDEVICES
 			optlen = min_t(long, optlen, IFNAMSIZ - 1);
 			strncpy(devname, optval, optlen);
 			devname[optlen] = 0;
@@ -3977,7 +3975,6 @@ BPF_CALL_5(bpf_setsockopt, struct bpf_sock_ops_kern *, bpf_sock,
 				dev_put(dev);
 			}
 			ret = sock_bindtoindex(sk, ifindex, false);
-#endif
 			break;
 		default:
 			ret = -EINVAL;
