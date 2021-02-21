@@ -1986,7 +1986,7 @@ static int mmdvfs_probe(struct platform_device *pdev)
 
 	vcore_reg_id = regulator_get(&pdev->dev, "vcore");
 	if (!vcore_reg_id)
-		pr_info("regulator_get vcore_reg_id failed\n");
+		pr_err("regulator_get vcore_reg_id failed\n");
 	return 0;
 
 }
