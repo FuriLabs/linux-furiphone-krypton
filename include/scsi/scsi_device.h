@@ -202,6 +202,7 @@ struct scsi_device {
 	unsigned unmap_limit_for_ws:1;	/* Use the UNMAP limit for WRITE SAME */
 	unsigned rpm_autosuspend:1;	/* Enable runtime autosuspend at device
 					 * creation time */
+	unsigned silence_suspend:1;	/* Do not print runtime PM related messages */
 	/* If non-zero, use timeout (in jiffies) for all commands */
 	unsigned int timeout_override;
 
