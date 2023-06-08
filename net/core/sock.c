@@ -136,6 +136,8 @@
 #include <linux/sock_diag.h>
 
 #include <linux/filter.h>
+#include <linux/file.h>
+#include <linux/pid.h>
 #include <net/sock_reuseport.h>
 
 #include <trace/events/sock.h>
@@ -1301,6 +1303,39 @@ int sock_getsockopt(struct socket *sock, int level, int optname,
 		if (copy_to_user(optval, &peercred, len))
 			return -EFAULT;
 		goto lenout;
+	}
+
+	case SO_PEERPIDFD:
+	{
+		struct pid *peer_pid;
+		struct file *pidfd_file = NULL;
+		int pidfd;
+
+		if (len > sizeof(pidfd))
+			len = sizeof(pidfd);
+
+		spin_lock(&sk->sk_peer_lock);
+		peer_pid = get_pid(sk->sk_peer_pid);
+		spin_unlock(&sk->sk_peer_lock);
+
+		if (!peer_pid)
+			return -ESRCH;
+
+		pidfd = pidfd_prepare(peer_pid, 0, &pidfd_file);
+		put_pid(peer_pid);
+		if (pidfd < 0)
+			return pidfd;
+
+		if (copy_to_user(optval, &pidfd, len) ||
+		    put_user(len, optlen)) {
+			put_unused_fd(pidfd);
+			fput(pidfd_file);
+
+			return -EFAULT;
+		}
+
+		fd_install(pidfd, pidfd_file);
+		return 0;
 	}
 
 	case SO_PEERGROUPS:

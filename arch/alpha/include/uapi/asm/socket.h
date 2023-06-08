@@ -118,5 +118,6 @@
 #define SO_BINDTOIFINDEX	62
 
 #define SO_PASSPIDFD		76
+#define SO_PEERPIDFD		77
 
 #endif /* _UAPI_ASM_SOCKET_H */
