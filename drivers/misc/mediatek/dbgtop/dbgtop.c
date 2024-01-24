@@ -55,14 +55,14 @@ static int mtk_dbgtop_probe(struct platform_device *pdev)
 	struct resource *res;
 
 	if (DBGTOP_BASE) {
-		pr_info("%s: already got the base addr\n", __func__);
+		pr_debug("%s: already got the base addr\n", __func__);
 		return 0;
 	}
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	DBGTOP_BASE = devm_ioremap_resource(&pdev->dev, res);
 	if (IS_ERR(DBGTOP_BASE)) {
-		pr_info("[DBGTOP] unable to map DBGTOP_BASE");
+		pr_err("[DBGTOP] unable to map DBGTOP_BASE");
 		return -EINVAL;
 	}
 
@@ -99,7 +99,7 @@ static ssize_t dbgtop_config_store
 	char *command;
 
 	if ((strlen(buf) + 1) > DBGTOP_MAX_CMD_LEN) {
-		pr_info("[DBGTOP] store command overflow\n");
+		pr_debug("[DBGTOP] store command overflow\n");
 		return count;
 	}
 
@@ -140,12 +140,12 @@ static int __init mtk_dbgtop_init(void)
 	/* register DBGTOP interface */
 	ret = platform_driver_register(&mtk_dbgtop);
 	if (ret)
-		pr_info("[DBGTOP] fail to register mtk_dbgtop driver");
+		pr_err("[DBGTOP] fail to register mtk_dbgtop driver");
 
 	ret = driver_create_file(&mtk_dbgtop.driver,
 		&driver_attr_dbgtop_config);
 	if (ret)
-		pr_info("[DBGTOP] fail to create dbgtop_config");
+		pr_err("[DBGTOP] fail to create dbgtop_config");
 
 	return 0;
 }
@@ -181,7 +181,7 @@ int mtk_dbgtop_dram_reserved(int enable)
 		tmp |= MTK_DBGTOP_MODE_KEY;
 		mt_reg_sync_writel(tmp, MTK_DBGTOP_MODE);
 	}
-	pr_info("%s: MTK_DBGTOP_MODE(0x%x)\n",
+	pr_debug("%s: MTK_DBGTOP_MODE(0x%x)\n",
 		__func__, readl(IOMEM(MTK_DBGTOP_MODE)));
 
 	return 0;
@@ -224,9 +224,9 @@ int mtk_dbgtop_cfg_dvfsrc(int enable)
 	latch_ctl |= MTK_DBGTOP_LATCH_CTL_KEY;
 	mt_reg_sync_writel(latch_ctl, latch_ctl_base);
 
-	pr_info("%s: MTK_DBGTOP_DEBUG_CTL2(0x%x)\n",
+	pr_debug("%s: MTK_DBGTOP_DEBUG_CTL2(0x%x)\n",
 		__func__, readl(IOMEM(debug_ctl2_base)));
-	pr_info("%s: MTK_DBGTOP_LATCH_CTL(0x%x)\n",
+	pr_debug("%s: MTK_DBGTOP_LATCH_CTL(0x%x)\n",
 		__func__, readl(IOMEM(latch_ctl_base)));
 
 	return 0;
@@ -258,7 +258,7 @@ int mtk_dbgtop_pause_dvfsrc(int enable)
 	}
 	if (!(readl(IOMEM(debug_ctl2_base))
 		& MTK_DBGTOP_DVFSRC_EN)) {
-		pr_info("%s: not enable DVFSRC\n", __func__);
+		pr_debug("%s: not enable DVFSRC\n", __func__);
 		return 0;
 	}
 
@@ -275,7 +275,7 @@ int mtk_dbgtop_pause_dvfsrc(int enable)
 			udelay(10);
 		}
 
-		pr_info("%s: DVFSRC pause result(0x%x)\n",
+		pr_debug("%s: DVFSRC pause result(0x%x)\n",
 			__func__, readl(IOMEM(debug_ctl_base)));
 	} else if (enable == 0) {
 		/* disable DVFSRC pause */
@@ -285,7 +285,7 @@ int mtk_dbgtop_pause_dvfsrc(int enable)
 		mt_reg_sync_writel(tmp, debug_ctl_base);
 	}
 
-	pr_info("%s: MTK_DBGTOP_DEBUG_CTL(0x%x)\n",
+	pr_debug("%s: MTK_DBGTOP_DEBUG_CTL(0x%x)\n",
 		__func__, readl(IOMEM(debug_ctl_base)));
 
 	return 0;
@@ -306,13 +306,13 @@ static int __init mtk_dbgtop_get_base_addr(void)
 	if (!DBGTOP_BASE && found_dbgtop_base) {
 		DBGTOP_BASE = of_iomap(np_dbgtop, 0);
 		if (!DBGTOP_BASE)
-			pr_info("%s: dbgtop iomap failed\n", __func__);
+			pr_err("%s: dbgtop iomap failed\n", __func__);
 	} else if (!DBGTOP_BASE) {
 		np_dbgtop = of_find_compatible_node(NULL, NULL, "mediatek,toprgu");
 		DBGTOP_BASE = of_iomap(np_dbgtop, 0);
 		if (!DBGTOP_BASE)
-			pr_info("%s: dbgtop iomap failed\n", __func__);
-		pr_info("use toprgu to setting\n");
+			pr_err("%s: dbgtop iomap failed\n", __func__);
+		pr_debug("use toprgu to setting\n");
 	}
 
 	return 0;
@@ -323,8 +323,8 @@ void get_dfd_base(void __iomem *dfd_base, unsigned int latch_offset)
 	LATCH_CTL2_OFFSET = latch_offset;
 
 	if (!DBGTOP_BASE)
-		pr_info("link RGU base failed.\n");
-	pr_info("Linked base: 0x%x\n", readl(IOMEM(DBGTOP_BASE)));
+		pr_err("link RGU base failed.\n");
+	pr_debug("Linked base: 0x%x\n", readl(IOMEM(DBGTOP_BASE)));
 }
 EXPORT_SYMBOL(get_dfd_base);
 
@@ -351,7 +351,7 @@ int mtk_dbgtop_dfd_count_en(int value)
 #endif
 	}
 
-	pr_info("%s: MTK_DBGTOP_LATCH_CTL2(0x%x)\n", __func__,
+	pr_debug("%s: MTK_DBGTOP_LATCH_CTL2(0x%x)\n", __func__,
 		readl(IOMEM(MTK_DBGTOP_LATCH_CTL2)));
 
 	return 0;
@@ -375,7 +375,7 @@ int mtk_dbgtop_dfd_therm1_dis(int value)
 		mt_reg_sync_writel(tmp, MTK_DBGTOP_LATCH_CTL2);
 	}
 
-	pr_info("%s: MTK_DBGTOP_LATCH_CTL2(0x%x)\n", __func__,
+	pr_debug("%s: MTK_DBGTOP_LATCH_CTL2(0x%x)\n", __func__,
 		readl(IOMEM(MTK_DBGTOP_LATCH_CTL2)));
 
 	return 0;
@@ -398,7 +398,7 @@ int mtk_dbgtop_dfd_therm2_dis(int value)
 		mt_reg_sync_writel(tmp, MTK_DBGTOP_LATCH_CTL2);
 	}
 
-	pr_info("%s: MTK_DBGTOP_LATCH_CTL2(0x%x)\n", __func__,
+	pr_debug("%s: MTK_DBGTOP_LATCH_CTL2(0x%x)\n", __func__,
 		readl(IOMEM(MTK_DBGTOP_LATCH_CTL2)));
 
 	return 0;
