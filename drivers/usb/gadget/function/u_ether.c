@@ -1240,8 +1240,8 @@ struct net_device *gether_setup_name_default(const char *netname)
 	skb_queue_head_init(&dev->rx_frames);
 
 	/* network device setup */
-	net->features |= NETIF_F_GSO | NETIF_F_SG;
-	net->hw_features |= NETIF_F_GSO | NETIF_F_SG;
+	//net->features |= NETIF_F_GSO | NETIF_F_SG;
+	//net->hw_features |= NETIF_F_GSO | NETIF_F_SG;
 	dev->net = net;
 	dev->qmult = QMULT_DEFAULT;
 	snprintf(net->name, sizeof(net->name), "%s%%d", netname);
