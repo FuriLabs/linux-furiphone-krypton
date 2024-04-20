@@ -438,11 +438,7 @@ static int mtk_drm_lvds_probe(struct platform_device *pdev)
 
 	lvds->bridge.funcs = &mtk_lvds_bridge_funcs;
 	lvds->bridge.of_node = pdev->dev.of_node;
-	ret = drm_bridge_add(&lvds->bridge);
-	if (ret) {
-		dev_err(dev, "failed to add bridge, ret = %d\n", ret);
-		return ret;
-	}
+	drm_bridge_add(&lvds->bridge);
 
 	pm_runtime_enable(dev);
 

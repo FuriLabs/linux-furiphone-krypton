@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2019 MediaTek Inc.
 */
+#include <linux/of.h>
 #include <linux/clk.h>
 #include <linux/delay.h>
 #include <linux/io.h>
