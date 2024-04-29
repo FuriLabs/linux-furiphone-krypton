@@ -148,7 +148,7 @@ int kbase_context_common_init(struct kbase_context *kctx)
 		struct pid *pid_struct;
 
 		rcu_read_lock();
-		pid_struct = find_get_pid(kctx->tgid);
+		pid_struct = get_pid(task_pid(current));
 		if (likely(pid_struct)) {
 			struct task_struct *task = pid_task(pid_struct, PIDTYPE_PID);
 
