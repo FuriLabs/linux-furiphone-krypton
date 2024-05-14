@@ -139,8 +139,8 @@ int kbase_context_common_init(struct kbase_context *kctx)
 	kctx->process_mm = NULL;
 	atomic_set(&kctx->nonmapped_pages, 0);
 	atomic_set(&kctx->permanent_mapped_pages, 0);
-	kctx->tgid = current->tgid;
-	kctx->pid = current->pid;
+	kctx->tgid = task_tgid_vnr(current);
+	kctx->pid = task_pid_vnr(current);
 	kctx->task = NULL;
 
 	/* Check if this is a Userspace created context */
