@@ -1099,36 +1099,54 @@ static void send_key_event(u32 keycode, u32 flag)
 static void send_accdet_status_event(u32 cable_type, u32 status)
 {
 	switch (cable_type) {
+	case NO_DEVICE:
+		input_report_switch(accdet_input_dev, SW_JACK_PHYSICAL_INSERT,
+			0);
+		input_report_switch(accdet_input_dev, SW_HEADPHONE_INSERT,
+			0);
+		input_report_switch(accdet_input_dev, SW_MICROPHONE_INSERT,
+			0);
+
+		input_sync(accdet_input_dev);
+		pr_info("%s NO_DEVICE", __func__);
+		break;
 	case HEADSET_NO_MIC:
 		input_report_switch(accdet_input_dev, SW_HEADPHONE_INSERT,
 			status);
-		/* when plug 4-pole out, if both AB=3 AB=0 happen,3-pole plug
-		 * in will be incorrectly reported, then 3-pole plug-out is
-		 * reported,if no mantory 4-pole plug-out, icon would be
-		 * visible.
-		 */
-		if (status == 0)
-			input_report_switch(accdet_input_dev,
-				SW_MICROPHONE_INSERT, status);
+		input_report_switch(accdet_input_dev, SW_MICROPHONE_INSERT,
+			0);
+		input_report_switch(accdet_input_dev, SW_JACK_PHYSICAL_INSERT,
+			status);
+
 		input_sync(accdet_input_dev);
-		pr_info("%s HEADPHONE(3-pole) %s\n", __func__,
+		pr_info("%s HEADPHONE(3-poole) %s\n", __func__,
 			status ? "PlugIn" : "PlugOut");
 		break;
 	case HEADSET_MIC:
-		/* when plug 4-pole out, 3-pole plug out should also be
-		 * reported for slow plug-in case
-		 */
-		if (status == 0)
-			input_report_switch(accdet_input_dev,
-				SW_HEADPHONE_INSERT, status);
+		input_report_switch(accdet_input_dev, SW_HEADPHONE_INSERT,
+			status);
 		input_report_switch(accdet_input_dev, SW_MICROPHONE_INSERT,
 			status);
+		input_report_switch(accdet_input_dev, SW_JACK_PHYSICAL_INSERT,
+			status);
+
 		input_sync(accdet_input_dev);
+
 		pr_info("%s MICROPHONE(4-pole) %s\n", __func__,
 			status ? "PlugIn" : "PlugOut");
+
+		/* when press key for a long time then plug in
+		 * even recoginized as 4-pole
+		 * disable micbias timer still timeout after 6s
+		 * it check AB=00(because keep to press key) then disable
+		 * micbias, it will cause key no response
+		 */
+		del_timer_sync(&micbias_timer);
 		break;
 	case LINE_OUT_DEVICE:
 		input_report_switch(accdet_input_dev, SW_LINEOUT_INSERT,
+			status);
+		input_report_switch(accdet_input_dev, SW_JACK_PHYSICAL_INSERT,
 			status);
 		input_sync(accdet_input_dev);
 		pr_info("%s LineOut %s\n", __func__,
