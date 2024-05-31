@@ -90,17 +90,43 @@ EXPORT_SYMBOL_GPL(word_size_align);
 static snd_pcm_uframes_t mtk_afe_pcm_pointer
 			 (struct snd_pcm_substream *substream)
 {
-	struct snd_soc_pcm_runtime *rtd = substream->private_data;
-	struct snd_soc_component *component = snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
-	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
-	struct mtk_base_afe_memif *memif = &afe->memif[rtd->cpu_dai->id];
-	const struct mtk_base_memif_data *memif_data = memif->data;
-	struct regmap *regmap = afe->regmap;
-	struct device *dev = afe->dev;
-	int reg_ofs_base = memif_data->reg_ofs_base;
-	int reg_ofs_cur = memif_data->reg_ofs_cur;
-	unsigned int hw_ptr = 0, hw_base = 0;
+	struct snd_soc_pcm_runtime *rtd;
+	struct snd_soc_component *component;
+	struct mtk_base_afe *afe;
+	struct mtk_base_afe_memif *memif;
+	const struct mtk_base_memif_data *memif_data;
+	struct regmap *regmap;
+	struct device *dev;
+	int reg_ofs_base;
+	int reg_ofs_cur;
+	unsigned int hw_ptr, hw_base;
 	int ret, pcm_ptr_bytes;
+
+	rtd = substream->private_data;
+	if (!rtd || !rtd->cpu_dai) goto fail;
+
+	component = snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
+	if (!component) goto fail;
+
+	afe = snd_soc_component_get_drvdata(component);
+	if (!afe) goto fail;
+
+	memif = &afe->memif[rtd->cpu_dai->id];
+	if (!memif) goto fail;
+
+	memif_data = memif->data;
+	if (!memif_data) goto fail;
+
+	regmap = afe->regmap;
+	dev = afe->dev;
+
+	if (!regmap || !dev) goto fail;
+
+	reg_ofs_base = memif_data->reg_ofs_base;
+	reg_ofs_cur = memif_data->reg_ofs_cur;
+
+	hw_ptr = 0;
+	hw_base = 0;
 
 	ret = regmap_read(regmap, reg_ofs_cur, &hw_ptr);
 	if (ret || hw_ptr == 0) {
@@ -121,6 +147,9 @@ static snd_pcm_uframes_t mtk_afe_pcm_pointer
 POINTER_RETURN_FRAMES:
 	pcm_ptr_bytes = word_size_align(pcm_ptr_bytes);
 	return bytes_to_frames(substream->runtime, pcm_ptr_bytes);
+
+fail:
+	return 0;
 }
 
 int mtk_afe_pcm_ack(struct snd_pcm_substream *substream)
