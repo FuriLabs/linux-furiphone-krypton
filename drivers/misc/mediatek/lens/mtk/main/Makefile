@@ -20,6 +20,7 @@ ARCH_MTK_PROJECT := $(subst ",,$(CONFIG_ARCH_MTK_PROJECT))
 
 MTK_CUSTOM_PATH  := $(srctree)/drivers/misc/mediatek
 
+subdir-ccflags-y += -Wframe-larger-than=20624
 
 subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mtk/main/inc
 subdir-ccflags-y += -I$(MTK_CUSTOM_PATH)/lens/mtk/main/common/lc898122af
