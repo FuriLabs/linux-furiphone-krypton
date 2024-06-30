@@ -661,6 +661,7 @@ enum {
 	DL_GAIN_N_22DB = 30,
 	DL_GAIN_N_40DB = 0x1f,
 };
+#define DL_GAIN_8DB_REG (DL_GAIN_8DB << 7 | DL_GAIN_8DB)
 #define DL_GAIN_N_10DB_REG (DL_GAIN_N_10DB << 7 | DL_GAIN_N_10DB)
 #define DL_GAIN_N_22DB_REG (DL_GAIN_N_22DB << 7 | DL_GAIN_N_22DB)
 #define DL_GAIN_N_40DB_REG (DL_GAIN_N_40DB << 7 | DL_GAIN_N_40DB)
@@ -1783,7 +1784,7 @@ static int mtk_hp_enable(struct mt6359_priv *priv)
 		regmap_write(priv->regmap, MT6359_AUDDEC_ANA_CON7, 0x0113);
 
 		/* Set LO gain to 0DB */
-		regmap_write(priv->regmap, MT6359_ZCD_CON1, DL_GAIN_0DB);
+		regmap_write(priv->regmap, MT6359_ZCD_CON1, DL_GAIN_8DB);
 	}
 
 	/* Enable AUD_ZCD */
@@ -1868,7 +1869,7 @@ static int mtk_hp_enable(struct mt6359_priv *priv)
 
 	/* apply volume setting */
 	headset_volume_ramp(priv,
-			    DL_GAIN_N_22DB,
+			    DL_GAIN_8DB,
 			    priv->ana_gain[AUDIO_ANALOG_VOLUME_HPOUTL]);
 
 	/* Disable HP aux output stage */
@@ -1956,7 +1957,7 @@ static int mtk_hp_disable(struct mt6359_priv *priv)
 	/* decrease HPL/R gain to normal gain step by step */
 	headset_volume_ramp(priv,
 			    priv->ana_gain[AUDIO_ANALOG_VOLUME_HPOUTL],
-			    DL_GAIN_N_22DB);
+			    DL_GAIN_8DB);
 
 	/* Enable HP aux feedback loop */
 	regmap_write(priv->regmap, MT6359_AUDDEC_ANA_CON1, 0x77ff);
@@ -3504,7 +3505,7 @@ static int mt_hp_mute_event(struct snd_soc_dapm_widget *w,
 	switch (event) {
 	case SND_SOC_DAPM_PRE_PMU:
 		/* Set HPR/HPL gain to -22dB */
-		regmap_write(priv->regmap, MT6359_ZCD_CON2, DL_GAIN_N_22DB_REG);
+		regmap_write(priv->regmap, MT6359_ZCD_CON2, DL_GAIN_8DB_REG);
 		break;
 	case SND_SOC_DAPM_POST_PMD:
 		/* Set HPL/HPR gain to mute */
@@ -4750,7 +4751,7 @@ static void start_trim_hardware(struct mt6359_priv *priv)
 	hp_gain_ctl_select(priv, HP_GAIN_CTL_ZCD);
 
 	/* Set HPR/HPL gain to -22dB */
-	regmap_write(priv->regmap, MT6359_ZCD_CON2, DL_GAIN_N_22DB_REG);
+	regmap_write(priv->regmap, MT6359_ZCD_CON2, DL_GAIN_8DB_REG);
 	usleep_range(250, 270);
 
 	/* Enable cap-less LDOs (1.5V) */
@@ -4830,7 +4831,7 @@ static void start_trim_hardware(struct mt6359_priv *priv)
 
 	/* apply volume setting */
 	headset_volume_ramp(priv,
-			    DL_GAIN_N_22DB,
+			    DL_GAIN_8DB,
 			    priv->ana_gain[AUDIO_ANALOG_VOLUME_HPOUTL]);
 
 	/* Disable HP aux output stage */
@@ -4991,7 +4992,7 @@ static void get_hp_dctrim_offset(struct mt6359_priv *priv,
 			   0x7, AUXADC_AVG_256);
 
 	/* set ana_gain as 0DB */
-	priv->ana_gain[AUDIO_ANALOG_VOLUME_HPOUTL] = DL_GAIN_0DB;
+	priv->ana_gain[AUDIO_ANALOG_VOLUME_HPOUTL] = DL_GAIN_8DB;
 
 	/* turn on trim buffer */
 	start_trim_hardware(priv);
@@ -5587,9 +5588,9 @@ static int detect_impedance(struct mt6359_priv *priv)
 	/* set hp gain 0dB */
 	regmap_update_bits(priv->regmap, MT6359_ZCD_CON2,
 			   RG_AUDHPRGAIN_MASK_SFT,
-			   DL_GAIN_0DB << RG_AUDHPRGAIN_SFT);
+			   DL_GAIN_8DB << RG_AUDHPRGAIN_SFT);
 	regmap_update_bits(priv->regmap, MT6359_ZCD_CON2,
-			   RG_AUDHPLGAIN_MASK_SFT, DL_GAIN_0DB);
+			   RG_AUDHPLGAIN_MASK_SFT, DL_GAIN_8DB);
 
 	for (cur_dc = 0; cur_dc <= dc_phase2; cur_dc += dc_step) {
 		/* apply dc by dc compensation: 16bit MSB and negative value */
