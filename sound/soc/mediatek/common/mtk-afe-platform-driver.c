@@ -185,7 +185,11 @@ static int default_write_copy(struct snd_pcm_substream *substream,
 			      int channel, unsigned long hwoff,
 			      void *buf, unsigned long bytes)
 {
-	if (copy_from_user(get_dma_ptr(substream->runtime, channel, hwoff),
+	void *dma_addr = get_dma_ptr(substream->runtime, channel, hwoff);
+	if (!dma_addr)
+		return -EFAULT;
+
+	if (copy_from_user(dma_addr,
 			   (void __user *)buf, bytes))
 		return -EFAULT;
 	return 0;
