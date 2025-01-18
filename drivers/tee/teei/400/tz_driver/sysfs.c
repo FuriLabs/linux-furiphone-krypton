@@ -99,6 +99,7 @@ static ssize_t teei_log_level_show(struct device *cd,
 	return sprintf(buf, "%lu\n", TEEI_log_level);
 }
 
+#ifdef CONFIG_MICROTRUST_TZ_LOG
 static ssize_t teei_log_level_store(struct device *dev,
 				struct device_attribute *attr,
 				const char *buf, size_t len)
@@ -122,7 +123,9 @@ static ssize_t teei_log_level_store(struct device *dev,
 	return len;
 }
 static DEVICE_ATTR_RW(teei_log_level);
-
+#else
+static DEVICE_ATTR_RO(teei_log_level);
+#endif
 
 #define DRIVER_LOADER_HOSTNAME "bta_loader"
 #define UUID_STRING_LENGTH 32
