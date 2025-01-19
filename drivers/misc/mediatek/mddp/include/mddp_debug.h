@@ -18,7 +18,7 @@ extern uint32_t mddp_debug_log_level_s;
 	do { \
 		if ((mddp_debug_log_class_s & _class) && \
 			(mddp_debug_log_level_s >= _lv)) \
-			pr_notice(_fmt, ##_args); \
+			pr_debug(_fmt, ##_args); \
 	} while (0)
 
 #define MDDP_C_LOG(_lv, _fmt, _args...) \
