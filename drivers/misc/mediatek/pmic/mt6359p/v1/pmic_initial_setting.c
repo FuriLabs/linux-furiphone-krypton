@@ -70,7 +70,7 @@ int PMIC_check_battery(void)
 int PMIC_POWER_HOLD(unsigned int hold)
 {
 	if (hold > 1) {
-		pr_notice("[%s] hold = %d only 0 or 1\n", __func__, hold);
+		pr_debug("[%s] hold = %d only 0 or 1\n", __func__, hold);
 		return -1;
 	}
 
@@ -190,7 +190,7 @@ void PMIC_LP_INIT_SETTING(void)
 	pmic_ldo_vufs_lp(SW, 1, 1, SW_ON);
 	pmic_ldo_vibr_lp(SW, 1, 1, SW_OFF);
 
-	pr_info("[%s] Chip Ver = %d\n", __func__, g_pmic_chip_version);
+	pr_debug("[%s] Chip Ver = %d\n", __func__, g_pmic_chip_version);
 	pmic_set_register_value(PMIC_RG_LDO_VRF12_OP_MODE, 0);
 #endif /*LP_INIT_SETTING_VERIFIED*/
 }
@@ -284,7 +284,7 @@ void PMIC_LP_INIT_SETTING(void)
 	pmic_ldo_vsim2_lp(SW, 1, 1, SW_OFF);
 	pmic_ldo_vufs_lp(SW, 1, 1, SW_ON);
 	pmic_ldo_vibr_lp(SW, 1, 1, SW_OFF);
-	pr_info("[%s] Chip Ver = %d\n", __func__, g_pmic_chip_version);
+	pr_debug("[%s] Chip Ver = %d\n", __func__, g_pmic_chip_version);
 #endif /*LP_INIT_SETTING_VERIFIED*/
 }
 #elif defined(CONFIG_MACH_MT6853) || defined(CONFIG_MACH_MT6833)
@@ -400,7 +400,7 @@ void PMIC_LP_INIT_SETTING(void)
 	pmic_ldo_vsim2_lp(SW, 1, 1, SW_OFF);
 	pmic_ldo_vufs_lp(SW, 1, 1, SW_ON);
 	pmic_ldo_vibr_lp(SW, 1, 1, SW_OFF);
-	pr_info("[%s] Chip Ver = %d\n", __func__, g_pmic_chip_version);
+	pr_debug("[%s] Chip Ver = %d\n", __func__, g_pmic_chip_version);
 #endif /*LP_INIT_SETTING_VERIFIED*/
 }
 #elif defined(CONFIG_MACH_MT6877)
@@ -507,7 +507,7 @@ void PMIC_LP_INIT_SETTING(void)
 	pmic_ldo_vsim2_lp(SW, 1, 1, SW_OFF);
 	pmic_ldo_vufs_lp(SW, 1, 1, SW_ON);
 	pmic_ldo_vibr_lp(SW, 1, 1, SW_OFF);
-	pr_info("[%s] Chip Ver = %d\n", __func__, g_pmic_chip_version);
+	pr_debug("[%s] Chip Ver = %d\n", __func__, g_pmic_chip_version);
 #endif /*LP_INIT_SETTING_VERIFIED*/
 
 }

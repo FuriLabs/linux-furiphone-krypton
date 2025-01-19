@@ -24,7 +24,7 @@ static int pmic_ipi_to_sspm(struct pmic_ipi_cmds *ipi_cmd)
 		ret = mtk_ipi_register(&sspm_ipidev, IPIS_C_PMIC, NULL, NULL,
 				       (void *)&sspm_pmic_ack);
 		if (ret) {
-			pr_notice("[PMIC] ipi_register fail, ret=%d\n", ret);
+			pr_debug("[PMIC] ipi_register fail, ret=%d\n", ret);
 			return ret;
 		}
 		is_ipi_register = true;
@@ -34,11 +34,11 @@ static int pmic_ipi_to_sspm(struct pmic_ipi_cmds *ipi_cmd)
 	ret = mtk_ipi_send_compl(&sspm_ipidev, IPIS_C_PMIC, IPI_SEND_POLLING,
 				 ipi_cmd, cmd_len, PMIC_IPI_TIMEOUT);
 	if (ret) {
-		pr_notice("[PMIC] IPI fail ret=%d\n", ret);
+		pr_debug("[PMIC] IPI fail ret=%d\n", ret);
 		return ret;
 	}
 	if (sspm_pmic_ack) {
-		pr_notice("[PMIC] IPI fail, ackdata=%d\n", sspm_pmic_ack);
+		pr_debug("[PMIC] IPI fail, ackdata=%d\n", sspm_pmic_ack);
 		return sspm_pmic_ack;
 	}
 	return 0;

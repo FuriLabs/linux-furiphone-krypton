@@ -36,7 +36,7 @@ unsigned int pmic_read_interface(unsigned int RegNum, unsigned int *val,
 
 	return_value = regmap_read(pwrap_regmap, RegNum, &pmic_reg);
 	if (return_value != 0) {
-		pr_notice("[Power/PMIC][%s] Reg[%x]= pmic_wrap read data fail\n",
+		pr_debug("[Power/PMIC][%s] Reg[%x]= pmic_wrap read data fail\n",
 		       __func__, RegNum);
 		return return_value;
 	}
@@ -54,14 +54,14 @@ unsigned int pmic_config_interface(unsigned int RegNum, unsigned int val,
 	unsigned int pmic_reg = 0;
 
 	if (val > MASK) {
-		pr_notice("[Power/PMIC][%s] Invalid data, Reg[%x]: MASK = 0x%x, val = 0x%x\n",
+		pr_debug("[Power/PMIC][%s] Invalid data, Reg[%x]: MASK = 0x%x, val = 0x%x\n",
 		       __func__, RegNum, MASK, val);
 		return E_PWR_INVALID_DATA;
 	}
 
 	return_value = regmap_read(pwrap_regmap, RegNum, &pmic_reg);
 	if (return_value != 0) {
-		pr_notice("[Power/PMIC][%s] Reg[%x]= pmic_wrap read data fail\n",
+		pr_debug("[Power/PMIC][%s] Reg[%x]= pmic_wrap read data fail\n",
 		       __func__, RegNum);
 		return return_value;
 	}
@@ -71,7 +71,7 @@ unsigned int pmic_config_interface(unsigned int RegNum, unsigned int val,
 
 	return_value = regmap_write(pwrap_regmap, RegNum, pmic_reg);
 	if (return_value != 0) {
-		pr_notice("[Power/PMIC][%s] Reg[%x]= pmic_wrap read data fail\n",
+		pr_debug("[Power/PMIC][%s] Reg[%x]= pmic_wrap read data fail\n",
 		       __func__, RegNum);
 		return return_value;
 	}
@@ -98,7 +98,7 @@ u32 g_reg_value;
 static ssize_t pmic_access_show(struct device *dev,
 				struct device_attribute *attr, char *buf)
 {
-	pr_notice("[%s] 0x%x\n", __func__, g_reg_value);
+	pr_debug("[%s] 0x%x\n", __func__, g_reg_value);
 	return sprintf(buf, "%04X\n", g_reg_value);
 }
 
@@ -125,7 +125,7 @@ static ssize_t pmic_access_store(struct device *dev,
 			ret = kstrtouint(pvalue, 16, &reg_value);
 			if (ret)
 				return ret;
-			pr_notice(
+			pr_debug(
 				"[%s] write PMU reg 0x%x with value 0x%x !\n",
 				__func__, reg_address, reg_value);
 			ret = pmic_config_interface(reg_address, reg_value,
@@ -136,10 +136,10 @@ static ssize_t pmic_access_store(struct device *dev,
 				return ret;
 			ret = pmic_read_interface(reg_address, &g_reg_value,
 						  0xFFFF, 0x0);
-			pr_notice(
+			pr_debug(
 				"[%s] read PMU reg 0x%x with value 0x%x !\n",
 				__func__, reg_address, g_reg_value);
-			pr_notice(
+			pr_debug(
 				"Please use \"cat pmic_access\" to get value\r\n");
 		}
 	}
@@ -173,7 +173,7 @@ void PMIC_INIT_SETTING_V1(void)
 		ret = pmic_config_interface(0x210, 0x1, 0x3, 10);
 		break;
 	default:
-		pr_notice("[Power/PMIC] Error chip ID %d\r\n", chip_version);
+		pr_debug("[Power/PMIC] Error chip ID %d\r\n", chip_version);
 		break;
 	}
 
@@ -504,7 +504,7 @@ static irqreturn_t thr_h_int_handler(int irq, void *dev_id)
 	unsigned int ret = 0;
 	unsigned int val = 0;
 
-	pr_notice("%s!\n", __func__);
+	pr_debug("%s!\n", __func__);
 
 	/* Read PMIC test register to get VMCH PG status */
 	pmic_config_interface(0x13A, 0x0101, 0xFFFF, 0);
@@ -512,7 +512,7 @@ static irqreturn_t thr_h_int_handler(int irq, void *dev_id)
 	if (val == 0) {
 		/* VMCH is not good */
 		upmu_set_rg_vmch_en(0);
-		pr_notice("%s: VMCH not good with status: 0x%x, turn off!\n",
+		pr_debug("%s: VMCH not good with status: 0x%x, turn off!\n",
 		       __func__, upmu_get_reg_value(0x150));
 	}
 
@@ -521,7 +521,7 @@ static irqreturn_t thr_h_int_handler(int irq, void *dev_id)
 
 static irqreturn_t thr_l_int_handler(int irq, void *dev_id)
 {
-	pr_notice("%s!\n", __func__);
+	pr_debug("%s!\n", __func__);
 
 	return IRQ_HANDLED;
 }
@@ -539,7 +539,7 @@ static int mt6397_pmic_probe(struct platform_device *dev)
 
 	/* get PMIC CID */
 	ret_val = upmu_get_cid();
-	pr_notice("Power/PMIC MT6397 PMIC CID=0x%x\n", ret_val);
+	pr_debug("Power/PMIC MT6397 PMIC CID=0x%x\n", ret_val);
 
 	/* pmic initial setting */
 	PMIC_INIT_SETTING_V1();

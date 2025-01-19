@@ -88,25 +88,25 @@ void pmic_enable_interrupt(enum PMIC_IRQ_ENUM intNo, unsigned int en, char *str)
 	struct irq_desc *desc;
 
 	if (!pmic_dev) {
-		pr_notice("[%s] PMIC not ready\n", __func__);
+		pr_debug("[%s] PMIC not ready\n", __func__);
 		return;
 	}
 	if (intNo == INT_ENUM_MAX) {
-		pr_notice(PMICTAG "[%s] disable intNo=%d\n", __func__, intNo);
+		pr_debug(PMICTAG "[%s] disable intNo=%d\n", __func__, intNo);
 		return;
 	} else if (pmic_cb->callback == NULL) {
-		pr_notice(PMICTAG "[%s] No callback at intNo=%d\n",
+		pr_debug(PMICTAG "[%s] No callback at intNo=%d\n",
 			__func__, intNo);
 		return;
 	}
 	irq = mt6358_irq_get_virq(pmic_dev->parent, intNo);
 	if (!irq) {
-		pr_notice(PMICTAG "[%s] fail intNo=%d\n", __func__, intNo);
+		pr_debug(PMICTAG "[%s] fail intNo=%d\n", __func__, intNo);
 		return;
 	}
 	name = mt6358_irq_get_name(pmic_dev->parent, intNo);
 	if (name == NULL) {
-		pr_notice(PMICTAG "[%s] no irq name at intNo=%d\n",
+		pr_debug(PMICTAG "[%s] no irq name at intNo=%d\n",
 			__func__, intNo);
 		return;
 	}
@@ -116,7 +116,7 @@ void pmic_enable_interrupt(enum PMIC_IRQ_ENUM intNo, unsigned int en, char *str)
 				legacy_pmic_int_handler, IRQF_TRIGGER_HIGH,
 				name, pmic_cb);
 			if (ret < 0)
-				pr_notice(PMICTAG "[%s] request %s irq fail\n",
+				pr_debug(PMICTAG "[%s] request %s irq fail\n",
 					  __func__, name);
 			else
 				pmic_cb->has_requested = true;
@@ -125,7 +125,7 @@ void pmic_enable_interrupt(enum PMIC_IRQ_ENUM intNo, unsigned int en, char *str)
 	} else if (en == 0 && pmic_cb->has_requested)
 		disable_irq_nosync(irq);
 	desc = irq_to_desc(irq);
-	pr_info("[%s] intNo=%d, en=%d, depth=%d\n",
+	pr_debug("[%s] intNo=%d, en=%d, depth=%d\n",
 		__func__, intNo, en, desc ? desc->depth : -1);
 }
 
@@ -135,10 +135,10 @@ void pmic_register_interrupt_callback(enum PMIC_IRQ_ENUM intNo,
 	struct legacy_pmic_callback *pmic_cb = &pmic_cbs[intNo];
 
 	if (intNo == INT_ENUM_MAX) {
-		pr_info(PMICTAG "[%s] disable intNo=%d\n", __func__, intNo);
+		pr_debug(PMICTAG "[%s] disable intNo=%d\n", __func__, intNo);
 		return;
 	}
-	pr_info("[%s] intNo=%d, callback=%pf\n",
+	pr_debug("[%s] intNo=%d, callback=%pf\n",
 		__func__, intNo, EINT_FUNC_PTR);
 	pmic_cb->callback = EINT_FUNC_PTR;
 }
@@ -155,7 +155,7 @@ static void oc_int_handler(enum PMIC_IRQ_ENUM intNo, const char *int_name)
 	switch (intNo) {
 	case INT_VCN33_OC:
 		/* keep OC interrupt and keep tracking */
-		pr_notice(PMICTAG "[PMIC_INT] PMIC OC: %s\n", int_name);
+		pr_debug(PMICTAG "[PMIC_INT] PMIC OC: %s\n", int_name);
 		break;
 	default:
 		/* issue AEE exception and disable OC interrupt */
@@ -167,7 +167,7 @@ static void oc_int_handler(enum PMIC_IRQ_ENUM intNo, const char *int_name)
 				, int_name);
 #endif
 		pmic_enable_interrupt(intNo, 0, "PMIC");
-		pr_notice(PMICTAG "[PMIC_INT] disable OC interrupt: %s\n"
+		pr_debug(PMICTAG "[PMIC_INT] disable OC interrupt: %s\n"
 		       , int_name);
 		break;
 	}
@@ -207,12 +207,12 @@ static void md_oc_int_handler(enum PMIC_IRQ_ENUM intNo, const char *int_name)
 					   , (char *)&data_int32, 4);
 #endif
 	if (ret)
-		pr_notice("[%s] - exec_ccci_kern_func_by_md_id - msg fail\n"
+		pr_debug("[%s] - exec_ccci_kern_func_by_md_id - msg fail\n"
 			  , __func__);
 	pmic_enable_interrupt(intNo, 0, "PMIC");
-	pr_notice(PMICTAG "[PMIC_INT] disable OC interrupt: %s\n"
+	pr_debug(PMICTAG "[PMIC_INT] disable OC interrupt: %s\n"
 		  , int_name);
-	pr_info("[%s]Send msg pass\n", __func__);
+	pr_debug("[%s]Send msg pass\n", __func__);
 }
 
 /* register general oc interrupt handler */
@@ -221,7 +221,7 @@ void pmic_register_oc_interrupt_callback(enum PMIC_IRQ_ENUM intNo)
 	unsigned int spNo, sp_conNo, sp_irqNo;
 
 	if (pmic_check_intNo(intNo, &spNo, &sp_conNo, &sp_irqNo)) {
-		pr_notice(PMICTAG "[%s] fail intNo=%d\n", __func__, intNo);
+		pr_debug(PMICTAG "[%s] fail intNo=%d\n", __func__, intNo);
 		return;
 	}
 	IRQLOG("[%s] intNo=%d\n", __func__, intNo);

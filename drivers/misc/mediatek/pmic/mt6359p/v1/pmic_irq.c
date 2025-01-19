@@ -86,20 +86,20 @@ void pmic_enable_interrupt(enum PMIC_IRQ_ENUM intNo, unsigned int en, char *str)
 	struct irq_desc *desc = NULL;
 
 	if (intNo == INT_ENUM_MAX) {
-		pr_notice(PMICTAG "[%s] disable intNo=%d\n", __func__, intNo);
+		pr_debug(PMICTAG "[%s] disable intNo=%d\n", __func__, intNo);
 		return;
 	} else if (pmic_cb->callback == NULL) {
-		pr_notice(PMICTAG "[%s] No callback at intNo=%d\n",
+		pr_debug(PMICTAG "[%s] No callback at intNo=%d\n",
 			__func__, intNo);
 		return;
 	} else if (IS_ERR_OR_NULL(pmic_dev)) {
-		pr_notice(PMICTAG "[%s] pmic_dev not initalize %d\n",
+		pr_debug(PMICTAG "[%s] pmic_dev not initalize %d\n",
 			__func__, intNo);
 		return;
 	}
 	irq = mt6358_irq_get_virq(pmic_dev->parent, intNo);
 	if (!irq) {
-		pr_notice(PMICTAG "[%s] fail intNo=%d\n", __func__, intNo);
+		pr_debug(PMICTAG "[%s] fail intNo=%d\n", __func__, intNo);
 		return;
 	}
 
@@ -107,7 +107,7 @@ void pmic_enable_interrupt(enum PMIC_IRQ_ENUM intNo, unsigned int en, char *str)
 	IRQLOG("mt6358_irq_get_name: %s............\n", name);
 
 	if (name == NULL) {
-		pr_notice(PMICTAG "[%s] no irq name at intNo=%d\n",
+		pr_debug(PMICTAG "[%s] no irq name at intNo=%d\n",
 			__func__, intNo);
 		return;
 	}
@@ -117,7 +117,7 @@ void pmic_enable_interrupt(enum PMIC_IRQ_ENUM intNo, unsigned int en, char *str)
 				legacy_pmic_int_handler, IRQF_TRIGGER_HIGH,
 				name, pmic_cb);
 			if (ret < 0)
-				pr_notice(PMICTAG "[%s] request %s irq fail\n",
+				pr_debug(PMICTAG "[%s] request %s irq fail\n",
 					  __func__, name);
 			else
 				pmic_cb->has_requested = true;
@@ -136,10 +136,10 @@ void pmic_register_interrupt_callback(enum PMIC_IRQ_ENUM intNo,
 	struct legacy_pmic_callback *pmic_cb = &pmic_cbs[intNo];
 
 	if (intNo == INT_ENUM_MAX) {
-		pr_info(PMICTAG "[%s] disable intNo=%d\n", __func__, intNo);
+		pr_debug(PMICTAG "[%s] disable intNo=%d\n", __func__, intNo);
 		return;
 	}
-	pr_info("[%s] intNo=%d, callback=%pf\n",
+	pr_debug("[%s] intNo=%d, callback=%pf\n",
 		__func__, intNo, EINT_FUNC_PTR);
 	pmic_cb->callback = EINT_FUNC_PTR;
 }

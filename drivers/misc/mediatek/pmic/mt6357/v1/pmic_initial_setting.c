@@ -71,7 +71,7 @@ int PMIC_check_battery(void)
 int PMIC_POWER_HOLD(unsigned int hold)
 {
 	if (hold > 1) {
-		pr_notice("[PMIC_KERNEL] %s hold = %d only 0 or 1\n",
+		pr_debug("[PMIC_KERNEL] %s hold = %d only 0 or 1\n",
 			__func__, hold);
 		return -1;
 	}
