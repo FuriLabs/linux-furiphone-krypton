@@ -1194,7 +1194,7 @@ int ccu_load_segments(const struct firmware *fw, enum CCU_BIN_TYPE type)
 	}
 	ehdr = (struct elf32_hdr *)elf_data;
 	phdr = (struct elf32_phdr *)(elf_data + ehdr->e_phoff);
-	// dev_info(dev, "ehdr->e_phnum %d\n", ehdr->e_phnum);
+	// dev_dbg(dev, "ehdr->e_phnum %d\n", ehdr->e_phnum);
 	/* go through the available ELF segments */
 	for (i = 0; i < ehdr->e_phnum; i++, phdr++) {
 		u32 da = phdr->p_paddr;

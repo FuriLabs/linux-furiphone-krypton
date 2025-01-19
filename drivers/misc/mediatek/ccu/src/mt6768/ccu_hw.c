@@ -1183,7 +1183,7 @@ int ccu_load_segments(const struct firmware *fw)
 	ehdr = (struct elf32_hdr *)elf_data;
 	// phdr = (struct elf32_phdr *)(elf_data + ehdr->e_phoff);
 	shdr = (struct elf32_shdr *)(elf_data + ehdr->e_shoff);
-	// dev_info(dev, "ehdr->e_phnum %d\n", ehdr->e_phnum);
+	// dev_dbg(dev, "ehdr->e_phnum %d\n", ehdr->e_phnum);
 	LOG_DBG("ehdr->e_shnum %d\n", ehdr->e_shnum);
 	/* go through the available ELF segments */
 	for (i = 0; i < ehdr->e_shnum; i++, shdr++) {
