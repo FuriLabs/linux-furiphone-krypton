@@ -165,12 +165,12 @@ static int g_resume_done = 1;
 #define mtktsvtskin_dprintk(fmt, args...)   \
 do {                                    \
 	if (mtktsvtskin_debug_log) {                \
-		pr_notice("[Thermal/TZ/VTSKIN]" fmt, ##args); \
+		pr_debug("[Thermal/TZ/VTSKIN]" fmt, ##args); \
 	}                                   \
 } while (0)
 
 #define mtktsvtskin_printk(fmt, args...)   \
-pr_notice("[Thermal/TZ/VTSKIN]" fmt, ##args)
+pr_debug("[Thermal/TZ/VTSKIN]" fmt, ##args)
 
 
 //change to enum
@@ -306,10 +306,10 @@ struct thermal_cooling_device *cdev, unsigned long state)
 
 	cl_dev_sysrst_state = state;
 	if (cl_dev_sysrst_state == 1) {
-		pr_notice("Power/vtskin: reset, reset, reset!!!");
-		pr_notice("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-		pr_notice("*****************************************");
-		pr_notice("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+		pr_debug("Power/vtskin: reset, reset, reset!!!");
+		pr_debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+		pr_debug("*****************************************");
+		pr_debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 
 		/* To trigger data abort to reset the system
 		 * for thermal protection.
@@ -351,12 +351,12 @@ static struct vtskin_data *parse_dt(struct platform_device *pdev)
 
 	root = pdev->dev.of_node;
 	of_property_read_u32(root, "num-sensor", &num_sensor);
-	pr_notice("vtskin num_sensor %d\n", num_sensor);
+	pr_debug("vtskin num_sensor %d\n", num_sensor);
 	mt6893_vtskin_data.num_sensor = num_sensor;
 	mt6893_vtskin_data.dev = dev;
 	mt6893_vtskin_data.params = devm_kzalloc(dev, num_sensor*sizeof(*params), GFP_KERNEL);
 	if(!mt6893_vtskin_data.params){
-		pr_notice("Error: Failed to allocate memory\n");
+		pr_debug("Error: Failed to allocate memory\n");
 		return NULL;
 	}
 	for_each_child_of_node(root, vtskin_map) {
@@ -365,17 +365,17 @@ static struct vtskin_data *parse_dt(struct platform_device *pdev)
 		int child_count = 0;
 
 		of_property_read_u32(vtskin_map, "ref-num", &ref_num);
-		pr_notice("vtskin ref_num  %d\n", ref_num);
+		pr_debug("vtskin ref_num  %d\n", ref_num);
 		mt6893_vtskin_data.params[count].ref_num= ref_num;
 		of_property_read_string(vtskin_map, "operation", (const char **)&operation);
-		pr_notice(" vtskin operation %s\n", operation);
+		pr_debug(" vtskin operation %s\n", operation);
 
 		if (!strcmp(operation, "OP_COEF"))
 			mt6893_vtskin_data.params[count].operation = OP_COEF;
 		else if(!strcmp(operation, "OP_MAX"))
 			mt6893_vtskin_data.params[count].operation = OP_MAX;
 		else
-			pr_notice("vtskin wrong coefficient %s\n", operation);
+			pr_debug("vtskin wrong coefficient %s\n", operation);
 
 		for_each_child_of_node(vtskin_map, vtskin_child_map){
 			char *sensor_name = NULL;
@@ -384,8 +384,8 @@ static struct vtskin_data *parse_dt(struct platform_device *pdev)
 			of_property_read_string(vtskin_child_map, "sensor-name",
 				(const char **)&sensor_name);
 			of_property_read_s32(vtskin_child_map, "sensor-coeff", &sensor_coeff);
-			pr_notice("vtskin sensor-name %s\n", sensor_name);
-			pr_notice("vtskin sensor-coeff  %lld\n", sensor_coeff);
+			pr_debug("vtskin sensor-name %s\n", sensor_name);
+			pr_debug("vtskin sensor-coeff  %lld\n", sensor_coeff);
 			strcpy(
 			mt6893_vtskin_data.params[count].vtskin_ref[child_count].sensor_name,
 				sensor_name);
@@ -411,7 +411,7 @@ static int mtktsvtskin3_bind(struct thermal_zone_device *thermal,
 
 	if (!strcmp(cdev->type, g_bind30)) {
 		table_val = 0;
-		pr_notice("g_bind0 [%s] %s\n", __func__, cdev->type);
+		pr_debug("g_bind0 [%s] %s\n", __func__, cdev->type);
 	} else if (!strcmp(cdev->type, g_bind31)) {
 		table_val = 1;
 		mtktsvtskin_dprintk("[%s] %s\n", __func__, cdev->type);
@@ -440,17 +440,17 @@ static int mtktsvtskin3_bind(struct thermal_zone_device *thermal,
 		table_val = 9;
 		mtktsvtskin_dprintk("[%s] %s\n", __func__, cdev->type);
 	} else {
-		pr_notice("mtktsvtskin_bind called return 0\n");
+		pr_debug("mtktsvtskin_bind called return 0\n");
 		return 0;
 	}
 
 	if (mtk_thermal_zone_bind_cooling_device(thermal, table_val, cdev)) {
-		pr_notice(
+		pr_debug(
 			"[%s] error binding cooling dev\n", __func__);
 		return -EINVAL;
 	}
 
-	pr_notice("[%s] binding OK, %d\n", __func__, table_val);
+	pr_debug("[%s] binding OK, %d\n", __func__, table_val);
 	return 0;
 }
 
@@ -513,7 +513,7 @@ static int mtktsvtskin2_bind(struct thermal_zone_device *thermal,
 
 	if (!strcmp(cdev->type, g_bind20)) {
 		table_val = 0;
-		pr_notice("g_bind0 [%s] %s\n", __func__, cdev->type);
+		pr_debug("g_bind0 [%s] %s\n", __func__, cdev->type);
 	} else if (!strcmp(cdev->type, g_bind21)) {
 		table_val = 1;
 		mtktsvtskin_dprintk("[%s] %s\n", __func__, cdev->type);
@@ -542,17 +542,17 @@ static int mtktsvtskin2_bind(struct thermal_zone_device *thermal,
 		table_val = 9;
 		mtktsvtskin_dprintk("[%s] %s\n", __func__, cdev->type);
 	} else {
-		pr_notice("mtktsvtskin_bind called return 0\n");
+		pr_debug("mtktsvtskin_bind called return 0\n");
 		return 0;
 	}
 
 	if (mtk_thermal_zone_bind_cooling_device(thermal, table_val, cdev)) {
-		pr_notice(
+		pr_debug(
 			"[%s] error binding cooling dev\n", __func__);
 		return -EINVAL;
 	}
 
-	pr_notice("[%s] binding OK, %d\n", __func__, table_val);
+	pr_debug("[%s] binding OK, %d\n", __func__, table_val);
 	return 0;
 }
 
@@ -615,7 +615,7 @@ static int mtktsvtskin1_bind(struct thermal_zone_device *thermal,
 
 	if (!strcmp(cdev->type, g_bind10)) {
 		table_val = 0;
-		pr_notice("g_bind0 [%s] %s\n", __func__, cdev->type);
+		pr_debug("g_bind0 [%s] %s\n", __func__, cdev->type);
 	} else if (!strcmp(cdev->type, g_bind11)) {
 		table_val = 1;
 		mtktsvtskin_dprintk("[%s] %s\n", __func__, cdev->type);
@@ -644,17 +644,17 @@ static int mtktsvtskin1_bind(struct thermal_zone_device *thermal,
 		table_val = 9;
 		mtktsvtskin_dprintk("[%s] %s\n", __func__, cdev->type);
 	} else {
-		pr_notice("mtktsvtskin_bind called return 0\n");
+		pr_debug("mtktsvtskin_bind called return 0\n");
 		return 0;
 	}
 
 	if (mtk_thermal_zone_bind_cooling_device(thermal, table_val, cdev)) {
-		pr_notice(
+		pr_debug(
 			"[%s] error binding cooling dev\n", __func__);
 		return -EINVAL;
 	}
 
-	pr_notice("[%s] binding OK, %d\n", __func__, table_val);
+	pr_debug("[%s] binding OK, %d\n", __func__, table_val);
 	return 0;
 }
 
@@ -716,7 +716,7 @@ static int mtktsvtskin_bind(struct thermal_zone_device *thermal,
 
 	if (!strcmp(cdev->type, g_bind0)) {
 		table_val = 0;
-		pr_notice("g_bind0 [%s] %s\n", __func__, cdev->type);
+		pr_debug("g_bind0 [%s] %s\n", __func__, cdev->type);
 	} else if (!strcmp(cdev->type, g_bind1)) {
 		table_val = 1;
 		mtktsvtskin_dprintk("[%s] %s\n", __func__, cdev->type);
@@ -749,12 +749,12 @@ static int mtktsvtskin_bind(struct thermal_zone_device *thermal,
 	}
 
 	if (mtk_thermal_zone_bind_cooling_device(thermal, table_val, cdev)) {
-		pr_notice(
+		pr_debug(
 			"[%s] error binding cooling dev\n", __func__);
 		return -EINVAL;
 	}
 
-	pr_notice("[%s] binding OK, %d\n", __func__, table_val);
+	pr_debug("[%s] binding OK, %d\n", __func__, table_val);
 	return 0;
 }
 
@@ -836,20 +836,20 @@ static int mtktsvtskin_get_temp(struct thermal_zone_device *thermal, int *temp)
 	for (i = 0; i < skin_param[id].ref_num; i++) {
 		sensor_name = skin_param[id].vtskin_ref[i].sensor_name;
 		if (!sensor_name) {
-			pr_notice("get sensor name fail %d\n", i);
+			pr_debug("get sensor name fail %d\n", i);
 			*temp = THERMAL_TEMP_INVALID;
 			return -EINVAL;
 		}
-		pr_notice("vtskin_get_temp sensor_name   %s\n", sensor_name);
+		pr_debug("vtskin_get_temp sensor_name   %s\n", sensor_name);
 		tzd = thermal_zone_get_zone_by_name(sensor_name);
 		if (IS_ERR_OR_NULL(tzd) || !tzd->ops->get_temp) {
-			pr_notice("get %s temp fail\n", sensor_name);
+			pr_debug("get %s temp fail\n", sensor_name);
 			*temp = THERMAL_TEMP_INVALID;
 			return -EINVAL;
 		}
 		ret = tzd->ops->get_temp(tzd, &tz_temp);
 		if (ret < 0) {
-			pr_notice("%s get_temp fail %d\n", sensor_name, ret);
+			pr_debug("%s get_temp fail %d\n", sensor_name, ret);
 			*temp = THERMAL_TEMP_INVALID;
 			return -EINVAL;
 		}
@@ -859,13 +859,13 @@ static int mtktsvtskin_get_temp(struct thermal_zone_device *thermal, int *temp)
 			if (tz_temp > *temp)
 				*temp = tz_temp;
 
-			pr_notice("get tz_temp %d\n", *temp);
+			pr_debug("get tz_temp %d\n", *temp);
 		} else if (skin_param[id].operation == OP_COEF) {
 			coef = skin_param[id].vtskin_ref[i].sensor_coef;
-			pr_notice("sensor_coef:  %d\n", coef);
+			pr_debug("sensor_coef:  %d\n", coef);
 			vtskin += tz_temp * coef;
 			if (i == skin_param[id].ref_num - 1){
-				pr_notice(" divide by vtskin / 10");
+				pr_debug(" divide by vtskin / 10");
 				*temp = (int)(vtskin / 10);
 			}
 		}
@@ -1046,11 +1046,11 @@ void mtktsvtskin_max_register_thermal(void)
 							0, 0, 0, interval * 1000);
 
 	if (IS_ERR(thz_dev0))
-		pr_notice("Thermal zone register vtskin max fail");
+		pr_debug("Thermal zone register vtskin max fail");
 
 	ret = snprintf(skin_data->params[i].tz_name, THERMAL_NAME_LENGTH, thz_dev0->type);
 	if (ret < 0)
-		pr_notice("copy tz_name fail %s\n", thz_dev0->type);
+		pr_debug("copy tz_name fail %s\n", thz_dev0->type);
 
 
 
@@ -1070,11 +1070,11 @@ void mtktsvtskin1_register_thermal(void)
 							0, 0, 0, interval * 1000);
 
 	if (IS_ERR(thz_dev1))
-		pr_notice("Thermal zone register fail");
+		pr_debug("Thermal zone register fail");
 
 	ret = snprintf(skin_data->params[i].tz_name, THERMAL_NAME_LENGTH, thz_dev1->type);
 	if (ret < 0)
-		pr_notice("copy tz_name fail %s\n", thz_dev1->type);
+		pr_debug("copy tz_name fail %s\n", thz_dev1->type);
 
 
 
@@ -1094,11 +1094,11 @@ void mtktsvtskin2_register_thermal(void)
 							0, 0, 0, interval * 1000);
 
 	if (IS_ERR(thz_dev2))
-		pr_notice("Thermal zone register fail");
+		pr_debug("Thermal zone register fail");
 
 	ret = snprintf(skin_data->params[i].tz_name, THERMAL_NAME_LENGTH, thz_dev2->type);
 	if (ret < 0)
-		pr_notice("copy tz_name fail %s\n", thz_dev2->type);
+		pr_debug("copy tz_name fail %s\n", thz_dev2->type);
 
 
 
@@ -1117,11 +1117,11 @@ void mtktsvtskin3_register_thermal(void)
 							0, 0, 0, interval * 1000);
 
 	if (IS_ERR(thz_dev3))
-		pr_notice("Thermal zone register fail");
+		pr_debug("Thermal zone register fail");
 
 	ret = snprintf(skin_data->params[i].tz_name, THERMAL_NAME_LENGTH, thz_dev3->type);
 	if (ret < 0)
-		pr_notice("copy tz_name fail %s\n", thz_dev3->type);
+		pr_debug("copy tz_name fail %s\n", thz_dev3->type);
 
 
 
@@ -1192,7 +1192,7 @@ struct file *file, const char __user *buffer, size_t count, loff_t *data)
 				sizeof(*ptr_mtktsvtskin_data), GFP_KERNEL);
 
 
-	pr_notice("num_trip3 mtktsvtskin_write  [%d]\n",count);
+	pr_debug("num_trip3 mtktsvtskin_write  [%d]\n",count);
 
 	if (ptr_mtktsvtskin_data == NULL)
 		return -ENOMEM;
@@ -1249,7 +1249,7 @@ struct file *file, const char __user *buffer, size_t count, loff_t *data)
 				__func__);
 
 		mtktsvtskin3_unregister_thermal();
-		pr_notice("num_trip3 mtktsvtskin_write [%d]\n",num_trip3);
+		pr_debug("num_trip3 mtktsvtskin_write [%d]\n",num_trip3);
 
 		if (num_trip3 < 0 || num_trip3 > 10) {
 			#ifdef CONFIG_MTK_AEE_FEATURE
@@ -1410,7 +1410,7 @@ struct file *file, const char __user *buffer, size_t count, loff_t *data)
 				sizeof(*ptr_mtktsvtskin_data), GFP_KERNEL);
 
 
-	pr_notice("num_trip2 mtktsvtskin_write  [%d]\n",count);
+	pr_debug("num_trip2 mtktsvtskin_write  [%d]\n",count);
 
 	if (ptr_mtktsvtskin_data == NULL)
 		return -ENOMEM;
@@ -1467,7 +1467,7 @@ struct file *file, const char __user *buffer, size_t count, loff_t *data)
 				__func__);
 
 		mtktsvtskin2_unregister_thermal();
-		pr_notice("num_trip2 mtktsvtskin_write [%d]\n",num_trip2);
+		pr_debug("num_trip2 mtktsvtskin_write [%d]\n",num_trip2);
 
 		if (num_trip2 < 0 || num_trip2 > 10) {
 			#ifdef CONFIG_MTK_AEE_FEATURE
@@ -1630,7 +1630,7 @@ struct file *file, const char __user *buffer, size_t count, loff_t *data)
 				sizeof(*ptr_mtktsvtskin_data), GFP_KERNEL);
 
 
-	pr_notice("num_trip1 mtktsvtskin_write[%d]\n",count);
+	pr_debug("num_trip1 mtktsvtskin_write[%d]\n",count);
 
 	if (ptr_mtktsvtskin_data == NULL)
 		return -ENOMEM;
@@ -1686,7 +1686,7 @@ struct file *file, const char __user *buffer, size_t count, loff_t *data)
 				"[%s] mtktsvtskin_unregister_thermal\n",__func__);
 
 		mtktsvtskin1_unregister_thermal();
-		pr_notice("num_trip1 mtktsvtskin_write [%d]\n",num_trip1);
+		pr_debug("num_trip1 mtktsvtskin_write [%d]\n",num_trip1);
 
 		if (num_trip1 < 0 || num_trip1 > 10) {
 			#ifdef CONFIG_MTK_AEE_FEATURE
@@ -1845,7 +1845,7 @@ struct file *file, const char __user *buffer, size_t count, loff_t *data)
 	struct mtktsvtskin_data *ptr_mtktsvtskin_data = kmalloc(
 				sizeof(*ptr_mtktsvtskin_data), GFP_KERNEL);
 
-	pr_notice("num_trip mtktsvtskin_write  [%d]\n",count);
+	pr_debug("num_trip mtktsvtskin_write  [%d]\n",count);
 
 	if (ptr_mtktsvtskin_data == NULL)
 		return -ENOMEM;
@@ -1901,7 +1901,7 @@ struct file *file, const char __user *buffer, size_t count, loff_t *data)
 				"[%s] mtktsvtskin0_unregister_thermal\n",__func__);
 
 		mtktsvtskin_max_unregister_thermal();
-		pr_notice("num_trip mtktsvtskin_write[%d]\n", num_trip);
+		pr_debug("num_trip mtktsvtskin_write[%d]\n", num_trip);
 
 		if (num_trip < 0 || num_trip > 10) {
 			#ifdef CONFIG_MTK_AEE_FEATURE
@@ -2151,14 +2151,14 @@ static int vtskin_probe(struct platform_device *pdev)
 
 
 	if (!pdev->dev.of_node) {
-		pr_notice("Only DT based supported\n");
+		pr_debug("Only DT based supported\n");
 		return -ENODEV;
 	}
-	pr_notice(" vtskin probe called");
+	pr_debug(" vtskin probe called");
 
 	skin_data = parse_dt(pdev);
 	if (!skin_data)
-		pr_notice("Error: Failed to get lvts platform data\n");
+		pr_debug("Error: Failed to get lvts platform data\n");
 
 	skin_data->dev = dev;
 	platform_set_drvdata(pdev, skin_data);
@@ -2168,7 +2168,7 @@ static int vtskin_probe(struct platform_device *pdev)
 
 	mtktsvtskin_dir = mtk_thermal_get_proc_drv_therm_dir_entry();
 	if (!mtktsvtskin_dir) {
-		pr_notice("%s mkdir /proc/driver/thermal failed\n",__func__);
+		pr_debug("%s mkdir /proc/driver/thermal failed\n",__func__);
 		return -1;
 	}
 
@@ -2195,12 +2195,12 @@ static int vtskin_probe(struct platform_device *pdev)
 #ifdef CONFIG_PM
 		ret = register_pm_notifier(&vtskin_pm_notifier_func);
 		if (ret)
-			pr_notice("Failed to register dctm PM notifier.\n");
+			pr_debug("Failed to register dctm PM notifier.\n");
 #endif
 
 
 
-	pr_notice("vtkin probe  completed");
+	pr_debug("vtkin probe  completed");
 	return 0;
 }
 

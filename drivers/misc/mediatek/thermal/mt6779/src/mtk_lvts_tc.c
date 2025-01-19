@@ -1329,7 +1329,7 @@ void lvts_sodi3_release_thermal_controller(void)
 	}
 
 	if (cnt == 50)
-		pr_notice("Err: SODI3 failed to wait LVTS TC %d idle, LVTSMSRCTL1[10,7,0] = %d,%d,%d\n",
+		pr_debug("Err: SODI3 failed to wait LVTS TC %d idle, LVTSMSRCTL1[10,7,0] = %d,%d,%d\n",
 				cnt + 1, (temp >> 16),
 				((temp & _BIT_(2)) >> 2),
 				((temp & _BIT_(1)) >> 1),

@@ -381,7 +381,7 @@ int mtktspmic_get_hw_temp(void)
 							"pmic_chip_temp");
 		if (IS_ERR(chan_chip_temp)) {
 			mutex_unlock(&TSPMIC_lock);
-			pr_notice("chan_chip_temp is invalid, return fake temperature\n");
+			pr_debug("chan_chip_temp is invalid, return fake temperature\n");
 			temp1 = 35000;
 			goto out;
 		}
@@ -440,7 +440,7 @@ int mt6359vcore_get_hw_temp(void)
 							"pmic_buck1_temp");
 		if (IS_ERR(chan_vcore_temp)) {
 			mutex_unlock(&TSPMIC_lock);
-			pr_notice("chan_vcore_temp is invalid, return fake temperature\n");
+			pr_debug("chan_vcore_temp is invalid, return fake temperature\n");
 			temp1 = 35000;
 			goto out;
 		}
@@ -499,7 +499,7 @@ int mt6359vproc_get_hw_temp(void)
 							"pmic_buck2_temp");
 		if (IS_ERR(chan_vproc_temp)) {
 			mutex_unlock(&TSPMIC_lock);
-			pr_notice("chan_vproc_temp is invalid, return fake temperature\n");
+			pr_debug("chan_vproc_temp is invalid, return fake temperature\n");
 			temp1 = 35000;
 			goto out;
 		}
@@ -558,7 +558,7 @@ int mt6359vgpu_get_hw_temp(void)
 							"pmic_buck3_temp");
 		if (IS_ERR(chan_vgpu_temp)) {
 			mutex_unlock(&TSPMIC_lock);
-			pr_notice("chan_vgpu_temp is invalid, return fake temperature\n");
+			pr_debug("chan_vgpu_temp is invalid, return fake temperature\n");
 			temp1 = 35000;
 			goto out;
 		}
@@ -796,7 +796,7 @@ int mt6359tsx_get_hw_temp(void)
 							"pmic_tsx_temp");
 		if (IS_ERR(chan_tsx_temp)) {
 			mutex_unlock(&TSPMIC_lock);
-			pr_notice("chan_tsx_temp is invalid, return fake temperature\n");
+			pr_debug("chan_tsx_temp is invalid, return fake temperature\n");
 			temp1 = 35000;
 			goto out;
 		}
@@ -858,7 +858,7 @@ int mt6359dcxo_get_hw_temp(void)
 							"pmic_dcxo_temp");
 		if (IS_ERR(chan_dcxo_temp)) {
 			mutex_unlock(&TSPMIC_lock);
-			pr_notice("chan_dcxo_temp is invalid, return fake temperature\n");
+			pr_debug("chan_dcxo_temp is invalid, return fake temperature\n");
 			temp1 = 35000;
 			goto out;
 		}

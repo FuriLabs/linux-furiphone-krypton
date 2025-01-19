@@ -452,20 +452,20 @@ bool __attribute__((weak))
 mtk_get_gpu_loading(unsigned int *pLoading)
 {
 #ifdef CONFIG_MTK_GPU_SUPPORT
-	pr_notice("E_WF: %s doesn't exist\n", __func__);
+	pr_debug("E_WF: %s doesn't exist\n", __func__);
 #endif
 	return 0;
 }
 unsigned int  __attribute__((weak))
 mt_gpufreq_get_min_power(void)
 {
-	pr_notice("E_WF: %s doesn't exist\n", __func__);
+	pr_debug("E_WF: %s doesn't exist\n", __func__);
 	return 0;
 }
 unsigned int  __attribute__((weak))
 mt_gpufreq_get_max_power(void)
 {
-	pr_notice("E_WF: %s doesn't exist\n", __func__);
+	pr_debug("E_WF: %s doesn't exist\n", __func__);
 	return 0;
 }
 void __attribute__ ((weak))
@@ -3809,7 +3809,7 @@ static int krtatm_thread(void *arg)
 				/* dump more info when atm is deactivated */
 				if (!cl_dev_adp_cpu_state_active) {
 #ifdef CONFIG_MTK_TINYSYS_SSPM_SUPPORT
-					pr_info_ratelimited(TSCPU_LOG_TAG
+					pr_debug_ratelimited(TSCPU_LOG_TAG
 					"tjs %d ttj %d %d on %d sspm %d %d\n",
 					TARGET_TJS[0], TARGET_TJ,
 					current_ETJ, ctm_on,
@@ -3825,7 +3825,7 @@ static int krtatm_thread(void *arg)
 					0);
 #endif
 #else /* !CONFIG_MTK_TINYSYS_SSPM_SUPPORT */
-					pr_info_ratelimited(TSCPU_LOG_TAG
+					pr_debug_ratelimited(TSCPU_LOG_TAG
 					"tjs %d ttj %d %d on %d\n",
 					TARGET_TJS[0], TARGET_TJ,
 					current_ETJ, ctm_on);

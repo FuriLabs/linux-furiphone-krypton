@@ -194,19 +194,19 @@ static void set_tc_trigger_hw_protect(int temperature, int temperature2, int tc_
 void __attribute__ ((weak))
 mt_ptp_lock(unsigned long *flags)
 {
-	pr_notice("[Power/CPU_Thermal]%s doesn't exist\n", __func__);
+	pr_debug("[Power/CPU_Thermal]%s doesn't exist\n", __func__);
 }
 
 void __attribute__ ((weak))
 mt_ptp_unlock(unsigned long *flags)
 {
-	pr_notice("[Power/CPU_Thermal]%s doesn't exist\n", __func__);
+	pr_debug("[Power/CPU_Thermal]%s doesn't exist\n", __func__);
 }
 
 int __attribute__ ((weak))
 get_wd_api(struct wd_api **obj)
 {
-	pr_notice("[Power/CPU_Thermal]%s doesn't exist\n", __func__);
+	pr_debug("[Power/CPU_Thermal]%s doesn't exist\n", __func__);
 	return -1;
 }
 
