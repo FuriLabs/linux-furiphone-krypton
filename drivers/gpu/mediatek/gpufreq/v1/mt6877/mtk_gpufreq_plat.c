@@ -3405,6 +3405,7 @@ static void __mt_update_gpufreqs_power_table(void)
  */
 static void __mt_gpufreq_kick_pbm(int enable)
 {
+#ifdef CONFIG_MTK_PBM
 #if MT_GPUFREQ_KICKER_PBM_READY
 	unsigned int cur_power = 0;
 	unsigned int cur_volt = 0;
@@ -3417,6 +3418,7 @@ static void __mt_gpufreq_kick_pbm(int enable)
 		kicker_pbm_by_gpu(true, cur_power, cur_volt / 100);
 	} else
 		kicker_pbm_by_gpu(false, 0, cur_volt / 100);
+#endif
 #endif
 }
 
