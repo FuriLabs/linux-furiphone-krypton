@@ -120,8 +120,8 @@ static void rtnl_print_btrace(struct timer_list *unused)
 		show_trace.nr_entries = rtnl_instance.entry_nr;
 		show_trace.entries = rtnl_instance.addrs;
 		show_trace.max_entries = RTNL_DEBUG_ADDRS_COUNT;
-		pr_info("-----------%s start-----------\n", __func__);
-		pr_info("[mtk_net][rtnl_lock] %s[%d][%c] hold lock more than 2 sec,start time: %lld\n",
+		pr_debug("-----------%s start-----------\n", __func__);
+		pr_debug("[mtk_net][rtnl_lock] %s[%d][%c] hold lock more than 2 sec,start time: %lld\n",
 			rtnl_instance.task->comm,
 			rtnl_instance.pid,
 			task_state_to_char(rtnl_instance.task),
@@ -129,9 +129,9 @@ static void rtnl_print_btrace(struct timer_list *unused)
 
 		print_stack_trace(&show_trace, 0);
 		show_stack(rtnl_instance.task, NULL);
-		pr_info("------------%s end-----------\n", __func__);
+		pr_debug("------------%s end-----------\n", __func__);
 	} else {
-		pr_info("[mtk_net][rtnl_lock]There is no process hold rtnl lock\n");
+		pr_debug("[mtk_net][rtnl_lock]There is no process hold rtnl lock\n");
 	}
 }
 
@@ -181,7 +181,7 @@ void __rtnl_unlock(void)
 
 	rtnl_instance.end = sched_clock();
 	if (rtnl_instance.end - rtnl_instance.start > 4000000000ULL)//4 second
-		pr_info("[mtk_net][rtnl_unlock] rtnl_lock is held by [%d] from [%llu] to [%llu]\n",
+		pr_debug("[mtk_net][rtnl_unlock] rtnl_lock is held by [%d] from [%llu] to [%llu]\n",
 			rtnl_instance.pid,
 			rtnl_instance.start, rtnl_instance.end);
 
