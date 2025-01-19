@@ -207,7 +207,7 @@ static void mtk_smi_larb_sleep_ctrl_mt8168(struct device *dev, bool toslp)
 		writel_relaxed(SLP_PROT_EN, base + SMI_LARB_SLP_CON);
 		if (readl_poll_timeout_atomic(base + SMI_LARB_SLP_CON,
 				tmp, !!(tmp & SLP_PROT_RDY), 10, 10000))
-			dev_notice(dev, "larb sleep con not ready(%d)\n", tmp);
+			dev_dbg(dev, "larb sleep con not ready(%d)\n", tmp);
 	} else
 		writel_relaxed(0, base + SMI_LARB_SLP_CON);
 }
@@ -313,7 +313,7 @@ static int mtk_smi_larb_probe(struct platform_device *pdev)
 		err = of_property_read_u32(dev->of_node, "mediatek,larb-id",
 					   &larb->larbid);
 		if (err) {
-			dev_notice(dev, "missing larbid property\n");
+			dev_dbg(dev, "missing larbid property\n");
 			return err;
 		}
 	}
@@ -328,7 +328,7 @@ static int mtk_smi_larb_probe(struct platform_device *pdev)
 			return -EPROBE_DEFER;
 		larb->smi_common_dev = &smi_pdev->dev;
 	} else {
-		dev_notice(dev, "Failed to get the smi_common device\n");
+		dev_dbg(dev, "Failed to get the smi_common device\n");
 		return -EINVAL;
 	}
 	pm_runtime_enable(dev);
@@ -350,12 +350,12 @@ static int __maybe_unused mtk_smi_larb_resume(struct device *dev)
 	/* Power on smi-common. */
 	ret = pm_runtime_get_sync(larb->smi_common_dev);
 	if (ret < 0) {
-		dev_notice(dev, "smi-common pm get failed(%d).\n", ret);
+		dev_dbg(dev, "smi-common pm get failed(%d).\n", ret);
 		return ret;
 	}
 	ret = mtk_smi_clk_enable(&larb->smi);
 	if (ret < 0) {
-		dev_notice(dev, "larb clk enable failed(%d).\n", ret);
+		dev_dbg(dev, "larb clk enable failed(%d).\n", ret);
 		pm_runtime_put_sync(larb->smi_common_dev);
 		return ret;
 	}
@@ -561,16 +561,16 @@ s32 mtk_smi_clk_enable(struct mtk_smi_dev *smi)
 	s32 i, j, ret = 0;
 
 	if (!smi) {
-		pr_info("No such device or address\n");
+		pr_debug("No such device or address\n");
 		return -ENXIO;
 	} else if (!smi->dev || !smi->clks) {
-		pr_info("SMI%u no such device or address\n", smi->id);
+		pr_debug("SMI%u no such device or address\n", smi->id);
 		return -ENXIO;
 	}
 	for (i = 1; i < smi->nr_clks; i++) { /* without MTCMOS */
 		ret = clk_prepare_enable(smi->clks[i]);
 		if (ret) {
-			dev_info(smi->dev, "SMI%u CLK%d enable failed:%d\n",
+			dev_dbg(smi->dev, "SMI%u CLK%d enable failed:%d\n",
 				smi->id, i, ret);
 			for (j = i - 1; j > 0; j--)
 				clk_disable_unprepare(smi->clks[j]);
@@ -586,9 +586,9 @@ void mtk_smi_clk_disable(struct mtk_smi_dev *smi)
 	s32 i;
 
 	if (!smi)
-		pr_info("No such device or address\n");
+		pr_debug("No such device or address\n");
 	else if (!smi->dev || !smi->clks)
-		pr_info("SMI%u no such device or address\n", smi->id);
+		pr_debug("SMI%u no such device or address\n", smi->id);
 	else {
 		atomic_dec(&(smi->clk_cnts));
 		for (i = smi->nr_clks - 1; i > 0; i--)
@@ -599,9 +599,9 @@ EXPORT_SYMBOL_GPL(mtk_smi_clk_disable);
 struct mtk_smi_dev *mtk_smi_dev_get(const u32 id)
 {
 	if (id > nr_dev)
-		pr_info("Invalid id: %u, nr_dev=%u\n", id, nr_dev);
+		pr_debug("Invalid id: %u, nr_dev=%u\n", id, nr_dev);
 	else if (!smi_dev[id])
-		pr_info("SMI%u no such device or address\n", id);
+		pr_debug("SMI%u no such device or address\n", id);
 	else
 		return smi_dev[id];
 	return NULL;
@@ -612,10 +612,10 @@ s32 mtk_smi_conf_set(const struct mtk_smi_dev *smi, const u32 scen_id)
 	u32 cnts, i;
 
 	if (!smi) {
-		pr_info("No such device or address\n");
+		pr_debug("No such device or address\n");
 		return -ENXIO;
 	} else if (!smi->dev) {
-		pr_info("SMI%u no such device or address\n", smi->id);
+		pr_debug("SMI%u no such device or address\n", smi->id);
 		return -ENXIO;
 	}
 	cnts = atomic_read(&(smi->clk_cnts));
@@ -639,10 +639,10 @@ static s32 mtk_smi_clks_get(struct mtk_smi_dev *smi)
 	s32 i = 0, ret;
 
 	if (!smi) {
-		pr_info("No such device or address\n");
+		pr_debug("No such device or address\n");
 		return -ENXIO;
 	} else if (!smi->dev) {
-		pr_info("SMI%u no such device or address\n", smi->id);
+		pr_debug("SMI%u no such device or address\n", smi->id);
 		return -ENXIO;
 	}
 	ret = of_property_count_strings(smi->dev->of_node, clk_names);
@@ -657,11 +657,11 @@ static s32 mtk_smi_clks_get(struct mtk_smi_dev *smi)
 
 		smi->clks[i] = devm_clk_get(smi->dev, name);
 		if (IS_ERR(smi->clks[i])) {
-			dev_info(smi->dev, "SMI%u CLK%d:%s get failed, err:%x\n",
+			dev_dbg(smi->dev, "SMI%u CLK%d:%s get failed, err:%x\n",
 				smi->id, i, name, IS_ERR(smi->clks[i]));
 			break;
 		}
-		dev_info(smi->dev, "SMI%u CLK%d:%s\n", smi->id, i, name);
+		dev_dbg(smi->dev, "SMI%u CLK%d:%s\n", smi->id, i, name);
 		i += 1;
 	}
 	if (i < smi->nr_clks)
@@ -671,9 +671,9 @@ static s32 mtk_smi_clks_get(struct mtk_smi_dev *smi)
 	if (count_number == smi_dev_number+1) {
 		ret = smi_register();
 		if (ret)
-			pr_info("Failed to register SMI_EXT driver\n");
+			pr_debug("Failed to register SMI_EXT driver\n");
 	} else if (count_number > smi_dev_number) {
-		pr_info("SMI probe too much\n");
+		pr_debug("SMI probe too much\n");
 	}
 
 	return 0;
@@ -703,7 +703,7 @@ static int mtk_smi_dev_probe(struct platform_device *pdev, const u32 id)
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	base = devm_ioremap_resource(smi_dev[id]->dev, res);
 	if (IS_ERR(base)) {
-		dev_info(&pdev->dev, "SMI%u base:%p read failed\n",
+		dev_dbg(&pdev->dev, "SMI%u base:%p read failed\n",
 			id, base);
 		return PTR_ERR(base);
 	}
@@ -711,7 +711,7 @@ static int mtk_smi_dev_probe(struct platform_device *pdev, const u32 id)
 	if (of_address_to_resource(smi_dev[id]->dev->of_node, 0, res))
 		return -EINVAL;
 
-	dev_info(&pdev->dev,
+	dev_dbg(&pdev->dev,
 		"SMI%u base: VA=%p, PA=%pa\n", id, base, &res->start);
 	platform_set_drvdata(pdev, smi_dev[id]);
 
@@ -771,12 +771,12 @@ static int mtk_smi_larb_probe(struct platform_device *pdev)
 	s32 ret;
 
 	if (!pdev) {
-		pr_notice("platform_device missed\n");
+		pr_debug("platform_device missed\n");
 		return -ENODEV;
 	}
 	ret = of_property_read_u32(pdev->dev.of_node, "mediatek,smi-id", &id);
 	if (ret) {
-		dev_info(&pdev->dev, "LARB read failed:%d\n", ret);
+		dev_dbg(&pdev->dev, "LARB read failed:%d\n", ret);
 		return ret;
 	}
 	count_number = count_number + 1;
@@ -794,12 +794,12 @@ static int mtk_smi_common_probe(struct platform_device *pdev)
 		smi_dev_number = smi_get_dev_num();
 
 	if (!pdev) {
-		pr_notice("platform_device missed\n");
+		pr_debug("platform_device missed\n");
 		return -ENODEV;
 	}
 	ret = of_property_read_u32(pdev->dev.of_node, "mediatek,smi-id", &id);
 	if (ret) {
-		dev_info(&pdev->dev, "COMMON read failed:%d\n", ret);
+		dev_dbg(&pdev->dev, "COMMON read failed:%d\n", ret);
 		return ret;
 	}
 	nr_larbs = id;
@@ -811,7 +811,7 @@ static int mtk_smi_common_probe(struct platform_device *pdev)
 		nr_dev = cnt ? cnt : (id + 1);
 		smi_dev = devm_kcalloc(
 			&pdev->dev, nr_dev, sizeof(*smi_dev), GFP_KERNEL);
-		dev_info(&pdev->dev, "COMMON%u nr_dev:%u\n", id, nr_dev);
+		dev_dbg(&pdev->dev, "COMMON%u nr_dev:%u\n", id, nr_dev);
 	}
 	if (!smi_dev)
 		return -ENOMEM;
