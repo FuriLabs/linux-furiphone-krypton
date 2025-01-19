@@ -85,11 +85,11 @@ static irqreturn_t mt6360_pmu_irq_handler(int irq, void *data)
 		dev_err(mpi->dev, "fail to retrig interrupt\n");
 
 #ifdef CONFIG_MT6360_PMU_DEBUG
-	dev_info_ratelimited(mpi->dev, "%s: pmu_irq_duration: %lld\n",
+	dev_dbg_ratelimited(mpi->dev, "%s: pmu_irq_duration: %lld\n",
 			    __func__, pmu_irq_duration);
 	for (k = 0; k < 8; k++) {
 		if (k != 2)
-			dev_info_ratelimited(mpi->dev,
+			dev_dbg_ratelimited(mpi->dev,
 				"%d index_count: %d, index_duration: %lld\n", k,
 				 count_index[k], duration_index[k]);
 	}
@@ -270,10 +270,10 @@ static int mt6360_pmu_irq_maskall(struct mt6360_pmu_info *mpi)
 		dev_err(mpi->dev, "read booton irq status fail\n");
 		return ret;
 	}
-	dev_info(mpi->dev, "booton irq status ++\n");
+	dev_dbg(mpi->dev, "booton irq status ++\n");
 	for (i = 0; i < MT6360_PMU_IRQ_REGNUM; i++)
-		dev_info(mpi->dev, "irq[%02x], %02x\n", i, irq_events[i]);
-	dev_info(mpi->dev, "booton irq status --\n");
+		dev_dbg(mpi->dev, "irq[%02x], %02x\n", i, irq_events[i]);
+	dev_dbg(mpi->dev, "booton irq status --\n");
 	/* write clear for booton events */
 	ret = mt6360_pmu_reg_block_write(mpi, MT6360_PMU_CHG_IRQ1,
 					 MT6360_PMU_IRQ_REGNUM, irq_events);

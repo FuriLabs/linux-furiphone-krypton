@@ -58,7 +58,7 @@ static int pmic_read_device(struct regmap *map,
 	}
 	ret = regmap_read(map, RegNum, val);
 	if (ret) {
-		dev_notice(chip->dev,
+		dev_dbg(chip->dev,
 			"[%s]ret=%d Reg=0x%x MASK=0x%x SHIFT=%d\n",
 			__func__, ret, RegNum, MASK, SHIFT);
 		return ret;
@@ -88,7 +88,7 @@ static int pmic_write_device(struct regmap *map,
 	}
 	ret = regmap_update_bits(map, RegNum, (MASK << SHIFT), (val << SHIFT));
 	if (ret) {
-		dev_notice(chip->dev,
+		dev_dbg(chip->dev,
 			"[%s]ret=%d Reg=0x%x val=0x%x MASK=0x%x SHIFT=%d\n",
 			__func__, ret, RegNum, val, MASK, SHIFT);
 		return ret;
@@ -592,7 +592,7 @@ static int pmic_mt_probe(struct platform_device *pdev)
 					   NULL, &pmic_ipi_regmap_config);
 	if (IS_ERR(chip->regmap)) {
 		ret = PTR_ERR(chip->regmap);
-		dev_notice(&pdev->dev, "failed to init IPI regmap\n");
+		dev_dbg(&pdev->dev, "failed to init IPI regmap\n");
 		chip->regmap = dev_get_regmap(chip->dev->parent, NULL);
 	}
 
@@ -603,7 +603,7 @@ static int pmic_mt_probe(struct platform_device *pdev)
 					      &pmic_ipi_nolock_regmap_config);
 	if (IS_ERR(pmic_nolock_regmap)) {
 		ret = PTR_ERR(pmic_nolock_regmap);
-		dev_notice(&pdev->dev, "failed to init nolock regmap\n");
+		dev_dbg(&pdev->dev, "failed to init nolock regmap\n");
 		pmic_nolock_regmap = chip->regmap;
 	}
 #else

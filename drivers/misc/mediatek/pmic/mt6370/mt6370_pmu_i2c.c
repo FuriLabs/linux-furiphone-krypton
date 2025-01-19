@@ -197,7 +197,7 @@ static inline void rt_config_of_node(struct device *dev)
 
 	np = of_find_node_by_name(NULL, "mt6370_pmu_dts");
 	if (np) {
-		dev_notice(dev, "find mt6370_pmu_dts node\n");
+		dev_dbg(dev, "find mt6370_pmu_dts node\n");
 		dev->of_node = np;
 	}
 }
@@ -220,11 +220,11 @@ static inline int mt6370_pmu_chip_id_check(struct i2c_client *i2c)
 	case MT6371_VENDOR_ID:
 	case MT6372_VENDOR_ID:
 	case MT6372C_VENDOR_ID:
-		dev_notice(&i2c->dev, "%s: E%d(0x%02X)\n",
+		dev_dbg(&i2c->dev, "%s: E%d(0x%02X)\n",
 				      __func__, chip_rev, vendor_id);
 		break;
 	default:
-		dev_notice(&i2c->dev, "%s: vendor id(0x%02X) does not match\n",
+		dev_dbg(&i2c->dev, "%s: vendor id(0x%02X) does not match\n",
 				      __func__, vendor_id);
 		ret = -ENODEV;
 	}
@@ -261,7 +261,7 @@ static int mt6370_pmu_probe(struct i2c_client *i2c,
 	struct mt6370_pmu_chip *chip;
 	struct mt6370_pmu_platform_data *pdata = dev_get_platdata(&i2c->dev);
 	bool use_dt = i2c->dev.of_node;
-	u8 dev_info = 0;
+	u8 dev_dbg = 0;
 	int ret = 0;
 
 	pr_info("%s: (%s)\n", __func__, MT6370_PMU_I2C_DRV_VERSION);
@@ -269,7 +269,7 @@ static int mt6370_pmu_probe(struct i2c_client *i2c,
 	ret = mt6370_pmu_chip_id_check(i2c);
 	if (ret < 0)
 		return ret;
-	dev_info = ret;
+	dev_dbg = ret;
 	if (use_dt) {
 		rt_config_of_node(&i2c->dev);
 		pdata = devm_kzalloc(&i2c->dev, sizeof(*pdata), GFP_KERNEL);
@@ -291,8 +291,8 @@ static int mt6370_pmu_probe(struct i2c_client *i2c,
 		return -ENOMEM;
 	chip->i2c = i2c;
 	chip->dev = &i2c->dev;
-	chip->chip_vid = dev_info & 0xF0;
-	chip->chip_rev = dev_info & 0x0F;
+	chip->chip_vid = dev_dbg & 0xF0;
+	chip->chip_rev = dev_dbg & 0x0F;
 	mutex_init(&chip->io_lock);
 	i2c_set_clientdata(i2c, chip);
 
@@ -307,7 +307,7 @@ static int mt6370_pmu_probe(struct i2c_client *i2c,
 	if (ret < 0)
 		goto out_subdevs;
 	pm_runtime_enable(&i2c->dev);
-	dev_info(&i2c->dev, "%s successfully\n", __func__);
+	dev_dbg(&i2c->dev, "%s successfully\n", __func__);
 	return 0;
 out_subdevs:
 	mt6370_pmu_irq_unregister(chip);
@@ -330,7 +330,7 @@ static int mt6370_pmu_remove(struct i2c_client *i2c)
 	mt6370_pmu_irq_unregister(chip);
 	mt6370_pmu_regmap_unregister(chip);
 	pm_runtime_set_suspended(&i2c->dev);
-	dev_info(chip->dev, "%s successfully\n", __func__);
+	dev_dbg(chip->dev, "%s successfully\n", __func__);
 	return 0;
 }
 

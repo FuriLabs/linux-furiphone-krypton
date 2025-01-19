@@ -915,9 +915,9 @@ static int fgauge_initial(struct gauge_device *gauge_dev)
 	if (vbif28en && (!IS_ERR(reg_vbif28))) {
 		err = regulator_enable(reg_vbif28);
 		if (err)
-			dev_info(&gauge_dev->dev, "fail to enable vbif28 regulator\n");
+			dev_dbg(&gauge_dev->dev, "fail to enable vbif28 regulator\n");
 	} else
-		dev_info(&gauge_dev->dev, "fail to get vbif28 regulator\n");
+		dev_dbg(&gauge_dev->dev, "fail to get vbif28 regulator\n");
 
 	bm_err("set PMIC_RG_LDO_VBIF28_EN from %d,to 1\n", vbif28en);
 

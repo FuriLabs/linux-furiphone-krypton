@@ -282,25 +282,25 @@ void PMIC_EINT_SETTING(struct platform_device *pdev)
 		NULL, key_int_handler, IRQF_TRIGGER_NONE,
 		"pwrkey", NULL);
 	if (ret < 0)
-		dev_notice(&pdev->dev, "request PWRKEY irq fail\n");
+		dev_dbg(&pdev->dev, "request PWRKEY irq fail\n");
 	ret = devm_request_threaded_irq(&pdev->dev,
 		platform_get_irq_byname(pdev, "pwrkey_r"),
 		NULL, key_int_handler, IRQF_TRIGGER_NONE,
 		"pwrkey_r", NULL);
 	if (ret < 0)
-		dev_notice(&pdev->dev, "request PWRKEY_R irq fail\n");
+		dev_dbg(&pdev->dev, "request PWRKEY_R irq fail\n");
 	ret = devm_request_threaded_irq(&pdev->dev,
 		platform_get_irq_byname(pdev, "homekey"),
 		NULL, key_int_handler, IRQF_TRIGGER_NONE,
 		"homekey", NULL);
 	if (ret < 0)
-		dev_notice(&pdev->dev, "request HOMEKEY irq fail\n");
+		dev_dbg(&pdev->dev, "request HOMEKEY irq fail\n");
 	ret = devm_request_threaded_irq(&pdev->dev,
 		platform_get_irq_byname(pdev, "homekey_r"),
 		NULL, key_int_handler, IRQF_TRIGGER_NONE,
 		"homekey_r", NULL);
 	if (ret < 0)
-		dev_notice(&pdev->dev, "request HOMEKEY_R irq fail\n");
+		dev_dbg(&pdev->dev, "request HOMEKEY_R irq fail\n");
 }
 
 MODULE_AUTHOR("Jeter Chen");

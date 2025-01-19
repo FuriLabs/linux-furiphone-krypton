@@ -579,17 +579,17 @@ void pmic_auxadc_chip_timeout_handler(
 		return;
 	}
 	timeout_times++;
-	dev_notice(dev, "(%d)Time out!STA0=0x%x,STA1=0x%x,STA2=0x%x\n",
+	dev_dbg(dev, "(%d)Time out!STA0=0x%x,STA1=0x%x,STA2=0x%x\n",
 		ch_num,
 		upmu_get_reg_value(MT6357_AUXADC_STA0),
 		upmu_get_reg_value(MT6357_AUXADC_STA1),
 		upmu_get_reg_value(MT6357_AUXADC_STA2));
-	dev_notice(dev, "RST: Reg[0x%x]=0x%x, Reg[0x%x]=0x%x\n",
+	dev_dbg(dev, "RST: Reg[0x%x]=0x%x, Reg[0x%x]=0x%x\n",
 		MT6357_STRUP_CON6,
 		upmu_get_reg_value(MT6357_STRUP_CON6),
 		MT6357_HK_TOP_RST_CON0,
 		upmu_get_reg_value(MT6357_HK_TOP_RST_CON0));
-	dev_notice(dev, "CLK: Reg[0x%x]=0x%x, Reg[0x%x]=0x%x\n",
+	dev_dbg(dev, "CLK: Reg[0x%x]=0x%x, Reg[0x%x]=0x%x\n",
 		MT6357_HK_TOP_CLK_CON0,
 		upmu_get_reg_value(MT6357_HK_TOP_CLK_CON0),
 		MT6357_HK_TOP_CLK_CON1,

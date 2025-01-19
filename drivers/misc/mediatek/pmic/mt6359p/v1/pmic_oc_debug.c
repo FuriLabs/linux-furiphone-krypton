@@ -185,7 +185,7 @@ static int register_all_oc_notifier(struct platform_device *pdev)
 		if (PTR_ERR(reg) == -EPROBE_DEFER)
 			return PTR_ERR(reg);
 		else if (IS_ERR(reg)) {
-			dev_notice(&pdev->dev, "fail to get regulator %s\n",
+			dev_dbg(&pdev->dev, "fail to get regulator %s\n",
 				   reg_oc_debug[i].name);
 			continue;
 		}
@@ -193,7 +193,7 @@ static int register_all_oc_notifier(struct platform_device *pdev)
 		ret = devm_regulator_register_notifier(reg,
 						       &reg_oc_debug[i].nb);
 		if (ret) {
-			dev_notice(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				   "regulator notifier request failed\n");
 		}
 	}
@@ -206,7 +206,7 @@ static int pmic_oc_debug_probe(struct platform_device *pdev)
 	struct mt6358_chip *chip = NULL;
 
 	if (!of_device_is_available(pdev->dev.of_node)) {
-		dev_info(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			 "this project no need to enable OC debug\n");
 		return 0;
 	}

@@ -709,7 +709,7 @@ static int mt6360_pmic_parse_dt_data(struct device *dev,
 				mt6360_val_props, ARRAY_SIZE(mt6360_val_props));
 	res_cnt = of_irq_count(np);
 	if (!res_cnt) {
-		dev_info(dev, "no irqs specified\n");
+		dev_dbg(dev, "no irqs specified\n");
 		goto bypass_irq_res;
 	}
 	res = devm_kzalloc(dev, res_cnt * sizeof(*res), GFP_KERNEL);
@@ -748,7 +748,7 @@ static inline void mt6360_config_of_node(struct device *dev, const char *name)
 		return;
 	np = of_find_node_by_name(NULL, name);
 	if (np) {
-		dev_info(dev, "find %s node\n", name);
+		dev_dbg(dev, "find %s node\n", name);
 		dev->of_node = np;
 	}
 }
@@ -821,7 +821,7 @@ static int mt6360_pmic_i2c_probe(struct i2c_client *client,
 	crc8_populate_msb(mpi->crc8_table, 0x7);
 	mutex_init(&mpi->io_lock);
 	i2c_set_clientdata(client, mpi);
-	dev_info(&client->dev, "chip_rev [%02x]\n", mpi->chip_rev);
+	dev_dbg(&client->dev, "chip_rev [%02x]\n", mpi->chip_rev);
 
 	/* regmap regiser */
 	ret = mt6360_pmic_regmap_register(mpi, &mt6360_pmic_regmap_fops);
@@ -872,7 +872,7 @@ static int mt6360_pmic_i2c_probe(struct i2c_client *client,
 						REGULATOR_MODE_STANDBY;
 	}
 	mt6360_pmic_irq_register(mpi);
-	dev_info(&client->dev, "%s: successfully probed\n", __func__);
+	dev_dbg(&client->dev, "%s: successfully probed\n", __func__);
 #ifdef FIXME
 //#if defined(CONFIG_MACH_MT6779) || defined(CONFIG_MACH_MT6785)
 	/* MT6359 record VMDLA vosel */
@@ -914,7 +914,7 @@ static int mt6360_pmic_enable_poweroff_sequence(struct mt6360_pmic_info *mpi,
 					    MT6360_PMIC_BUCK1_SEQOFFDLY + i,
 					    en ? pdata->pwr_off_seq[i] : 0);
 		if (ret < 0) {
-			dev_notice(mpi->dev, "%s: set buck(%d) fail\n",
+			dev_dbg(mpi->dev, "%s: set buck(%d) fail\n",
 				__func__, i);
 			return ret;
 		}
@@ -932,7 +932,7 @@ static void mt6360_pmic_shutdown(struct i2c_client *client)
 		return;
 	ret = mt6360_pmic_enable_poweroff_sequence(mpi, true);
 	if (ret < 0) {
-		dev_notice(mpi->dev, "%s: enable power off sequence fail\n",
+		dev_dbg(mpi->dev, "%s: enable power off sequence fail\n",
 			__func__);
 		return;
 	}

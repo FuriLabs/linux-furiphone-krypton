@@ -388,7 +388,7 @@ static int mt6360_psy_online_changed(struct mt6360_pmu_chg_info *mpci)
 	if (!mpci->psy)
 		mpci->psy = power_supply_get_by_name("charger");
 	if (!mpci->psy) {
-		dev_notice(mpci->dev,
+		dev_dbg(mpci->dev,
 			"%s: get power supply failed\n", __func__);
 		return -EINVAL;
 	}
@@ -415,7 +415,7 @@ static int mt6360_psy_chg_type_changed(struct mt6360_pmu_chg_info *mpci)
 	if (!mpci->psy)
 		mpci->psy = power_supply_get_by_name("charger");
 	if (!mpci->psy) {
-		dev_notice(mpci->dev,
+		dev_dbg(mpci->dev,
 			"%s: get power supply failed\n", __func__);
 		return -EINVAL;
 	}
@@ -638,13 +638,13 @@ static int mt6360_chgdet_pre_process(struct mt6360_pmu_chg_info *mpci)
 	}
 	if (attach && (boot_mode == 1)) {
 		/* Skip charger type detection to speed up meta boot.*/
-		dev_notice(mpci->dev, "%s: force Standard USB Host in meta\n",
+		dev_dbg(mpci->dev, "%s: force Standard USB Host in meta\n",
 			   __func__);
 		mpci->attach = attach;
 		mpci->chg_type = STANDARD_HOST;
 		ret = mt6360_psy_online_changed(mpci);
 		if (ret < 0)
-			dev_notice(mpci->dev,
+			dev_dbg(mpci->dev,
 				   "%s: set psy online fail\n", __func__);
 		return mt6360_psy_chg_type_changed(mpci);
 	}
@@ -702,7 +702,7 @@ out:
 	if (!attach) {
 		ret = __mt6360_enable_usbchgen(mpci, false);
 		if (ret < 0)
-			dev_notice(mpci->dev, "%s: disable chgdet fail\n",
+			dev_dbg(mpci->dev, "%s: disable chgdet fail\n",
 				   __func__);
 	} else if (mpci->chg_type != STANDARD_CHARGER)
 		mt6360_set_usbsw_state(mpci, MT6360_USBSW_USB);
@@ -774,7 +774,7 @@ static int __mt6360_set_ichg(struct mt6360_pmu_chg_info *mpci, u32 uA)
 					 MT6360_MASK_ICHG,
 					 data << MT6360_SHFT_ICHG);
 	if (ret < 0)
-		dev_notice(mpci->dev, "%s: fail\n", __func__);
+		dev_dbg(mpci->dev, "%s: fail\n", __func__);
 	else
 		mpci->ichg = uA;
 	return ret;
@@ -860,7 +860,7 @@ static int mt6360_enable(struct charger_device *chg_dev, bool en)
 						 MT6360_MASK_ICHG,
 						 0x04 << MT6360_SHFT_ICHG);
 		if (ret < 0) {
-			dev_notice(mpci->dev,
+			dev_dbg(mpci->dev,
 				   "%s: set ichg fail\n", __func__);
 			goto vsys_wkard_fail;
 		}
@@ -869,7 +869,7 @@ static int mt6360_enable(struct charger_device *chg_dev, bool en)
 		if (mpci->ichg == mpci->ichg_dis_chg) {
 			ret = __mt6360_set_ichg(mpci, mpci->ichg);
 			if (ret < 0) {
-				dev_notice(mpci->dev,
+				dev_dbg(mpci->dev,
 					   "%s: set ichg fail\n", __func__);
 				goto out;
 			}
@@ -881,7 +881,7 @@ out:
 					 MT6360_PMU_CHG_CTRL2,
 					 MT6360_MASK_CHG_EN, en ? 0xff : 0);
 	if (ret < 0)
-		dev_notice(mpci->dev, "%s: fail, en = %d\n", __func__, en);
+		dev_dbg(mpci->dev, "%s: fail, en = %d\n", __func__, en);
 vsys_wkard_fail:
 	mutex_unlock(&mpci->ichg_lock);
 	return ret;
@@ -2729,7 +2729,7 @@ static int mt6360_chg_init_setting(struct mt6360_pmu_chg_info *mpci)
 	/* Disable DCD */
 	ret = mt6360_enable_dcd_tout(mpci, false);
 	if (ret < 0)
-		dev_notice(mpci->dev, "%s disable dcd fail\n", __func__);
+		dev_dbg(mpci->dev, "%s disable dcd fail\n", __func__);
 #endif
 	/* Check BATSYSUV occurred last time boot-on */
 	ret = mt6360_pmu_reg_read(mpci->mpi, MT6360_PMU_CHG_STAT);
@@ -2800,7 +2800,7 @@ static ssize_t shipping_mode_store(struct device *dev,
 	int ret = 0;
 
 	if (kstrtoint(buf, 10, &tmp) < 0) {
-		dev_notice(dev, "parsing number fail\n");
+		dev_dbg(dev, "parsing number fail\n");
 		return -EINVAL;
 	}
 	if (tmp != 5526789)
@@ -2945,7 +2945,7 @@ static int mt6360_pmu_chg_probe(struct platform_device *pdev)
 	}
 	ret = device_create_file(mpci->dev, &dev_attr_shipping_mode);
 	if (ret < 0) {
-		dev_notice(&pdev->dev, "create shipping attr fail\n");
+		dev_dbg(&pdev->dev, "create shipping attr fail\n");
 		goto err_register_chg_dev;
 	}
 	/* for trigger unfinish pe pattern */

@@ -554,7 +554,7 @@ static int mt6397_pmic_probe(struct platform_device *dev)
 
 	res = platform_get_resource(dev, IORESOURCE_IRQ, 0);
 	if (!res) {
-		dev_info(&dev->dev, "no IRQ resource\n");
+		dev_dbg(&dev->dev, "no IRQ resource\n");
 		return -ENODEV;
 	}
 
@@ -566,7 +566,7 @@ static int mt6397_pmic_probe(struct platform_device *dev)
 				       IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
 				       "mt6397-thr_l", &dev->dev);
 	if (ret_val) {
-		dev_info(&dev->dev,
+		dev_dbg(&dev->dev,
 			 "Failed to request mt6397-thr_l IRQ: %d: %d\n",
 			 irq_thr_l, ret_val);
 	}
@@ -579,7 +579,7 @@ static int mt6397_pmic_probe(struct platform_device *dev)
 				       IRQF_ONESHOT | IRQF_TRIGGER_HIGH,
 				       "mt6397-thr_h", &dev->dev);
 	if (ret_val) {
-		dev_info(&dev->dev,
+		dev_dbg(&dev->dev,
 			 "Failed to request mt6397-thr_h IRQ: %d: %d\n",
 			 irq_thr_h, ret_val);
 	}

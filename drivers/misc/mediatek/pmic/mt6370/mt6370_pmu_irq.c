@@ -264,7 +264,7 @@ static irqreturn_t mt6370_pmu_irq_handler(int irq, void *priv)
 				continue;
 			ret = irq_find_mapping(chip->irq_domain, i * 8 + j);
 			if (ret) {
-				dev_info_ratelimited(chip->dev,
+				dev_dbg_ratelimited(chip->dev,
 				"%s: handler irq_domain = (%d, %d)\n",
 				__func__, i, j);
 				handle_nested_irq(ret);

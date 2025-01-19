@@ -921,7 +921,7 @@ static int mt6360_pmic_enable_poweroff_sequence(struct mt6360_pmic_info *mpi,
 					    MT6360_PMIC_BUCK1_SEQOFFDLY + i,
 					    en ? pdata->pwr_off_seq[i] : 0);
 		if (ret < 0) {
-			dev_notice(mpi->dev, "%s: set buck(%d) fail\n",
+			dev_dbg(mpi->dev, "%s: set buck(%d) fail\n",
 				__func__, i);
 			return ret;
 		}
@@ -939,7 +939,7 @@ static void mt6360_pmic_shutdown(struct i2c_client *client)
 		return;
 	ret = mt6360_pmic_enable_poweroff_sequence(mpi, true);
 	if (ret < 0) {
-		dev_notice(mpi->dev, "%s: enable power off sequence fail\n",
+		dev_dbg(mpi->dev, "%s: enable power off sequence fail\n",
 			__func__);
 		return;
 	}

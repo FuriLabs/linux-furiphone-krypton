@@ -642,7 +642,7 @@ static int mt6360_ldo_parse_dt_data(struct device *dev,
 				mt6360_val_props, ARRAY_SIZE(mt6360_val_props));
 	res_cnt = of_irq_count(np);
 	if (!res_cnt) {
-		dev_info(dev, "no irqs specified\n");
+		dev_dbg(dev, "no irqs specified\n");
 		goto bypass_irq_res;
 	}
 	res = devm_kzalloc(dev, res_cnt * sizeof(*res), GFP_KERNEL);
@@ -679,7 +679,7 @@ static inline void mt6360_config_of_node(struct device *dev, const char *name)
 		return;
 	np = of_find_node_by_name(NULL, name);
 	if (np) {
-		dev_info(dev, "find %s node\n", name);
+		dev_dbg(dev, "find %s node\n", name);
 		dev->of_node = np;
 	}
 }
@@ -727,7 +727,7 @@ static int mt6360_ldo_i2c_probe(struct i2c_client *client,
 	crc8_populate_msb(mli->crc8_table, 0x7);
 	mutex_init(&mli->io_lock);
 	i2c_set_clientdata(client, mli);
-	dev_info(&client->dev, "chip_rev [%02x]\n", mli->chip_rev);
+	dev_dbg(&client->dev, "chip_rev [%02x]\n", mli->chip_rev);
 
 	/* regmap regiser */
 	ret = mt6360_ldo_regmap_register(mli, &mt6360_ldo_regmap_fops);
@@ -763,7 +763,7 @@ static int mt6360_ldo_i2c_probe(struct i2c_client *client,
 						REGULATOR_MODE_STANDBY;
 	}
 	mt6360_ldo_irq_register(mli);
-	dev_info(&client->dev, "%s: successfully probed\n", __func__);
+	dev_dbg(&client->dev, "%s: successfully probed\n", __func__);
 	return 0;
 out_pdata:
 	mt6360_ldo_regmap_unregister(mli);

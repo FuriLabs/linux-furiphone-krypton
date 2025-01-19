@@ -68,7 +68,7 @@ static irqreturn_t mt6370_pmu_fled_lvf_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_fled_data *info = data;
 
-	dev_notice(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -76,7 +76,7 @@ static irqreturn_t mt6370_pmu_fled2_short_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_fled_data *info = data;
 
-	dev_notice(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -84,7 +84,7 @@ static irqreturn_t mt6370_pmu_fled1_short_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_fled_data *info = data;
 
-	dev_notice(info->dev, "%s\n", __func__);
+	dev_dbg(info->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -102,7 +102,7 @@ static irqreturn_t mt6370_pmu_fled2_strb_to_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_fled_data *fi = (struct mt6370_pmu_fled_data *)data;
 
-	dev_info(fi->dev, "%s occurred\n", __func__);
+	dev_dbg(fi->dev, "%s occurred\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -110,7 +110,7 @@ static irqreturn_t mt6370_pmu_fled1_strb_to_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_fled_data *fi = (struct mt6370_pmu_fled_data *)data;
 
-	dev_info(fi->dev, "%s occurred\n", __func__);
+	dev_dbg(fi->dev, "%s occurred\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -321,7 +321,7 @@ static int mt6370_fled_set_mode(struct rt_fled_dev *info,
 		ret |= mt6370_pmu_reg_set_bit(fi->chip,
 				MT6370_PMU_REG_FLEDEN, MT6370_TORCH_EN_MASK);
 		udelay(500);
-		dev_info(fi->dev, "set to torch mode with 500 us delay\n");
+		dev_dbg(fi->dev, "set to torch mode with 500 us delay\n");
 		mt6370_global_mode = mode;
 		if (fi->id == MT6370_FLED1)
 			mt6370_fled_on |= 1 << MT6370_FLED1;
@@ -337,7 +337,7 @@ static int mt6370_fled_set_mode(struct rt_fled_dev *info,
 		ret |= mt6370_pmu_reg_set_bit(fi->chip,
 			MT6370_PMU_REG_FLEDEN, MT6370_STROBE_EN_MASK);
 		mdelay(5);
-		dev_info(fi->dev, "set to flash mode with 400/4500 us delay\n");
+		dev_dbg(fi->dev, "set to flash mode with 400/4500 us delay\n");
 		mt6370_global_mode = mode;
 		if (fi->id == MT6370_FLED1)
 			mt6370_fled_on |= 1 << MT6370_FLED1;
@@ -348,7 +348,7 @@ static int mt6370_fled_set_mode(struct rt_fled_dev *info,
 		ret = mt6370_pmu_reg_clr_bit(fi->chip,
 				MT6370_PMU_REG_FLEDEN,
 				fi->id == MT6370_FLED1 ? 0x02 : 0x01);
-		dev_info(fi->dev, "set to off mode\n");
+		dev_dbg(fi->dev, "set to off mode\n");
 		if (fi->id == MT6370_FLED1)
 			mt6370_fled_on &= ~(1 << MT6370_FLED1);
 		if (fi->id == MT6370_FLED2)
@@ -414,10 +414,10 @@ static int mt6370_fled_set_mode(struct rt_fled_dev *info,
 		return -EINVAL;
 	}
 	if (ret < 0)
-		dev_info(fi->dev, "%s set %s mode fail\n", __func__,
+		dev_dbg(fi->dev, "%s set %s mode fail\n", __func__,
 			 flashlight_mode_str[mode]);
 	else
-		dev_info(fi->dev, "%s set %s\n", __func__,
+		dev_dbg(fi->dev, "%s set %s\n", __func__,
 			 flashlight_mode_str[mode]);
 out:
 	mutex_unlock(&fled_lock);
@@ -767,9 +767,9 @@ static int mt6370_pmu_fled_probe(struct platform_device *pdev)
 
 		mt6370_pmu_fled_irq_register(pdev);
 		mt6370_fled_inited = 1;
-		dev_info(&pdev->dev, "mt6370 fled inited\n");
+		dev_dbg(&pdev->dev, "mt6370 fled inited\n");
 	}
-	dev_info(&pdev->dev, "%s successfully\n", __func__);
+	dev_dbg(&pdev->dev, "%s successfully\n", __func__);
 	return 0;
 }
 
@@ -778,7 +778,7 @@ static int mt6370_pmu_fled_remove(struct platform_device *pdev)
 	struct mt6370_pmu_fled_data *fled_data = platform_get_drvdata(pdev);
 
 	platform_device_unregister(fled_data->mt_flash_dev);
-	dev_info(fled_data->dev, "%s successfully\n", __func__);
+	dev_dbg(fled_data->dev, "%s successfully\n", __func__);
 	return 0;
 }
 

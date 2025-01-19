@@ -113,7 +113,7 @@ struct mt6370_pmu_dsv_platform_data {
 
 static irqreturn_t mt6370_pmu_dsv_vneg_ocp_irq_handler(int irq, void *data)
 {
-	/* Use pr_info()  instead of dev_info */
+	/* Use pr_info()  instead of dev_dbg */
 	struct mt6370_pmu_dsv_data *dsv_data = data;
 
 	mt6370_pmu_dsv_auto_vbst_adjustment(dsv_data->chip, DSV_VNEG_OCP);
@@ -420,7 +420,7 @@ static struct regulator_init_data *mt_parse_regulator_init_data(
 	}
 	init_data = of_get_regulator_init_data(dev, sub_np, NULL);
 	if (init_data) {
-		dev_info(dev,
+		dev_dbg(dev,
 			"regulator_name = %s, min_uV = %d, max_uV = %d\n",
 			init_data->constraints.name,
 			init_data->constraints.min_uV,
@@ -526,7 +526,7 @@ static int mt6370_pmu_dsv_probe(struct platform_device *pdev)
 	}
 
 	mt6370_pmu_dsv_irq_register(pdev);
-	dev_info(&pdev->dev, "%s successfully\n", __func__);
+	dev_dbg(&pdev->dev, "%s successfully\n", __func__);
 
 	mt6370_pmu_dsv_debug_init(dsv_data->chip);
 	return 0;
@@ -534,7 +534,7 @@ reg_apply_dts_fail:
 reg_dsvn_register_fail:
 	regulator_unregister(dsv_data->dsvp->regulator);
 reg_dsvp_register_fail:
-	dev_info(&pdev->dev, "%s failed\n", __func__);
+	dev_dbg(&pdev->dev, "%s failed\n", __func__);
 	return ret;
 }
 
@@ -542,7 +542,7 @@ static int mt6370_pmu_dsv_remove(struct platform_device *pdev)
 {
 	struct mt6370_pmu_dsv_data *dsv_data = platform_get_drvdata(pdev);
 
-	dev_info(dsv_data->dev, "%s successfully\n", __func__);
+	dev_dbg(dsv_data->dev, "%s successfully\n", __func__);
 	return 0;
 }
 

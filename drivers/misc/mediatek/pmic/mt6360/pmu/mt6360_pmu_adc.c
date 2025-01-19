@@ -476,7 +476,7 @@ static int mt6360_pmu_adc_probe(struct platform_device *pdev)
 	mt6360_pmu_adc_irq_register(pdev);
 	/* default disable adc_donei irq by default */
 	mt6360_pmu_adc_irq_enable("adc_donei", 0);
-	dev_info(&pdev->dev, "%s: successfully probed\n", __func__);
+	dev_dbg(&pdev->dev, "%s: successfully probed\n", __func__);
 	return 0;
 }
 

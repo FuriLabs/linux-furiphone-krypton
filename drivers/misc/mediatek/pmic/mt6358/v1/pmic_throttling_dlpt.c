@@ -457,7 +457,7 @@ void battery_oc_protect_init(struct platform_device *pdev)
 		NULL, fg_cur_h_int_handler, IRQF_TRIGGER_NONE,
 		"fg_cur_h", NULL);
 	if (ret < 0)
-		dev_notice(&pdev->dev, "request fg_cur_h irq fail\n");
+		dev_dbg(&pdev->dev, "request fg_cur_h irq fail\n");
 	disable_irq_nosync(fg_cur_h_irq);
 	pmic_set_register_value(PMIC_FG_CUR_HTH,
 				bat_oc_h_thd(g_battery_oc_h_thd));
@@ -469,7 +469,7 @@ void battery_oc_protect_init(struct platform_device *pdev)
 		NULL, fg_cur_l_int_handler, IRQF_TRIGGER_NONE,
 		"fg_cur_l", NULL);
 	if (ret < 0)
-		dev_notice(&pdev->dev, "request fg_cur_l irq fail\n");
+		dev_dbg(&pdev->dev, "request fg_cur_l irq fail\n");
 
 	pr_debug("FG_CUR_HTH = 0x%x, FG_CUR_LTH = 0x%x, RG_INT_EN_FG_CUR_H = %d, RG_INT_EN_FG_CUR_L = %d\n"
 		, pmic_get_register_value(PMIC_FG_CUR_HTH)

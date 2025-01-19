@@ -1959,7 +1959,7 @@ static irqreturn_t mt6370_pmu_isink4_short_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_rgbled_data *rgbled_data = data;
 
-	dev_notice(rgbled_data->dev, "%s\n", __func__);
+	dev_dbg(rgbled_data->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -1967,7 +1967,7 @@ static irqreturn_t mt6370_pmu_isink3_short_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_rgbled_data *rgbled_data = data;
 
-	dev_notice(rgbled_data->dev, "%s\n", __func__);
+	dev_dbg(rgbled_data->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -1975,7 +1975,7 @@ static irqreturn_t mt6370_pmu_isink2_short_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_rgbled_data *rgbled_data = data;
 
-	dev_notice(rgbled_data->dev, "%s\n", __func__);
+	dev_dbg(rgbled_data->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -1983,7 +1983,7 @@ static irqreturn_t mt6370_pmu_isink1_short_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_rgbled_data *rgbled_data = data;
 
-	dev_notice(rgbled_data->dev, "%s\n", __func__);
+	dev_dbg(rgbled_data->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -1991,7 +1991,7 @@ static irqreturn_t mt6370_pmu_isink4_open_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_rgbled_data *rgbled_data = data;
 
-	dev_notice(rgbled_data->dev, "%s\n", __func__);
+	dev_dbg(rgbled_data->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -2000,7 +2000,7 @@ static irqreturn_t mt6370_pmu_isink3_open_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_rgbled_data *rgbled_data = data;
 
-	dev_notice(rgbled_data->dev, "%s\n", __func__);
+	dev_dbg(rgbled_data->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -2008,7 +2008,7 @@ static irqreturn_t mt6370_pmu_isink2_open_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_rgbled_data *rgbled_data = data;
 
-	dev_notice(rgbled_data->dev, "%s\n", __func__);
+	dev_dbg(rgbled_data->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -2016,7 +2016,7 @@ static irqreturn_t mt6370_pmu_isink1_open_irq_handler(int irq, void *data)
 {
 	struct mt6370_pmu_rgbled_data *rgbled_data = data;
 
-	dev_notice(rgbled_data->dev, "%s\n", __func__);
+	dev_dbg(rgbled_data->dev, "%s\n", __func__);
 	return IRQ_HANDLED;
 }
 
@@ -2231,7 +2231,7 @@ static int mt6370_pmu_rgbled_probe(struct platform_device *pdev)
 		}
 	}
 	mt6370_pmu_rgbled_irq_register(pdev);
-	dev_info(&pdev->dev, "%s successfully\n", __func__);
+	dev_dbg(&pdev->dev, "%s successfully\n", __func__);
 	return 0;
 out_led_register:
 	while (!new && --i >= 0)
@@ -2271,7 +2271,7 @@ static int mt6370_pmu_rgbled_remove(struct platform_device *pdev)
 		led_trigger_register(&mt6370_pmu_led_trigger[i]);
 	for (i = 0; i < ARRAY_SIZE(mt6370_pmu_led_trigger2) && new; i++)
 		led_trigger_register(&mt6370_pmu_led_trigger2[i]);
-	dev_info(rgbled_data->dev, "%s successfully\n", __func__);
+	dev_dbg(rgbled_data->dev, "%s successfully\n", __func__);
 	return 0;
 }
 

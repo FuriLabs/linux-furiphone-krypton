@@ -181,7 +181,7 @@ static int mt6360_rgbled_change_mode(struct led_classdev *led, int mode)
 
 	if (mode >= MT_LED_MODE_MAX)
 		return -EINVAL;
-	dev_info(rgbled_info->dev, "%s mode = %s\n",
+	dev_dbg(rgbled_info->dev, "%s mode = %s\n",
 		__func__, mt_led_trigger_mode_name[mode]);
 	switch (led_index) {
 	case MT6360_LED_1:
@@ -1281,7 +1281,7 @@ static int mt6360_pmu_rgbled_probe(struct platform_device *pdev)
 	}
 	/* irq register */
 	mt6360_pmu_rgbled_irq_register(pdev);
-	dev_info(&pdev->dev, "%s: successfully probed\n", __func__);
+	dev_dbg(&pdev->dev, "%s: successfully probed\n", __func__);
 	return 0;
 
 out_led_disable:
@@ -1316,7 +1316,7 @@ static int mt6360_pmu_rgbled_remove(struct platform_device *pdev)
 	}
 	mt_led_trigger_unregister();
 
-	dev_info(mpri->dev, "%s successfullt\n", __func__);
+	dev_dbg(mpri->dev, "%s successfullt\n", __func__);
 	return 0;
 }
 

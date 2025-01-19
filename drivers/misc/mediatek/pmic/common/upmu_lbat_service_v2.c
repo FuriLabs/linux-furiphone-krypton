@@ -532,13 +532,13 @@ int lbat_service_init(struct platform_device *pdev)
 		NULL, bat_h_int_handler, IRQF_TRIGGER_NONE,
 		"bat_h", NULL);
 	if (ret < 0)
-		dev_notice(&pdev->dev, "request bat_h irq fail\n");
+		dev_dbg(&pdev->dev, "request bat_h irq fail\n");
 	ret = devm_request_threaded_irq(&pdev->dev,
 		platform_get_irq_byname(pdev, "bat_l"),
 		NULL, bat_l_int_handler, IRQF_TRIGGER_NONE,
 		"bat_l", NULL);
 	if (ret < 0)
-		dev_notice(&pdev->dev, "request bat_l irq fail\n");
+		dev_dbg(&pdev->dev, "request bat_l irq fail\n");
 
 	lbat_wq = create_singlethread_workqueue("lbat_service");
 
