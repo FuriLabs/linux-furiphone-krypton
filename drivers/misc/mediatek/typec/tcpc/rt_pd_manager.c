@@ -60,7 +60,7 @@ struct rt_pd_manager_data {
 
 void __attribute__((weak)) usb_dpdm_pulldown(bool enable)
 {
-	pr_notice("%s is not defined\n", __func__);
+	pr_debug("%s is not defined\n", __func__);
 }
 #if defined(CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT)/* Added start by Eli at 2023-10-06 21:09  */
 extern void typec_headset_queue_work(int state);

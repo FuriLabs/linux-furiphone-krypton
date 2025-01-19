@@ -60,7 +60,7 @@ static inline bool pd_dbg_print_out(void)
 	if (used < (PD_INFO_BUF_SIZE + 1 + OUT_BUF_MAX))
 		pd_dbg_buffer[index].buf[used] = '\0';
 
-	pr_info("///PD dbg info %ud\n", used);
+	pr_debug("///PD dbg info %ud\n", used);
 
 	for (i = 0; i < used; i += OUT_BUF_MAX) {
 		temp = pd_dbg_buffer[index].buf[OUT_BUF_MAX + i];
@@ -69,11 +69,11 @@ static inline bool pd_dbg_print_out(void)
 		while (atomic_read(&busy))
 			usleep_range(1000, 2000);
 
-		pr_notice("%s", pd_dbg_buffer[index].buf + i);
+		pr_debug("%s", pd_dbg_buffer[index].buf + i);
 		pd_dbg_buffer[index].buf[OUT_BUF_MAX + i] = temp;
 	}
 
-	/* pr_info("PD dbg info///\n"); */
+	/* pr_debug("PD dbg info///\n"); */
 	pd_dbg_buffer[index].used = 0;
 	msleep(MSG_POLLING_MS);
 	return true;
@@ -88,7 +88,7 @@ static int print_out_thread_fn(void *data)
 				atomic_read(&pending_print_out) ||
 				kthread_should_stop());
 		if (kthread_should_stop() || ret) {
-			pr_notice("%s exits(%d)\n", __func__, ret);
+			pr_debug("%s exits(%d)\n", __func__, ret);
 			break;
 		}
 		do {
@@ -139,7 +139,7 @@ static struct task_struct *print_out_task;
 
 int pd_dbg_info_init(void)
 {
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 	mutex_init(&buff_lock);
 	init_waitqueue_head(&print_out_wait_que);
 	atomic_set(&pending_print_out, 0);

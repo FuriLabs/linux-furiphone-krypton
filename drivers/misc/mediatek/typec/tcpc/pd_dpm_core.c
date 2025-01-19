@@ -91,7 +91,7 @@ int dpm_check_supported_modes(void)
 	const int size = ARRAY_SIZE(svdm_svid_ops);
 
 	for (i = 0; i < size; i++) {
-		pr_info("SVDM supported mode [%d]: name = %s, svid = 0x%x\n",
+		pr_debug("SVDM supported mode [%d]: name = %s, svid = 0x%x\n",
 			i, svdm_svid_ops[i].name,
 			svdm_svid_ops[i].svid);
 	}
