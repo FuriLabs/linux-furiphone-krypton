@@ -380,7 +380,7 @@ static int mtk_rtc_get_spare_register(enum rtc_spare_enum cmd)
 		if (ret < 0)
 			goto exit;
 
-		pr_notice("%s: cmd[%d], get rg[0x%x, 0x%x , %d] = 0x%x\n",
+		pr_debug("%s: cmd[%d], get rg[0x%x, 0x%x , %d] = 0x%x\n",
 			      __func__, cmd,
 				  rtc_spare_reg[cmd][RTC_REG],
 			      rtc_spare_reg[cmd][RTC_MASK],
@@ -400,7 +400,7 @@ static void mtk_rtc_set_spare_register(enum rtc_spare_enum cmd, u16 val)
 
 	if (cmd >= 0 && cmd < RTC_SPAR_NUM) {
 
-		pr_notice("%s: cmd[%d], set rg[0x%x, 0x%x , %d] = 0x%x\n",
+		pr_debug("%s: cmd[%d], set rg[0x%x, 0x%x , %d] = 0x%x\n",
 				  __func__, cmd,
 			      rtc_spare_reg[cmd][RTC_REG],
 			      rtc_spare_reg[cmd][RTC_MASK],
@@ -520,7 +520,7 @@ static void mtk_rtc_set_gpio_32k_status(u16 user, bool enable)
 		}
 	}
 
-	pr_notice("RTC_GPIO user %d enable = %d 32k (0x%x)\n",
+	pr_debug("RTC_GPIO user %d enable = %d 32k (0x%x)\n",
 		user, enable, pdn1);
 	return;
 
@@ -532,7 +532,7 @@ void rtc_gpio_enable_32k(enum rtc_gpio_user_t user)
 {
 	unsigned long flags;
 
-	pr_notice("%s: user = %d\n", __func__, user);
+	pr_debug("%s: user = %d\n", __func__, user);
 
 	if (user < RTC_GPIO_USER_WIFI || user > RTC_GPIO_USER_PMIC)
 		return;
@@ -547,7 +547,7 @@ void rtc_gpio_disable_32k(enum rtc_gpio_user_t user)
 {
 	unsigned long flags;
 
-	pr_notice("%s: user = %d\n", __func__, user);
+	pr_debug("%s: user = %d\n", __func__, user);
 
 	if (user < RTC_GPIO_USER_WIFI || user > RTC_GPIO_USER_PMIC)
 		return;
@@ -652,7 +652,7 @@ void rtc_mark_recovery(void)
 {
 	unsigned long flags;
 
-	pr_notice("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	spin_lock_irqsave(&rtc_misc->lock, flags);
 	mtk_rtc_set_spare_register(RTC_FAC_RESET, 0x1);
@@ -666,7 +666,7 @@ void rtc_mark_kpoc(void)
 {
 	unsigned long flags;
 
-	pr_notice("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	spin_lock_irqsave(&rtc_misc->lock, flags);
 	mtk_rtc_set_spare_register(RTC_KPOC, 0x1);
@@ -677,7 +677,7 @@ void rtc_mark_fast(void)
 {
 	unsigned long flags;
 
-	pr_notice("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	spin_lock_irqsave(&rtc_misc->lock, flags);
 	mtk_rtc_set_spare_register(RTC_FAST_BOOT, 0x1);
@@ -697,7 +697,7 @@ static int pmic_config_interface(unsigned int RegNum, unsigned int val,
 				(MASK << SHIFT), (val << SHIFT));
 #endif
 	if (ret) {
-		pr_notice("[%s]ret=%d Reg=0x%x val=0x%x MASK=0x%x SHIFT=%d\n",
+		pr_debug("[%s]ret=%d Reg=0x%x val=0x%x MASK=0x%x SHIFT=%d\n",
 			__func__, ret, RegNum, val, MASK, SHIFT);
 		return ret;
 	}
@@ -764,7 +764,7 @@ static void mtk_rtc_enable_k_eosc_revised(void)
 	u32 td;
 	int ret;
 
-	pr_notice("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	/* Truning on eosc cali mode clock */
 	pmic_config_interface(PMIC_SCK_TOP_CKPDN_CON0_CLR_ADDR, 1,
@@ -780,7 +780,7 @@ static void mtk_rtc_enable_k_eosc_revised(void)
 		goto exit;
 
 	if (rtc_eosc_cali_td) {
-		pr_notice("%s: rtc_eosc_cali_td = %d\n",
+		pr_debug("%s: rtc_eosc_cali_td = %d\n",
 						__func__, rtc_eosc_cali_td);
 		switch (rtc_eosc_cali_td) {
 		case 1:
@@ -815,7 +815,7 @@ exit:
 
 static void mtk_rtc_enable_k_eosc(void)
 {
-	pr_notice("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	/* Truning on eosc cali mode clock */
 	pmic_config_interface(PMIC_SCK_TOP_CKPDN_CON0_CLR_ADDR, 1,
@@ -823,7 +823,7 @@ static void mtk_rtc_enable_k_eosc(void)
 					PMIC_RG_RTC_EOSC32_CK_PDN_SHIFT);
 
 	if (rtc_eosc_cali_td) {
-		pr_notice("%s: rtc_eosc_cali_td = %d\n",
+		pr_debug("%s: rtc_eosc_cali_td = %d\n",
 						__func__, rtc_eosc_cali_td);
 		switch (rtc_eosc_cali_td) {
 		case 1:
@@ -859,7 +859,7 @@ static void mtk_rtc_enable_k_eosc(void)
 	 * RTC mode will have only OFF mode and FPM
 	 */
 	if (dcxo_switch) {
-		pr_notice("%s: dcxo_switch\n", __func__);
+		pr_debug("%s: dcxo_switch\n", __func__);
 		pmic_config_interface(PMIC_XO_EN32K_MAN_ADDR, 0,
 				     PMIC_XO_EN32K_MAN_MASK,
 					 PMIC_XO_EN32K_MAN_SHIFT);
@@ -891,7 +891,7 @@ void mt_power_off(void)
 	u32 pdn1 = 0, al_mask = 0, irq_en = 0;
 	int ret;
 
-	pr_notice("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 	dump_stack();
 
 	spin_lock_irqsave(&rtc_misc->lock, flags);
@@ -911,7 +911,7 @@ void mt_power_off(void)
 	}
 
 	/* lpsd */
-	pr_notice("clear lpsd solution\n");
+	pr_debug("clear lpsd solution\n");
 	ret = rtc_write(RTC_BBPU, RTC_BBPU_KEY | RTC_BBPU_CLR | RTC_BBPU_PWREN);
 	if (ret < 0)
 		goto exit;
@@ -938,7 +938,7 @@ void mt_power_off(void)
 	ret = rtc_read(RTC_IRQ_EN, &irq_en);
 	if (ret < 0)
 		goto exit;
-	pr_notice("%s: RTC_AL_MASK= 0x%x RTC_IRQ_EN= 0x%x\n",
+	pr_debug("%s: RTC_AL_MASK= 0x%x RTC_IRQ_EN= 0x%x\n",
 				__func__, al_mask, irq_en);
 
 	spin_unlock_irqrestore(&rtc_misc->lock, flags);
@@ -980,7 +980,7 @@ static void mtk_rtc_lpsd_restore_al_mask(void)
 	ret = rtc_read(RTC_AL_MASK, &val);
 	if (ret < 0)
 		goto exit;
-	pr_notice("%s: 1st RTC_AL_MASK = 0x%x\n", __func__, val);
+	pr_debug("%s: 1st RTC_AL_MASK = 0x%x\n", __func__, val);
 
 	/* mask DOW */
 	ret = rtc_write(RTC_AL_MASK, RTC_AL_MASK_DOW);
@@ -993,7 +993,7 @@ static void mtk_rtc_lpsd_restore_al_mask(void)
 	ret = rtc_read(RTC_AL_MASK, &val);
 	if (ret < 0)
 		goto exit;
-	pr_notice("%s: 2nd RTC_AL_MASK = 0x%x\n", __func__, val);
+	pr_debug("%s: 2nd RTC_AL_MASK = 0x%x\n", __func__, val);
 
 	return;
 exit:
@@ -1025,7 +1025,7 @@ static int mt6358_misc_probe(struct platform_device *pdev)
 	misc->regmap = mt6358_chip->regmap;
 #endif
 	if (!misc->regmap) {
-		pr_notice("get regmap failed\n");
+		pr_debug("get regmap failed\n");
 		return -ENODEV;
 	}
 
@@ -1042,7 +1042,7 @@ static int mt6358_misc_probe(struct platform_device *pdev)
 	if (of_property_read_u32(pdev->dev.of_node, "base",
 							&rtc_misc->addr_base))
 		rtc_misc->addr_base = RTC_DSN_ID;
-	pr_notice("%s: rtc_misc->addr_base =0x%x\n",
+	pr_debug("%s: rtc_misc->addr_base =0x%x\n",
 				__func__, rtc_misc->addr_base);
 
 	if (of_property_read_bool(pdev->dev.of_node, "apply-lpsd-solution")) {
@@ -1056,7 +1056,7 @@ static int mt6358_misc_probe(struct platform_device *pdev)
 	if (of_property_read_bool(pdev->dev.of_node, "dcxo-switch"))
 		dcxo_switch = 1;
 
-	pr_notice("%s done\n", __func__);
+	pr_debug("%s done\n", __func__);
 
 	return 0;
 }

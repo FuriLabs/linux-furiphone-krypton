@@ -57,7 +57,7 @@ static unsigned int pmic_ipi_write_to_sspm(void *buffer, void *retbuf)
 		is_err_pnt = true;
 
 	if (is_err_pnt)
-		pr_notice_ratelimited("%s ap_ret=%d ipi_ret=%d\n"
+		pr_debug_ratelimited("%s ap_ret=%d ipi_ret=%d\n"
 				      , __func__, ret, ipi_ret);
 	ret = ipi_ret;
 
@@ -76,7 +76,7 @@ static unsigned int pmic_ipi_config_interface(unsigned int RegNum,
 
 	if (RegNum == 0x20) {
 		dump_stack();
-		pr_info("[%s] ipi_config: Regnum:%d, val:%d,MASK:%d,SHIFT,%d\n",
+		pr_debug("[%s] ipi_config: Regnum:%d, val:%d,MASK:%d,SHIFT,%d\n",
 			__func__, RegNum, val, MASK, SHIFT);
 	}
 	send.cmd[0] = MAIN_PMIC_WRITE_REGISTER;
@@ -97,13 +97,13 @@ static int pmic_ipi_reg_write(void *context, const void *data, size_t count)
 	unsigned short reg = dout[0], val = dout[1];
 
 	if (count != 4) {
-		pr_notice("%s: reg=0x%x, val=0x%x, count=%zu\n",
+		pr_debug("%s: reg=0x%x, val=0x%x, count=%zu\n",
 			  __func__, reg, val, count);
 		return -EINVAL;
 	}
 	ret = pmic_ipi_config_interface(reg, val, 0xFFFF, 0, 1);
 	if (ret) {
-		pr_info("[%s]fail with ret=%d, reg=0x%x val=0x%x\n",
+		pr_debug("[%s]fail with ret=%d, reg=0x%x val=0x%x\n",
 			__func__, ret, reg, val);
 		return -EINVAL;
 	}
@@ -119,7 +119,7 @@ static int pmic_ipi_reg_read(void *context,
 	int ret = 0;
 
 	if (reg_size != 2 || val_size != 2) {
-		pr_notice("%s: reg=0x%x, reg_size=%zu, val_size=%zu\n",
+		pr_debug("%s: reg=0x%x, reg_size=%zu, val_size=%zu\n",
 			__func__, reg, reg_size, val_size);
 		return -EINVAL;
 	}
@@ -135,7 +135,7 @@ static int pmic_ipi_reg_update_bits(void *context, unsigned int reg,
 
 	ret = pmic_ipi_config_interface(reg, val, mask, 0, 1);
 	if (ret) {
-		pr_info("[%s]fail with ret=%d, reg=0x%x mask=0x%x val=0x%x\n",
+		pr_debug("[%s]fail with ret=%d, reg=0x%x mask=0x%x val=0x%x\n",
 			__func__, ret, reg, mask, val);
 		return -EINVAL;
 	}

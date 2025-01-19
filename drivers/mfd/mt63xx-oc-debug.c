@@ -17,7 +17,7 @@
 #define PMIC_OC_DEBUG_DUMP(_pmic_reg) \
 {	\
 	regmap_read(regmap, _pmic_reg, &val);	\
-	pr_notice(#_pmic_reg"=0x%x\n", val);	\
+	pr_debug(#_pmic_reg"=0x%x\n", val);	\
 }
 
 struct reg_oc_debug_t {
@@ -147,7 +147,7 @@ static int md_reg_oc_notify(struct reg_oc_debug_t *reg_oc_dbg)
 	ret = exec_ccci_kern_func_by_md_id(MD_SYS1, ID_PMIC_INTR,
 					   (char *)&data_int32, 4);
 	if (ret)
-		pr_notice("[%s]-exec_ccci fail:%d\n", __func__, ret);
+		pr_debug("[%s]-exec_ccci fail:%d\n", __func__, ret);
 #endif
 	return 0;
 }
@@ -169,8 +169,8 @@ static int regulator_oc_notify(struct notifier_block *nb, unsigned long event,
 
 	ret = snprintf(oc_str, 30, "PMIC OC:%s", reg_oc_dbg->name);
 	if (ret < 0)
-		pr_info("%s error\n", __func__);
-	pr_notice("regulator:%s OC %d times\n",
+		pr_debug("%s error\n", __func__);
+	pr_debug("regulator:%s OC %d times\n",
 		  reg_oc_dbg->name, reg_oc_dbg->times);
 	if (reg_oc_dbg->is_md_reg) {
 #if IS_ENABLED(CONFIG_MTK_AEE_FEATURE)
