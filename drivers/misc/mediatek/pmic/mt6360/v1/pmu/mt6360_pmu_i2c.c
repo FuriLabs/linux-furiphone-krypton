@@ -198,7 +198,7 @@ static int mt6360_pmu_parse_dt_data(struct device *dev,
 	struct device_node *np = dev->of_node;
 	int ret;
 
-	dev_info(dev, "%s ++\n", __func__);
+	dev_dbg(dev, "%s ++\n", __func__);
 	memcpy(pdata, &def_platform_data, sizeof(*pdata));
 	mt6360_dt_parser_helper(np, (void *)pdata,
 				mt6360_val_props, ARRAY_SIZE(mt6360_val_props));
@@ -218,7 +218,7 @@ static int mt6360_pmu_parse_dt_data(struct device *dev,
 	}
 #endif /* (!defined(CONFIG_MTK_GPIO) || defined(CONFIG_MTK_GPIOLIB_STAND)) */
 out_parse_dt:
-	dev_info(dev, "%s --, irq gpio%d\n", __func__, pdata->irq_gpio);
+	dev_dbg(dev, "%s --, irq gpio%d\n", __func__, pdata->irq_gpio);
 	return 0;
 }
 
@@ -242,7 +242,7 @@ static inline void mt6360_config_of_node(struct device *dev, const char *name)
 		return;
 	np = of_find_node_by_name(NULL, name);
 	if (np) {
-		dev_info(dev, "find %s node\n", name);
+		dev_dbg(dev, "find %s node\n", name);
 		dev->of_node = np;
 	}
 }
@@ -289,7 +289,7 @@ static int mt6360_pmu_i2c_probe(struct i2c_client *client,
 	mpi->chip_rev = chip_rev;
 	mutex_init(&mpi->io_lock);
 	i2c_set_clientdata(client, mpi);
-	dev_info(&client->dev, "chip_rev [%02x]\n", mpi->chip_rev);
+	dev_dbg(&client->dev, "chip_rev [%02x]\n", mpi->chip_rev);
 
 	pm_runtime_set_active(mpi->dev);
 	/* regmap regiser */
@@ -323,7 +323,7 @@ static int mt6360_pmu_i2c_probe(struct i2c_client *client,
 			dev_err(&client->dev, "%s: LPSD set fail\n", __func__);
 	}
 	pm_runtime_enable(mpi->dev);
-	dev_info(&client->dev, "%s: successfully probed\n", __func__);
+	dev_dbg(&client->dev, "%s: successfully probed\n", __func__);
 	return 0;
 out_irq:
 	mt6360_pmu_regmap_unregister(mpi);
