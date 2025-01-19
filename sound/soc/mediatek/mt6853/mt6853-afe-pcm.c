@@ -140,7 +140,7 @@ int mt6853_fe_trigger(struct snd_pcm_substream *substream, int cmd,
 	int fs;
 	int ret = 0;
 
-	dev_info(afe->dev, "%s(), %s cmd %d, irq_id %d\n",
+	dev_dbg(afe->dev, "%s(), %s cmd %d, irq_id %d\n",
 		 __func__, memif->data->name, cmd, irq_id);
 
 	switch (cmd) {
@@ -665,7 +665,7 @@ static int mt6853_irq_cnt1_set(struct snd_kcontrol *kcontrol,
 	int irq_id = memif->irq_usage;
 	int irq_cnt = afe_priv->irq_cnt[memif_num];
 
-	dev_info(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
+	dev_dbg(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
 		 __func__,
 		 irq_id, irq_cnt,
 		 ucontrol->value.integer.value[0]);
@@ -677,7 +677,7 @@ static int mt6853_irq_cnt1_set(struct snd_kcontrol *kcontrol,
 	afe_priv->irq_cnt[memif_num] = irq_cnt;
 
 	if (pm_runtime_status_suspended(afe->dev) || irq_id < 0) {
-		dev_info(afe->dev, "%s(), suspended || irq_id %d, not set\n",
+		dev_dbg(afe->dev, "%s(), suspended || irq_id %d, not set\n",
 			 __func__, irq_id);
 	} else {
 		struct mtk_base_afe_irq *irqs = &afe->irqs[irq_id];
@@ -715,7 +715,7 @@ static int mt6853_irq_cnt2_set(struct snd_kcontrol *kcontrol,
 	int irq_id = memif->irq_usage;
 	int irq_cnt = afe_priv->irq_cnt[memif_num];
 
-	dev_info(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
+	dev_dbg(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
 		 __func__,
 		 irq_id, irq_cnt,
 		 ucontrol->value.integer.value[0]);
@@ -727,7 +727,7 @@ static int mt6853_irq_cnt2_set(struct snd_kcontrol *kcontrol,
 	afe_priv->irq_cnt[memif_num] = irq_cnt;
 
 	if (pm_runtime_status_suspended(afe->dev) || irq_id < 0) {
-		dev_info(afe->dev, "%s(), suspended || irq_id %d, not set\n",
+		dev_dbg(afe->dev, "%s(), suspended || irq_id %d, not set\n",
 			 __func__, irq_id);
 	} else {
 		struct mtk_base_afe_irq *irqs = &afe->irqs[irq_id];
@@ -764,7 +764,7 @@ static int mt6853_deep_irq_cnt_set(struct snd_kcontrol *kcontrol,
 	int irq_id = memif->irq_usage;
 	int irq_cnt = afe_priv->irq_cnt[memif_num];
 
-	dev_info(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
+	dev_dbg(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
 		 __func__,
 		 irq_id, irq_cnt,
 		 ucontrol->value.integer.value[0]);
@@ -776,7 +776,7 @@ static int mt6853_deep_irq_cnt_set(struct snd_kcontrol *kcontrol,
 	afe_priv->irq_cnt[memif_num] = irq_cnt;
 
 	if (pm_runtime_status_suspended(afe->dev) || irq_id < 0) {
-		dev_info(afe->dev, "%s(), suspended || irq_id %d, not set\n",
+		dev_dbg(afe->dev, "%s(), suspended || irq_id %d, not set\n",
 			 __func__, irq_id);
 	} else {
 		struct mtk_base_afe_irq *irqs = &afe->irqs[irq_id];
@@ -813,7 +813,7 @@ static int mt6853_voip_rx_irq_cnt_set(struct snd_kcontrol *kcontrol,
 	int irq_id = memif->irq_usage;
 	int irq_cnt = afe_priv->irq_cnt[memif_num];
 
-	dev_info(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
+	dev_dbg(afe->dev, "%s(), irq_id %d, irq_cnt = %d, value = %ld\n",
 		 __func__,
 		 irq_id, irq_cnt,
 		 ucontrol->value.integer.value[0]);
@@ -825,7 +825,7 @@ static int mt6853_voip_rx_irq_cnt_set(struct snd_kcontrol *kcontrol,
 	afe_priv->irq_cnt[memif_num] = irq_cnt;
 
 	if (pm_runtime_status_suspended(afe->dev) || irq_id < 0) {
-		dev_info(afe->dev, "%s(), suspended || irq_id %d, not set\n",
+		dev_dbg(afe->dev, "%s(), suspended || irq_id %d, not set\n",
 			 __func__, irq_id);
 	} else {
 		struct mtk_base_afe_irq *irqs = &afe->irqs[irq_id];
@@ -987,7 +987,7 @@ static int mt6853_record_xrun_assert_set(struct snd_kcontrol *kcontrol,
 	struct mt6853_afe_private *afe_priv = afe->platform_priv;
 	int xrun_assert = ucontrol->value.integer.value[0];
 
-	dev_info(afe->dev, "%s(), xrun_assert %d\n", __func__, xrun_assert);
+	dev_dbg(afe->dev, "%s(), xrun_assert %d\n", __func__, xrun_assert);
 	afe_priv->xrun_assert[MT6853_RECORD_MEMIF] = xrun_assert;
 	return 0;
 }
@@ -1012,7 +1012,7 @@ static int mt6853_echo_ref_xrun_assert_set(struct snd_kcontrol *kcontrol,
 	struct mt6853_afe_private *afe_priv = afe->platform_priv;
 	int xrun_assert = ucontrol->value.integer.value[0];
 
-	dev_info(afe->dev, "%s(), xrun_assert %d\n", __func__, xrun_assert);
+	dev_dbg(afe->dev, "%s(), xrun_assert %d\n", __func__, xrun_assert);
 	afe_priv->xrun_assert[MT6853_ECHO_REF_MEMIF] = xrun_assert;
 	return 0;
 }
@@ -1213,7 +1213,7 @@ static int mt6853_mmap_dl_scene_set(struct snd_kcontrol *kcontrol,
 		memif->use_mmap_share_mem = 0;
 	}
 
-	dev_info(afe->dev, "%s(), state %d, mem %d\n", __func__,
+	dev_dbg(afe->dev, "%s(), state %d, mem %d\n", __func__,
 		 afe_priv->mmap_playback_state, memif->use_mmap_share_mem);
 	return 0;
 }
@@ -1252,7 +1252,7 @@ static int mt6853_mmap_ul_scene_set(struct snd_kcontrol *kcontrol,
 		memif->use_mmap_share_mem = 0;
 	}
 
-	dev_info(afe->dev, "%s(), state %d, mem %d\n", __func__,
+	dev_dbg(afe->dev, "%s(), state %d, mem %d\n", __func__,
 		 afe_priv->mmap_record_state, memif->use_mmap_share_mem);
 	return 0;
 }
@@ -1284,7 +1284,7 @@ static int mt6853_dl_mmap_fd_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.integer.value[0] = (memif->use_mmap_share_mem == 1) ?
 					    mtk_get_mmap_dl_fd() : 0;
-	dev_info(afe->dev, "%s, fd %ld\n", __func__,
+	dev_dbg(afe->dev, "%s, fd %ld\n", __func__,
 		 ucontrol->value.integer.value[0]);
 	return 0;
 }
@@ -1305,7 +1305,7 @@ static int mt6853_ul_mmap_fd_get(struct snd_kcontrol *kcontrol,
 
 	ucontrol->value.integer.value[0] = (memif->use_mmap_share_mem == 2) ?
 					    mtk_get_mmap_ul_fd() : 0;
-	dev_info(afe->dev, "%s, fd %ld\n", __func__,
+	dev_dbg(afe->dev, "%s, fd %ld\n", __func__,
 		 ucontrol->value.integer.value[0]);
 	return 0;
 }
@@ -1416,7 +1416,7 @@ static int ul_tinyconn_event(struct snd_soc_dapm_widget *w,
 	unsigned int reg_shift;
 	unsigned int reg_mask_shift;
 
-	dev_info(afe->dev, "%s(), event 0x%x\n", __func__, event);
+	dev_dbg(afe->dev, "%s(), event 0x%x\n", __func__, event);
 
 	if (strstr(w->name, "UL1")) {
 		reg_shift = VUL1_USE_TINY_SFT;
@@ -3353,7 +3353,7 @@ static int mt6853_afe_runtime_suspend(struct device *dev)
 	unsigned int value = 0;
 	int ret;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	if (!afe->regmap)
 		goto skip_regmap;
@@ -3395,7 +3395,7 @@ static int mt6853_afe_runtime_resume(struct device *dev)
 	struct mt6853_afe_private *afe_priv = afe->platform_priv;
 	int ret;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	ret = mt6853_afe_enable_clock(afe);
 	if (ret)

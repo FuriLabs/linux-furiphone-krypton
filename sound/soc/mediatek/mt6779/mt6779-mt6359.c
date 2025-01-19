@@ -77,7 +77,7 @@ static int mt6779_mt6359_spk_amp_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_dapm_context *dapm = w->dapm;
 	struct snd_soc_card *card = dapm->card;
 
-	dev_info(card->dev, "%s(), event %d\n", __func__, event);
+	dev_dbg(card->dev, "%s(), event %d\n", __func__, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -149,7 +149,7 @@ static int mt6779_mt6359_mtkaif_calibration(struct snd_soc_pcm_runtime *rtd)
 	int prev_cycle_1, prev_cycle_2, prev_cycle_3;
 	int counter;
 
-	dev_info(afe->dev, "%s(), start\n", __func__);
+	dev_dbg(afe->dev, "%s(), start\n", __func__);
 
 	pm_runtime_get_sync(afe->dev);
 	mt6779_afe_gpio_request(afe, true, MT6779_DAI_ADDA, 1);
@@ -276,7 +276,7 @@ static int mt6779_mt6359_mtkaif_calibration(struct snd_soc_pcm_runtime *rtd)
 	mt6779_afe_gpio_request(afe, false, MT6779_DAI_ADDA_CH34, 0);
 	pm_runtime_put(afe->dev);
 
-	dev_info(afe->dev, "%s(), end, calibration ok %d\n",
+	dev_dbg(afe->dev, "%s(), end, calibration ok %d\n",
 		 __func__,
 		 afe_priv->mtkaif_calibration_ok);
 
@@ -318,7 +318,7 @@ static int mt6779_mt6359_init(struct snd_soc_pcm_runtime *rtd)
 static int mt6779_i2s_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 				      struct snd_pcm_hw_params *params)
 {
-	dev_info(rtd->dev, "%s(), fix format to 32bit\n", __func__);
+	dev_dbg(rtd->dev, "%s(), fix format to 32bit\n", __func__);
 
 	/* fix BE i2s format to 32bit, clean param mask first */
 	snd_mask_reset_range(hw_param_mask(params, SNDRV_PCM_HW_PARAM_FORMAT),
@@ -346,7 +346,7 @@ static int mt6779_mt6359_vow_startup(struct snd_pcm_substream *substream)
 		snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
 	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
 
-	dev_info(afe->dev, "%s(), start\n", __func__);
+	dev_dbg(afe->dev, "%s(), start\n", __func__);
 	snd_soc_set_runtime_hwparams(substream, &mt6779_mt6359_vow_hardware);
 
 	mt6779_afe_gpio_request(afe, true, MT6779_DAI_VOW, 0);
@@ -364,7 +364,7 @@ static void mt6779_mt6359_vow_shutdown(struct snd_pcm_substream *substream)
 		snd_soc_rtdcom_lookup(rtd, AFE_PCM_NAME);
 	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(component);
 
-	dev_info(afe->dev, "%s(), end\n", __func__);
+	dev_dbg(afe->dev, "%s(), end\n", __func__);
 	mt6779_afe_gpio_request(afe, false, MT6779_DAI_VOW, 0);
 
 	/* restore to fool ASoC */
@@ -1048,7 +1048,7 @@ static int mt6779_mt6359_dev_probe(struct platform_device *pdev)
 	int ret, i;
 	const char *name;
 
-	dev_info(&pdev->dev, "%s(), start\n", __func__);
+	dev_dbg(&pdev->dev, "%s(), start\n", __func__);
 
 	ret = mtk_spk_update_dai_link(card, pdev, &mt6779_mt6359_i2s_ops);
 	if (ret) {
@@ -1067,7 +1067,7 @@ static int mt6779_mt6359_dev_probe(struct platform_device *pdev)
 	dsp_node = of_parse_phandle(pdev->dev.of_node,
 				    "mediatek,snd_audio_dsp", 0);
 	if (!dsp_node)
-		dev_info(&pdev->dev, "Property 'snd_audio_dsp' missing or invalid\n");
+		dev_dbg(&pdev->dev, "Property 'snd_audio_dsp' missing or invalid\n");
 
 	for (i = 0; i < card->num_links; i++) {
 		if (mt6779_mt6359_dai_links[i].platform_name)
@@ -1102,7 +1102,7 @@ static int mt6779_mt6359_dev_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "%s snd_soc_register_card fail %d\n",
 			__func__, ret);
 
-	dev_info(&pdev->dev, "%s(), ret %d\n", __func__, ret);
+	dev_dbg(&pdev->dev, "%s(), ret %d\n", __func__, ret);
 	return ret;
 }
 

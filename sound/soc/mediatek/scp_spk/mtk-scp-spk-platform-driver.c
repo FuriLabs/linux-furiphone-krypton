@@ -171,7 +171,7 @@ static int mtk_scp_spk_dl_scenario_set(struct snd_kcontrol *kcontrol,
 	struct mtk_base_afe *afe = get_afe_base();
 	const int scp_spk_memif_id = get_scp_spk_memif_id(SCP_SPK_DL_DAI_ID);
 
-	dev_info(scp_spk->dev,
+	dev_dbg(scp_spk->dev,
 		 "%s(), %d\n",
 		 __func__, ucontrol->value.integer.value[0]);
 
@@ -202,7 +202,7 @@ static int mtk_scp_spk_iv_scenario_set(struct snd_kcontrol *kcontrol,
 	struct mtk_base_afe *afe = get_afe_base();
 	const int scp_spk_memif_id = get_scp_spk_memif_id(SCP_SPK_IV_DAI_ID);
 
-	dev_info(scp_spk->dev,
+	dev_dbg(scp_spk->dev,
 		 "%s(), %d\n",
 		 __func__, ucontrol->value.integer.value[0]);
 
@@ -233,7 +233,7 @@ static int mtk_scp_spk_mdul_scenario_set(struct snd_kcontrol *kcontrol,
 	struct mtk_base_afe *afe = get_afe_base();
 	const int scp_spk_memif_id = get_scp_spk_memif_id(SCP_SPK_MDUL_DAI_ID);
 
-	dev_info(scp_spk->dev,
+	dev_dbg(scp_spk->dev,
 		 "%s(), %d\n",
 		 __func__, ucontrol->value.integer.value[0]);
 
@@ -263,7 +263,7 @@ static int mtk_scp_spk_set_iv_tcm_buf_set(struct snd_kcontrol *kcontrol,
 	struct snd_soc_component *cmpnt = snd_soc_kcontrol_component(kcontrol);
 	struct mtk_base_scp_spk *scp_spk = snd_soc_component_get_drvdata(cmpnt);
 
-	dev_info(scp_spk->dev,
+	dev_dbg(scp_spk->dev,
 		 "%s(), %d\n",
 		 __func__, ucontrol->value.integer.value[0]);
 
@@ -415,7 +415,7 @@ static int mtk_scp_spk_pcm_open(struct snd_pcm_substream *substream)
 	struct mtk_base_afe_memif *memif;
 	struct mtk_base_afe_irq *irqs = &afe->irqs[memif->irq_usage];
 
-	dev_info(scp_spk->dev, "%s() spk_dl_memif_id: %d, system cycle:%llu\n",
+	dev_dbg(scp_spk->dev, "%s() spk_dl_memif_id: %d, system cycle:%llu\n",
 		 __func__, scp_spk->spk_mem.spk_dl_memif_id,
 		 GET_SYSTEM_TIMER_CYCLE());
 
@@ -423,7 +423,7 @@ static int mtk_scp_spk_pcm_open(struct snd_pcm_substream *substream)
 	       sizeof(struct snd_pcm_hardware));
 
 	if (scp_spk->spk_mem.spk_dl_memif_id < 0) {
-		dev_info(scp_spk->dev, "%s() spk_dl_memif_id < 0, return\n",
+		dev_dbg(scp_spk->dev, "%s() spk_dl_memif_id < 0, return\n",
 			 __func__);
 		return 0;
 	}
@@ -459,12 +459,12 @@ static int mtk_scp_spk_pcm_close(struct snd_pcm_substream *substream)
 	struct mtk_base_afe *afe = get_afe_base();
 	struct mtk_base_afe_memif *memif;
 
-	dev_info(scp_spk->dev, "%s() spk_dl_memif_id:%d, system cycle:%llu\n",
+	dev_dbg(scp_spk->dev, "%s() spk_dl_memif_id:%d, system cycle:%llu\n",
 		 __func__, scp_spk->spk_mem.spk_dl_memif_id,
 		 GET_SYSTEM_TIMER_CYCLE());
 
 	if (scp_spk->spk_mem.spk_dl_memif_id < 0) {
-		dev_info(scp_spk->dev, "%s() spk_dl_memif_id < 0, return\n",
+		dev_dbg(scp_spk->dev, "%s() spk_dl_memif_id < 0, return\n",
 			 __func__);
 		return 0;
 	}
@@ -504,7 +504,7 @@ static void mtk_scp_spk_pcm_hw_params_dl(struct snd_pcm_substream *substream,
 	int iv_using_dram =
 		afe->memif[spk_mem->spk_iv_memif_id].using_sram ? 0 : 1;
 
-	dev_info(scp_spk->dev, "%s(), system cycle:%llu\n",
+	dev_dbg(scp_spk->dev, "%s(), system cycle:%llu\n",
 		 __func__, GET_SYSTEM_TIMER_CYCLE());
 
 	substream->runtime->dma_bytes = params_buffer_bytes(params);
@@ -558,7 +558,7 @@ static void mtk_scp_spk_pcm_hw_params_ul(struct snd_pcm_substream *substream)
 	int md_ul_using_dram =
 		afe->memif[spk_mem->spk_md_ul_memif_id].using_sram ? 0 : 1;
 
-	dev_info(scp_spk->dev, "%s(), system cycle:%llu\n",
+	dev_dbg(scp_spk->dev, "%s(), system cycle:%llu\n",
 		 __func__, GET_SYSTEM_TIMER_CYCLE());
 
 	payload_len = mtk_scp_spk_pack_payload(
@@ -610,7 +610,7 @@ static int mtk_scp_spk_pcm_hw_prepare(struct snd_pcm_substream *substream)
 	int payload_len = 0;
 	int msg_id;
 
-	dev_info(scp_spk->dev, "%s(), system cycle:%llu\n",
+	dev_dbg(scp_spk->dev, "%s(), system cycle:%llu\n",
 		 __func__, GET_SYSTEM_TIMER_CYCLE());
 
 	if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK)
@@ -649,7 +649,7 @@ static int mtk_scp_spk_pcm_start(struct snd_pcm_substream *substream)
 	unsigned int counter = runtime->period_size;
 	int fs;
 
-	dev_info(scp_spk->dev, "%s(), counter:%d, stream:%d, system cycle:%llu\n",
+	dev_dbg(scp_spk->dev, "%s(), counter:%d, stream:%d, system cycle:%llu\n",
 		 __func__, counter, substream->stream,
 		 GET_SYSTEM_TIMER_CYCLE());
 
@@ -726,7 +726,7 @@ static int mtk_scp_spk_pcm_stop(struct snd_pcm_substream *substream)
 	struct mtk_base_afe_irq *irqs = &afe->irqs[irq_id];
 	const struct mtk_base_irq_data *irq_data = irqs->irq_data;
 
-	dev_info(scp_spk->dev, "%s(), system cycle:%llu\n",
+	dev_dbg(scp_spk->dev, "%s(), system cycle:%llu\n",
 		 __func__, GET_SYSTEM_TIMER_CYCLE());
 
 	RingBuf_Reset(ring_buf);
@@ -809,7 +809,7 @@ static int mtk_scp_spk_pcm_copy(struct snd_pcm_substream *substream,
 	if (availsize >= copy_size) {
 		RingBuf_copyFromUserLinear(ringbuf, buf, copy_size);
 	} else {
-		dev_info(scp_spk->dev,
+		dev_dbg(scp_spk->dev,
 			 "%s() fail copy_size = %d availsize = %d\n",
 			 __func__,
 			 copy_size, RingBuf_getFreeSpace(ringbuf));
@@ -834,7 +834,7 @@ static int mtk_scp_spk_pcm_new(struct snd_soc_pcm_runtime *rtd)
 	struct mtk_base_scp_spk *scp_spk =
 			snd_soc_platform_get_drvdata(rtd->platform);
 
-	dev_info(scp_spk->dev, "%s()\n", __func__);
+	dev_dbg(scp_spk->dev, "%s()\n", __func__);
 
 	snd_soc_add_platform_controls(rtd->platform,
 				      scp_spk_platform_kcontrols,

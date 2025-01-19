@@ -47,7 +47,7 @@ int mtk_scp_ultra_reserved_dram_init(void)
 
 	memset_io((void *)ultra_resv_mem->vir_addr, 0, ultra_resv_mem->size);
 
-	dev_info(scp_ultra->dev,
+	dev_dbg(scp_ultra->dev,
 		 "%s(), sce reserve mem pa=0x%llx, va=%p, size=0x%llx\n",
 		 __func__,
 		 ultra_resv_mem->phy_addr,
@@ -74,7 +74,7 @@ int mtk_scp_ultra_reserved_dram_init(void)
 		pr_err("%s(), dump_resv_mem size error\n", __func__);
 		return -1;
 	}
-	dev_info(scp_ultra->dev,
+	dev_dbg(scp_ultra->dev,
 		 "%s(), dump pa=0x%llx, va=%p, size=0x%llx\n",
 		 __func__,
 		 dump_resv_mem->phy_addr,
@@ -94,7 +94,7 @@ int mtk_scp_ultra_free_mem(struct snd_pcm_substream *substream,
 	struct mtk_base_afe_memif *memif = &afe->memif[id];
 	struct mtk_base_scp_ultra *scp_ultra = get_scp_ultra_base();
 
-	dev_info(scp_ultra->dev, "%s(), %s\n", __func__, memif->data->name);
+	dev_dbg(scp_ultra->dev, "%s(), %s\n", __func__, memif->data->name);
 
 	if (memif->using_sram) {
 		memif->using_sram = 0;
@@ -167,7 +167,7 @@ int mtk_scp_ultra_allocate_mem(struct snd_pcm_substream *substream,
 		return ret;
 	}
 
-	dev_info(scp_ultra->dev,
+	dev_dbg(scp_ultra->dev,
 		 "%s(), ultra VA:0x%p,PA:0x%lx,size:%d,using_sram=%d\n",
 		 __func__,
 		 ultra_dma_buf->area,

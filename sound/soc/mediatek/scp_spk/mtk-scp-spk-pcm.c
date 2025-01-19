@@ -50,7 +50,7 @@ static int scp_spk_pcm_dev_probe(struct platform_device *pdev)
 	struct mtk_base_scp_spk *scp_spk;
 	int ret = 0;
 
-	dev_info(&pdev->dev, "%s()\n", __func__);
+	dev_dbg(&pdev->dev, "%s()\n", __func__);
 
 	scp_spk = devm_kzalloc(&pdev->dev,
 			       sizeof(struct mtk_base_scp_spk), GFP_KERNEL);

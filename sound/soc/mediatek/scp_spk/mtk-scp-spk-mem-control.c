@@ -79,7 +79,7 @@ int mtk_scp_spk_reserved_dram_init(void)
 	memset_io((void *)dump_resv_mem->vir_addr, 0,
 		  dump_resv_mem->size);
 
-	dev_info(scp_spk->dev,
+	dev_dbg(scp_spk->dev,
 		 "%s(), reserved dram: pa %p, va %p, size 0x%x, reserved dump dram: pa %p, va %p, size 0x%x\n",
 		 __func__,
 		 scp_spk_reserved_mem.phy_addr,
@@ -121,7 +121,7 @@ int mtk_scp_spk_allocate_tcm_iv_buf(void)
 			(unsigned char *)(SCP_TCM + ipi_msg.param1);
 		scp_spk_iv_tcm_buf.size = ipi_msg.param2;
 
-		dev_info(scp_spk->dev,
+		dev_dbg(scp_spk->dev,
 			 "%s(), spk tcm iv pa:0x%x, va:0x%x, bytes:%d, SCP_TCM:0x%x, ipi_msg.param1:0x%x\n",
 			 __func__,
 			 scp_spk_iv_tcm_buf.phy_addr,
@@ -129,7 +129,7 @@ int mtk_scp_spk_allocate_tcm_iv_buf(void)
 			 scp_spk_iv_tcm_buf.size, SCP_TCM, ipi_msg.param1);
 		spk_mem->is_iv_buf_in_tcm = true;
 	} else {
-		dev_info(scp_spk->dev,
+		dev_dbg(scp_spk->dev,
 			 "%s(), not support\n", __func__);
 		spk_mem->is_iv_buf_in_tcm = false;
 	}
@@ -146,7 +146,7 @@ int mtk_scp_spk_free_mem(struct snd_pcm_substream *substream,
 	struct mtk_base_scp_spk *scp_spk = get_scp_spk_base();
 	struct mtk_base_scp_spk_mem *spk_mem = &scp_spk->spk_mem;
 
-	dev_info(scp_spk->dev, "%s(), %s\n", __func__, memif->data->name);
+	dev_dbg(scp_spk->dev, "%s(), %s\n", __func__, memif->data->name);
 
 	if (id == get_scp_spk_memif_id(SCP_SPK_DL_DAI_ID)) {
 		spk_mem->spk_dl_memif_id = -1;
@@ -192,7 +192,7 @@ void mtk_scp_spk_allocate_platform_buf(unsigned int size,
 	*phys_addr = spk_mem->platform_dma_buf.addr;
 	*virt_addr = spk_mem->platform_dma_buf.area;
 
-	dev_info(scp_spk->dev,
+	dev_dbg(scp_spk->dev,
 		 "%s(), spk platform VA:0x%p, PA:0x%lx, size:%d\n",
 		 __func__,
 		 spk_mem->platform_dma_buf.area,
@@ -274,7 +274,7 @@ BYPASS_RSVED_MEM_ALLOCATE:
 		return ret;
 	}
 
-	dev_info(scp_spk->dev,
+	dev_dbg(scp_spk->dev,
 		 "%s(), %s, spk VA:0x%p, spk PA:0x%lx, size:%d, iv buf in tcm:%d\n",
 		 __func__, memif->data->name,
 		 spk_dma_buf->area,

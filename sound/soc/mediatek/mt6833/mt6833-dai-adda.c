@@ -264,7 +264,7 @@ static int mtk_adda_ul_event(struct snd_soc_dapm_widget *w,
 	struct mt6833_afe_private *afe_priv = afe->platform_priv;
 	int mtkaif_dmic = afe_priv->mtkaif_dmic;
 
-	dev_info(afe->dev, "%s(), name %s, event 0x%x, mtkaif_dmic %d\n",
+	dev_dbg(afe->dev, "%s(), name %s, event 0x%x, mtkaif_dmic %d\n",
 		 __func__, w->name, event, mtkaif_dmic);
 
 	switch (event) {
@@ -347,7 +347,7 @@ static int mtk_adda_mtkaif_cfg_event(struct snd_soc_dapm_widget *w,
 			if (strcmp(w->name, "ADDA_MTKAIF_CFG") == 0) {
 				if (afe_priv->mtkaif_chosen_phase[0] < 0 &&
 				    afe_priv->mtkaif_chosen_phase[1] < 0) {
-					dev_info(afe->dev,
+					dev_dbg(afe->dev,
 						 "%s(), calib fail mtkaif_chosen_phase[0/1]:%d/%d\n",
 						 __func__,
 						 afe_priv->mtkaif_chosen_phase[0],
@@ -359,7 +359,7 @@ static int mtk_adda_mtkaif_cfg_event(struct snd_soc_dapm_widget *w,
 
 				if (afe_priv->mtkaif_chosen_phase[0] < 0 ||
 				    afe_priv->mtkaif_chosen_phase[1] < 0) {
-					dev_info(afe->dev,
+					dev_dbg(afe->dev,
 						 "%s(), skip dealy setting mtkaif_chosen_phase[0/1]:%d/%d\n",
 						 __func__,
 						 afe_priv->mtkaif_chosen_phase[0],
@@ -414,7 +414,7 @@ static int mtk_adda_dl_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
 	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
 
-	dev_info(afe->dev, "%s(), name %s, event 0x%x\n",
+	dev_dbg(afe->dev, "%s(), name %s, event 0x%x\n",
 		 __func__, w->name, event);
 
 	switch (event) {
@@ -502,7 +502,7 @@ static int mt6833_adda_dmic_set(struct snd_kcontrol *kcontrol,
 
 	dmic_on = ucontrol->value.integer.value[0];
 
-	dev_info(afe->dev, "%s(), kcontrol name %s, dmic_on %d\n",
+	dev_dbg(afe->dev, "%s(), kcontrol name %s, dmic_on %d\n",
 		 __func__, kcontrol->id.name, dmic_on);
 
 	afe_priv->mtkaif_dmic = dmic_on;
@@ -583,7 +583,7 @@ static int mtk_stf_event(struct snd_soc_dapm_widget *w,
 
 	regmap_read(afe->regmap, AFE_SIDETONE_CON1, &reg_value);
 
-	dev_info(afe->dev, "%s(), name %s, event 0x%x, ul_rate 0x%x, AFE_SIDETONE_CON1 0x%x\n",
+	dev_dbg(afe->dev, "%s(), name %s, event 0x%x, ul_rate 0x%x, AFE_SIDETONE_CON1 0x%x\n",
 		 __func__, w->name, event, ul_rate, reg_value);
 
 	switch (event) {
@@ -957,7 +957,7 @@ static int mtk_dai_adda_hw_params(struct snd_pcm_substream *substream,
 	int id = dai->id;
 	struct mtk_afe_adda_priv *adda_priv = afe_priv->dai_priv[id];
 
-	dev_info(afe->dev, "%s(), id %d, stream %d, rate %d\n",
+	dev_dbg(afe->dev, "%s(), id %d, stream %d, rate %d\n",
 		 __func__,
 		 id,
 		 substream->stream,
@@ -1159,7 +1159,7 @@ int mt6833_dai_adda_register(struct mtk_base_afe *afe)
 	struct mt6833_afe_private *afe_priv = afe->platform_priv;
 	int ret;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	dai = devm_kzalloc(afe->dev, sizeof(*dai), GFP_KERNEL);
 	if (!dai)

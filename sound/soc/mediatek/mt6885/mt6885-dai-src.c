@@ -240,7 +240,7 @@ static int mtk_set_src_1_param(struct mtk_base_afe *afe, int id)
 		for (i = 0; i < iir_coeff_num; i++) {
 			regmap_read(afe->regmap, AFE_GENERAL1_ASRC_2CH_CON12,
 				    &reg_val);
-			dev_info(afe->dev, "%s(), i = %d, coeff = 0x%x\n",
+			dev_dbg(afe->dev, "%s(), i = %d, coeff = 0x%x\n",
 				 __func__, i, reg_val);
 		}
 #endif
@@ -336,7 +336,7 @@ static int mtk_set_src_2_param(struct mtk_base_afe *afe, int id)
 		for (i = 0; i < iir_coeff_num; i++) {
 			regmap_read(afe->regmap, AFE_GENERAL2_ASRC_2CH_CON12,
 				    &reg_val);
-			dev_info(afe->dev, "%s(), i = %d, coeff = 0x%x\n",
+			dev_dbg(afe->dev, "%s(), i = %d, coeff = 0x%x\n",
 				 __func__, i, reg_val);
 		}
 #endif
@@ -383,7 +383,7 @@ static int mtk_hw_src_event(struct snd_soc_dapm_widget *w,
 
 	src_priv = afe_priv->dai_priv[id];
 
-	dev_info(afe->dev, "%s(), name %s, event 0x%x, id %d, src_priv %p, dl_rate %d, ul_rate %d\n",
+	dev_dbg(afe->dev, "%s(), name %s, event 0x%x, id %d, src_priv %p, dl_rate %d, ul_rate %d\n",
 		 __func__,
 		 w->name, event,
 		 id, src_priv,
@@ -551,7 +551,7 @@ static int mtk_afe_src_en_connect(struct snd_soc_dapm_widget *source,
 	else
 		src_priv = afe_priv->dai_priv[MT6885_DAI_SRC_2];
 
-	dev_info(afe->dev,
+	dev_dbg(afe->dev,
 		 "%s(), source %s, sink %s, dl_rate %d, ul_rate %d\n",
 		 __func__, source->name, sink->name,
 		 src_priv->dl_rate, src_priv->ul_rate);
@@ -615,7 +615,7 @@ static int mtk_dai_src_hw_params(struct snd_pcm_substream *substream,
 	unsigned int rate = params_rate(params);
 	unsigned int rate_reg = mt6885_rate_transform(afe->dev, rate, id);
 
-	dev_info(afe->dev, "%s(), id %d, stream %d, rate %d\n",
+	dev_dbg(afe->dev, "%s(), id %d, stream %d, rate %d\n",
 		 __func__,
 		 id,
 		 substream->stream,
@@ -658,7 +658,7 @@ static int mtk_dai_src_hw_free(struct snd_pcm_substream *substream,
 	int id = dai->id;
 	struct mtk_afe_src_priv *src_priv = afe_priv->dai_priv[id];
 
-	dev_info(afe->dev, "%s(), id %d, stream %d\n",
+	dev_dbg(afe->dev, "%s(), id %d, stream %d\n",
 		 __func__,
 		 id,
 		 substream->stream);
@@ -734,7 +734,7 @@ int mt6885_dai_src_register(struct mtk_base_afe *afe)
 	struct mtk_base_afe_dai *dai;
 	int ret;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	dai = devm_kzalloc(afe->dev, sizeof(*dai), GFP_KERNEL);
 	if (!dai)

@@ -42,18 +42,18 @@ int allocate_vow_bargein_mem(struct snd_pcm_substream *substream,
 				    substream,
 				    format, false) == 0) {
 		/* Using SRAM */
-		dev_info(afe->dev, "%s(), use SRAM\n", __func__);
+		dev_dbg(afe->dev, "%s(), use SRAM\n", __func__);
 		memif->using_sram = 1;
 	} else {
 		/* Using DRAM */
-		dev_info(afe->dev, "%s(), use DRAM\n", __func__);
+		dev_dbg(afe->dev, "%s(), use DRAM\n", __func__);
 #if IS_ENABLED(CONFIG_MTK_TINYSYS_SCP_SUPPORT)
 		addr = scp_get_reserve_mem_phys(VOW_BARGEIN_MEM_ID);
 		area =
 			(uint8_t *)scp_get_reserve_mem_virt(VOW_BARGEIN_MEM_ID);
 		memif->using_sram = 0;
 #else
-		dev_info(afe->dev, "%s(), scp not supported, scp_get_reserve_mem failed.\n",
+		dev_dbg(afe->dev, "%s(), scp not supported, scp_get_reserve_mem failed.\n",
 			__func__);
 		return -EINVAL;
 #endif
@@ -63,12 +63,12 @@ int allocate_vow_bargein_mem(struct snd_pcm_substream *substream,
 	memset_io(area, 0, bytes);
 	ret = mtk_memif_set_addr(afe, id, area, addr, bytes);
 	if (ret) {
-		dev_info(afe->dev, "%s(), error, set addr, ret %d\n",
+		dev_dbg(afe->dev, "%s(), error, set addr, ret %d\n",
 			 __func__, ret);
 		return ret;
 	}
 
-	dev_info(afe->dev, "%s(), addr = %pad, area = %p, bytes = %zu\n",
+	dev_dbg(afe->dev, "%s(), addr = %pad, area = %p, bytes = %zu\n",
 		 __func__, &addr, area, bytes);
 
 	if ((memif->using_sram == 0) && (afe->request_dram_resource))

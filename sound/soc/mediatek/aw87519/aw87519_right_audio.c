@@ -571,7 +571,7 @@ static int aw87519_parse_dt(struct device *dev, struct device_node *np)
 
 	aw87519->reset_gpio = of_get_named_gpio(np, "reset-gpio", 0);
 	if (aw87519->reset_gpio >= 0) {
-		dev_info(dev, "%s: reset gpio provided ok\n", __func__);
+		dev_dbg(dev, "%s: reset gpio provided ok\n", __func__);
 	} else {
 		dev_err(dev, "%s: reset gpio provided failed.\n", __func__);
 		return -1;
@@ -687,7 +687,7 @@ aw87519_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 
 	ret = sysfs_create_group(&client->dev.kobj, &aw87519_attribute_group);
 	if (ret < 0)
-		dev_info(&client->dev, "%s error creating sysfs attr files\n",
+		dev_dbg(&client->dev, "%s error creating sysfs attr files\n",
 			__func__);
 
 	/* aw87519 cfg update */

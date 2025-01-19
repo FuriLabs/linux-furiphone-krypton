@@ -445,12 +445,12 @@ static int mtk_scp_ultra_pcm_open(struct snd_pcm_substream *substream)
 			sizeof(struct snd_pcm_hardware));
 
 	if (scp_ultra->ultra_mem.ultra_dl_memif_id < 0) {
-		dev_info(scp_ultra->dev, "%s() ultra_ul_memif_id<0, return\n",
+		dev_dbg(scp_ultra->dev, "%s() ultra_ul_memif_id<0, return\n",
 			__func__);
 		return 0;
 	}
 
-	dev_info(scp_ultra->dev, "%s() memif dl=%d,ul=%d\n",
+	dev_dbg(scp_ultra->dev, "%s() memif dl=%d,ul=%d\n",
 		__func__,
 		scp_ultra->ultra_mem.ultra_dl_memif_id,
 		scp_ultra->ultra_mem.ultra_ul_memif_id);
@@ -543,13 +543,13 @@ static int mtk_scp_ultra_pcm_stop(struct snd_pcm_substream *substream)
 	struct mtk_base_afe_irq *irqs_ul = &afe->irqs[irq_id_ul];
 	const struct mtk_base_irq_data *irq_data_ul = irqs_ul->irq_data;
 
-	dev_info(scp_ultra->dev, "%s() dl_if=%d,ul_if=%d\n",
+	dev_dbg(scp_ultra->dev, "%s() dl_if=%d,ul_if=%d\n",
 		 __func__,
 		 ultra_mem->ultra_dl_memif_id,
 		 ultra_mem->ultra_ul_memif_id);
 
 	if (scp_ultra->usnd_state == SCP_ULTRA_STATE_OFF) {
-		dev_info(scp_ultra->dev, "%s() ignore, state is off\n",
+		dev_dbg(scp_ultra->dev, "%s() ignore, state is off\n",
 			 __func__);
 		return 0;
 	}
@@ -643,7 +643,7 @@ static int mtk_scp_ultra_pcm_new(struct snd_soc_pcm_runtime *rtd)
 	struct mtk_base_scp_ultra *scp_ultra =
 		snd_soc_component_get_drvdata(component);
 
-	dev_info(scp_ultra->dev, "%s()\n", __func__);
+	dev_dbg(scp_ultra->dev, "%s()\n", __func__);
 
 	snd_soc_add_component_controls(component,
 				      ultra_platform_kcontrols,

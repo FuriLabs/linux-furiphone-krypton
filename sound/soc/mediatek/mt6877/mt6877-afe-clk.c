@@ -226,7 +226,7 @@ int mt6877_afe_enable_clock(struct mtk_base_afe *afe)
 	struct mt6877_afe_private *afe_priv = afe->platform_priv;
 	int ret = 0;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	ret = clk_prepare_enable(afe_priv->clk[CLK_SCP_SYS_AUD]);
 	if (ret) {
@@ -297,7 +297,7 @@ void mt6877_afe_disable_clock(struct mtk_base_afe *afe)
 {
 	struct mt6877_afe_private *afe_priv = afe->platform_priv;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	clk_disable_unprepare(afe_priv->clk[CLK_AFE]);
 
@@ -315,7 +315,7 @@ int mt6877_afe_dram_request(struct device *dev)
 	struct mt6877_afe_private *afe_priv = afe->platform_priv;
 	struct arm_smccc_res res;
 
-	dev_info(dev, "%s(), dram_resource_counter %d\n",
+	dev_dbg(dev, "%s(), dram_resource_counter %d\n",
 		 __func__, afe_priv->dram_resource_counter);
 
 	mutex_lock(&mutex_request_dram);
@@ -337,7 +337,7 @@ int mt6877_afe_dram_release(struct device *dev)
 	struct mt6877_afe_private *afe_priv = afe->platform_priv;
 	struct arm_smccc_res res;
 
-	dev_info(dev, "%s(), dram_resource_counter %d\n",
+	dev_dbg(dev, "%s(), dram_resource_counter %d\n",
 		 __func__, afe_priv->dram_resource_counter);
 
 	mutex_lock(&mutex_request_dram);

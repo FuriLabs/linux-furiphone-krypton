@@ -76,7 +76,7 @@ static int mt6781_mt6366_spk_amp_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_dapm_context *dapm = w->dapm;
 	struct snd_soc_card *card = dapm->card;
 
-	dev_info(card->dev, "%s(), event %d\n", __func__, event);
+	dev_dbg(card->dev, "%s(), event %d\n", __func__, event);
 
 	switch (event) {
 	case SND_SOC_DAPM_POST_PMU:
@@ -148,7 +148,7 @@ static int mt6781_mt6366_mtkaif_calibration(struct snd_soc_pcm_runtime *rtd)
 	int cycle_1, cycle_2, prev_cycle_1, prev_cycle_2 = 0;
 	int counter = 0;
 
-	dev_info(afe->dev, "%s(), start\n", __func__);
+	dev_dbg(afe->dev, "%s(), start\n", __func__);
 
 	miso0_need_calib = mt6781_afe_gpio_is_prepared(MT6781_AFE_GPIO_DAT_MISO0_ON);
 	miso1_need_calib = mt6781_afe_gpio_is_prepared(MT6781_AFE_GPIO_DAT_MISO1_ON);
@@ -261,7 +261,7 @@ static int mt6781_mt6366_mtkaif_calibration(struct snd_soc_pcm_runtime *rtd)
 				   0x1 << RG_ADDA_MTKAIF_RX_SYNC_WORD2_DISABLE_SFT);
 	pm_runtime_put(afe->dev);
 
-	dev_info(afe->dev, "%s(), mtkaif_chosen_phase[0/1]:%d/%d, miso_need_calib[%d/%d]\n",
+	dev_dbg(afe->dev, "%s(), mtkaif_chosen_phase[0/1]:%d/%d, miso_need_calib[%d/%d]\n",
 		 __func__,
 		 afe_priv->mtkaif_chosen_phase[0],
 		 afe_priv->mtkaif_chosen_phase[1],
@@ -305,7 +305,7 @@ static int mt6781_mt6366_init(struct snd_soc_pcm_runtime *rtd)
 static int mt6781_i2s_hw_params_fixup(struct snd_soc_pcm_runtime *rtd,
 				      struct snd_pcm_hw_params *params)
 {
-	dev_info(rtd->dev, "%s(), fix format to 32bit\n", __func__);
+	dev_dbg(rtd->dev, "%s(), fix format to 32bit\n", __func__);
 
 	/* fix BE i2s format to 32bit, clean param mask first */
 	snd_mask_reset_range(hw_param_mask(params, SNDRV_PCM_HW_PARAM_FORMAT),
@@ -335,7 +335,7 @@ static int mt6781_mt6366_vow_startup(struct snd_pcm_substream *substream)
 	struct snd_soc_component *comp = NULL;
 	struct snd_soc_rtdcom_list *rtdcom = NULL;
 
-	dev_info(afe->dev, "%s(), start\n", __func__);
+	dev_dbg(afe->dev, "%s(), start\n", __func__);
 	snd_soc_set_runtime_hwparams(substream, &mt6781_mt6366_vow_hardware);
 
 	mt6781_afe_gpio_request(afe, true, MT6781_DAI_VOW, 0);
@@ -357,7 +357,7 @@ static void mt6781_mt6366_vow_shutdown(struct snd_pcm_substream *substream)
 	struct snd_soc_component *comp = NULL;
 	struct snd_soc_rtdcom_list *rtdcom = NULL;
 
-	dev_info(afe->dev, "%s(), end\n", __func__);
+	dev_dbg(afe->dev, "%s(), end\n", __func__);
 	mt6781_afe_gpio_request(afe, false, MT6781_DAI_VOW, 0);
 
 	/* restore to fool ASoC */
@@ -1034,7 +1034,7 @@ static int mt6781_mt6366_dev_probe(struct platform_device *pdev)
 	int spk_out_dai_link_idx, spk_iv_dai_link_idx;
 	const char *name;
 
-	dev_info(&pdev->dev, "%s(), ++\n", __func__);
+	dev_dbg(&pdev->dev, "%s(), ++\n", __func__);
 
 	ret = mtk_spk_update_info(card, pdev,
 				  &spk_out_dai_link_idx, &spk_iv_dai_link_idx,
@@ -1045,7 +1045,7 @@ static int mt6781_mt6366_dev_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 
-	dev_info(&pdev->dev, "%s(), update spk dai\n", __func__);
+	dev_dbg(&pdev->dev, "%s(), update spk dai\n", __func__);
 
 	spk_out_dai_link = &mt6781_mt6366_dai_links[spk_out_dai_link_idx];
 	spk_iv_dai_link = &mt6781_mt6366_dai_links[spk_iv_dai_link_idx];
@@ -1074,7 +1074,7 @@ static int mt6781_mt6366_dev_probe(struct platform_device *pdev)
 		}
 	}
 
-	dev_info(&pdev->dev, "%s(), update platform dai\n", __func__);
+	dev_dbg(&pdev->dev, "%s(), update platform dai\n", __func__);
 
 	platform_node = of_parse_phandle(pdev->dev.of_node,
 					 "mediatek,platform", 0);
@@ -1086,7 +1086,7 @@ static int mt6781_mt6366_dev_probe(struct platform_device *pdev)
 	dsp_node = of_parse_phandle(pdev->dev.of_node,
 				    "mediatek,snd_audio_dsp", 0);
 	if (!dsp_node)
-		dev_info(&pdev->dev, "Property 'snd_audio_dsp' missing or invalid\n");
+		dev_dbg(&pdev->dev, "Property 'snd_audio_dsp' missing or invalid\n");
 
 	for (i = 0; i < card->num_links; i++) {
 		if (mt6781_mt6366_dai_links[i].platform_name)
@@ -1101,7 +1101,7 @@ static int mt6781_mt6366_dev_probe(struct platform_device *pdev)
 		mt6781_mt6366_dai_links[i].platform_of_node = platform_node;
 	}
 
-	dev_info(&pdev->dev, "%s(), update audio-codec dai\n", __func__);
+	dev_dbg(&pdev->dev, "%s(), update audio-codec dai\n", __func__);
 
 	codec_node = of_parse_phandle(pdev->dev.of_node,
 				      "mediatek,audio-codec", 0);
@@ -1120,7 +1120,7 @@ static int mt6781_mt6366_dev_probe(struct platform_device *pdev)
 
 	card->dev = &pdev->dev;
 
-	dev_info(&pdev->dev, "%s(), devm_snd_soc_register_card\n", __func__);
+	dev_dbg(&pdev->dev, "%s(), devm_snd_soc_register_card\n", __func__);
 
 	ret = devm_snd_soc_register_card(&pdev->dev, card);
 	if (ret)

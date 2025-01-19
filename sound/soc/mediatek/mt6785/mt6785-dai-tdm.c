@@ -205,7 +205,7 @@ static int mtk_tdm_bck_en_event(struct snd_soc_dapm_widget *w,
 	struct mt6785_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[MT6785_DAI_TDM];
 
-	dev_info(cmpnt->dev, "%s(), name %s, event 0x%x\n",
+	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
 		 __func__, w->name, event);
 
 	switch (event) {
@@ -231,7 +231,7 @@ static int mtk_tdm_mck_en_event(struct snd_soc_dapm_widget *w,
 	struct mt6785_afe_private *afe_priv = afe->platform_priv;
 	struct mtk_afe_tdm_priv *tdm_priv = afe_priv->dai_priv[MT6785_DAI_TDM];
 
-	dev_info(cmpnt->dev, "%s(), name %s, event 0x%x\n",
+	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
 		 __func__, w->name, event);
 
 	switch (event) {
@@ -448,7 +448,7 @@ static int mtk_dai_tdm_hw_params(struct snd_pcm_substream *substream,
 	if (tdm_priv->mclk_rate % tdm_priv->bck_rate != 0)
 		AUDIO_AEE("bck cannot generate");
 
-	dev_info(afe->dev, "%s(), id %d, rate %d, channels %d, format %d, mclk_rate %d, bck_rate %d\n",
+	dev_dbg(afe->dev, "%s(), id %d, rate %d, channels %d, format %d, mclk_rate %d, bck_rate %d\n",
 		 __func__,
 		 tdm_id, rate, channels, format,
 		 tdm_priv->mclk_rate, tdm_priv->bck_rate);
@@ -521,7 +521,7 @@ static int mtk_dai_tdm_set_sysclk(struct snd_soc_dai *dai,
 		return -EINVAL;
 	}
 
-	dev_info(afe->dev, "%s(), freq %d\n", __func__, freq);
+	dev_dbg(afe->dev, "%s(), freq %d\n", __func__, freq);
 
 	return mtk_dai_tdm_cal_mclk(afe, tdm_priv, freq);
 }
@@ -563,7 +563,7 @@ int mt6785_dai_tdm_register(struct mtk_base_afe *afe)
 	struct mtk_afe_tdm_priv *tdm_priv;
 	struct mtk_base_afe_dai *dai;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	dai = devm_kzalloc(afe->dev, sizeof(*dai), GFP_KERNEL);
 	if (!dai)

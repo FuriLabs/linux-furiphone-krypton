@@ -108,7 +108,7 @@ static int mt6877_sgen_set(struct snd_kcontrol *kcontrol,
 	mode = ucontrol->value.integer.value[0];
 	mode_idx = mt6877_sgen_mode_idx[mode];
 
-	dev_info(afe->dev, "%s(), mode %d, mode_idx %d\n",
+	dev_dbg(afe->dev, "%s(), mode %d, mode_idx %d\n",
 		 __func__, mode, mode_idx);
 
 	if (mode_idx >= 0) {
@@ -155,7 +155,7 @@ static int mt6877_sgen_rate_set(struct snd_kcontrol *kcontrol,
 
 	rate = ucontrol->value.integer.value[0];
 
-	dev_info(afe->dev, "%s(), rate %d\n", __func__, rate);
+	dev_dbg(afe->dev, "%s(), rate %d\n", __func__, rate);
 
 	regmap_update_bits(afe->regmap, AFE_SINEGEN_CON0,
 			   SINE_MODE_CH1_MASK_SFT,
@@ -199,7 +199,7 @@ static int mt6877_sgen_amplitude_set(struct snd_kcontrol *kcontrol,
 		return -EINVAL;
 	}
 
-	dev_info(afe->dev, "%s(), amplitude %d\n", __func__, amplitude);
+	dev_dbg(afe->dev, "%s(), amplitude %d\n", __func__, amplitude);
 
 	regmap_update_bits(afe->regmap, AFE_SINEGEN_CON0,
 			   AMP_DIV_CH1_MASK_SFT,
@@ -241,7 +241,7 @@ static int mt6877_sgen_mute_set(struct snd_kcontrol *kcontrol,
 
 	mute = ucontrol->value.integer.value[0];
 
-	dev_info(afe->dev, "%s(), kcontrol name %s, mute %d\n",
+	dev_dbg(afe->dev, "%s(), kcontrol name %s, mute %d\n",
 		 __func__, kcontrol->id.name, mute);
 
 	if (strcmp(kcontrol->id.name, SGEN_MUTE_CH1_KCONTROL_NAME) == 0) {
@@ -308,7 +308,7 @@ static int mt6877_afe_debug_set(struct snd_kcontrol *kcontrol,
 			continue;
 
 		regmap_read(afe->regmap, i, &value);
-		dev_info(afe->dev, "%s = 0x%x\n",
+		dev_dbg(afe->dev, "%s = 0x%x\n",
 			 mt6877_reg_str[i / 4], value);
 	}
 
@@ -383,7 +383,7 @@ static int mt6877_usb_echo_ref_set(struct snd_kcontrol *kcontrol,
 	}
 
 	if (enable) {
-		dev_info(afe->dev, "%s(), prev enable %d, user size %d, default dma_addr %pad, bytes %zu, reallocate %d\n",
+		dev_dbg(afe->dev, "%s(), prev enable %d, user size %d, default dma_addr %pad, bytes %zu, reallocate %d\n",
 			 __func__,
 			 afe_priv->usb_call_echo_ref_enable,
 			 size,
@@ -452,10 +452,10 @@ static int mt6877_usb_echo_ref_set(struct snd_kcontrol *kcontrol,
 		udelay(30);
 		mtk_memif_set_enable(afe, ul_id);
 
-		dev_info(afe->dev, "%s(), memif_lpbk path hw enabled\n",
+		dev_dbg(afe->dev, "%s(), memif_lpbk path hw enabled\n",
 			 __func__);
 	} else {
-		dev_info(afe->dev, "%s(), disable\n", __func__);
+		dev_dbg(afe->dev, "%s(), disable\n", __func__);
 
 		mtk_memif_set_disable(afe, dl_id);
 		mtk_memif_set_disable(afe, ul_id);
@@ -647,7 +647,7 @@ static int mt6877_afe_vow_bargein_set(struct snd_kcontrol *kcontrol,
 
 	id = get_scp_vow_memif_id();
 	val = ucontrol->value.integer.value[0];
-	dev_info(afe->dev, "%s(), %d\n", __func__, val);
+	dev_dbg(afe->dev, "%s(), %d\n", __func__, val);
 
 	afe->memif[id].vow_bargein_enable = (val > 0) ? true : false;
 #endif
@@ -662,7 +662,7 @@ static const struct snd_kcontrol_new mt6877_afe_bargein_controls[] = {
 
 int mt6877_add_misc_control(struct snd_soc_component *platform)
 {
-	dev_info(platform->dev, "%s()\n", __func__);
+	dev_dbg(platform->dev, "%s()\n", __func__);
 
 	snd_soc_add_component_controls(platform,
 				      mt6877_afe_sgen_controls,

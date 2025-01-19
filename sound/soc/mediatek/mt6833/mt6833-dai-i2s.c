@@ -148,7 +148,7 @@ static int mt6833_i2s_hd_set(struct snd_kcontrol *kcontrol,
 
 	hd_en = ucontrol->value.integer.value[0];
 
-	dev_info(afe->dev, "%s(), kcontrol name %s, hd_en %d\n",
+	dev_dbg(afe->dev, "%s(), kcontrol name %s, hd_en %d\n",
 		 __func__, kcontrol->id.name, hd_en);
 
 	i2s_priv = get_i2s_priv_by_name(afe, kcontrol->id.name);
@@ -395,7 +395,7 @@ static int mtk_i2s_en_event(struct snd_soc_dapm_widget *w,
 		return -EINVAL;
 	}
 
-	dev_info(cmpnt->dev, "%s(), name %s, event 0x%x\n",
+	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
 		 __func__, w->name, event);
 
 	switch (event) {
@@ -418,7 +418,7 @@ static int mtk_i2s_hd_en_event(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
 
-	dev_info(cmpnt->dev, "%s(), name %s, event 0x%x\n",
+	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
 		 __func__, w->name, event);
 
 	return 0;
@@ -431,7 +431,7 @@ static int mtk_apll_event(struct snd_soc_dapm_widget *w,
 	struct snd_soc_component *cmpnt = snd_soc_dapm_to_component(w->dapm);
 	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
 
-	dev_info(cmpnt->dev, "%s(), name %s, event 0x%x\n",
+	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
 		 __func__, w->name, event);
 
 	switch (event) {
@@ -462,7 +462,7 @@ static int mtk_mclk_en_event(struct snd_soc_dapm_widget *w,
 	struct mtk_base_afe *afe = snd_soc_component_get_drvdata(cmpnt);
 	struct mtk_afe_i2s_priv *i2s_priv;
 
-	dev_info(cmpnt->dev, "%s(), name %s, event 0x%x\n",
+	dev_dbg(cmpnt->dev, "%s(), name %s, event 0x%x\n",
 		 __func__, w->name, event);
 
 	i2s_priv = get_i2s_priv_by_name(afe, w->name);
@@ -965,7 +965,7 @@ static int mtk_dai_connsys_i2s_hw_params(struct snd_pcm_substream *substream,
 						      rate, dai->id);
 	unsigned int i2s_con = 0;
 
-	dev_info(afe->dev, "%s(), id %d, stream %d, rate %d\n",
+	dev_dbg(afe->dev, "%s(), id %d, stream %d, rate %d\n",
 		 __func__,
 		 dai->id,
 		 substream->stream,
@@ -1020,7 +1020,7 @@ static int mtk_dai_connsys_i2s_trigger(struct snd_pcm_substream *substream,
 	struct mtk_base_afe *afe = snd_soc_dai_get_drvdata(dai);
 	struct mt6833_afe_private *afe_priv = afe->platform_priv;
 
-	dev_info(afe->dev, "%s(), cmd %d, stream %d\n",
+	dev_dbg(afe->dev, "%s(), cmd %d, stream %d\n",
 		 __func__,
 		 cmd,
 		 substream->stream);
@@ -1103,7 +1103,7 @@ static int mtk_dai_i2s_config(struct mtk_base_afe *afe,
 	unsigned int i2s_con = 0;
 	int ret = 0;
 
-	dev_info(afe->dev, "%s(), id %d, rate %d, format %d\n",
+	dev_dbg(afe->dev, "%s(), id %d, rate %d, format %d\n",
 		 __func__,
 		 i2s_id,
 		 rate, format);
@@ -1193,7 +1193,7 @@ static int mtk_dai_i2s_set_sysclk(struct snd_soc_dai *dai,
 		return -EINVAL;
 	}
 
-	dev_info(afe->dev, "%s(), freq %d\n", __func__, freq);
+	dev_dbg(afe->dev, "%s(), freq %d\n", __func__, freq);
 
 	apll = mt6833_get_apll_by_rate(afe, freq);
 	apll_rate = mt6833_get_apll_rate(afe, apll);
@@ -1404,7 +1404,7 @@ int mt6833_dai_i2s_register(struct mtk_base_afe *afe)
 	struct mtk_base_afe_dai *dai;
 	int ret;
 
-	dev_info(afe->dev, "%s()\n", __func__);
+	dev_dbg(afe->dev, "%s()\n", __func__);
 
 	dai = devm_kzalloc(afe->dev, sizeof(*dai), GFP_KERNEL);
 	if (!dai)
