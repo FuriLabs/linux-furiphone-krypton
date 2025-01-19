@@ -47,7 +47,7 @@ static struct mt_vibr *g_mt_vib;
 static int vibr_Enable(void)
 {
 	if (!g_mt_vib->ldo_state) {
-		pr_info("vibr enable");
+		pr_debug("vibr enable");
 #ifndef CONFIG_MACH_MT6771
 		vibr_Enable_HW(g_mt_vib->reg);
 #else
@@ -61,7 +61,7 @@ static int vibr_Enable(void)
 static int vibr_Disable(void)
 {
 	if (g_mt_vib->ldo_state) {
-		pr_info("vibr disable");
+		pr_debug("vibr disable");
 #ifndef CONFIG_MACH_MT6771
 		vibr_Disable_HW(g_mt_vib->reg);
 #else
@@ -74,13 +74,13 @@ static int vibr_Disable(void)
 
 static void on_vibrator(struct work_struct *work)
 {
-	pr_info("update vibrator enable, ldo=%d", g_mt_vib->ldo_state);
+	pr_debug("update vibrator enable, ldo=%d", g_mt_vib->ldo_state);
 	vibr_Enable();
 }
 
 static void off_vibrator(struct work_struct *work)
 {
-	pr_info("update vibrator disable, ldo=%d", g_mt_vib->ldo_state);
+	pr_debug("update vibrator disable, ldo=%d", g_mt_vib->ldo_state);
 	vibr_Disable();
 }
 
@@ -90,7 +90,7 @@ static void vibrator_enable(unsigned int dur, unsigned int activate)
 	struct vibrator_hw *hw = mt_get_cust_vibrator_hw();
 
 	hrtimer_cancel(&g_mt_vib->vibr_timer);
-	pr_info(VIB_TAG "cancel hrtimer, cust:%dms, value:%u, activate:%d, shutdown:%d\n",
+	pr_debug(VIB_TAG "cancel hrtimer, cust:%dms, value:%u, activate:%d, shutdown:%d\n",
 			hw->vib_timer, dur, activate, g_mt_vib->shutdown_flag);
 	cancel_work_sync(&g_mt_vib->vibr_onwork);
 	spin_lock_irqsave(&g_mt_vib->vibr_lock, flags);
@@ -118,7 +118,7 @@ static void vibrator_enable(unsigned int dur, unsigned int activate)
 
 static void vibrator_oc_handler(void)
 {
-	pr_info(VIB_TAG "%s: disable vibr for oc intr happened\n", __func__);
+	pr_debug(VIB_TAG "%s: disable vibr for oc intr happened\n", __func__);
 	vibrator_enable(0, 0);
 }
 
@@ -128,7 +128,7 @@ static enum hrtimer_restart vibrator_timer_func(struct hrtimer *timer)
 
 	atomic_set(&vibr->vibr_state, 0);
 
-	pr_info(VIB_TAG "set vibr_state 0");
+	pr_debug(VIB_TAG "set vibr_state 0");
 	queue_work(vibr->vibr_queue, &vibr->vibr_offwork);
 	return HRTIMER_NORESTART;
 }
@@ -272,7 +272,7 @@ static int vib_probe(struct platform_device *pdev)
 	vibr->reg = devm_regulator_get(&pdev->dev, "vibr");
 	if (IS_ERR(vibr->reg)) {
 		ret = PTR_ERR(vibr->reg);
-		pr_info("Error load dts: get regulator return %d\n", ret);
+		pr_debug("Error load dts: get regulator return %d\n", ret);
 		return ret;
 	}
 #endif
@@ -333,7 +333,7 @@ static int vib_suspend(struct device *dev)
 	if (atomic_read(&vibr->vibr_state)) {
 		atomic_set(&vibr->vibr_state, 0);
 		ret = vibr_Disable();
-		pr_info("vibr disbale vibr ret=%d, enter suspend.", ret);
+		pr_debug("vibr disbale vibr ret=%d, enter suspend.", ret);
 	}
 
 	return ret;
