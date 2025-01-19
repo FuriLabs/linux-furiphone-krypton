@@ -319,7 +319,7 @@ static void auxadc_reset(struct mt635x_auxadc_device *adc_dev)
 				   adc_dev->info->rst_setting[i][1],
 				   adc_dev->info->rst_setting[i][2]);
 	}
-	dev_info(adc_dev->dev, "reset AUXADC done\n");
+	dev_dbg(adc_dev->dev, "reset AUXADC done\n");
 }
 
 static void auxadc_debug_dump(struct mt635x_auxadc_device *adc_dev,
@@ -337,7 +337,7 @@ static void auxadc_debug_dump(struct mt635x_auxadc_device *adc_dev,
 		strncat(reg_log, reg_str, ARRAY_SIZE(reg_log) - 1);
 	}
 	if (len)
-		dev_notice(adc_dev->dev,
+		dev_dbg(adc_dev->dev,
 			   "(%s)Time out!(%d) %s\n"
 			   , __func__, timeout_times, reg_log);
 }
@@ -1107,7 +1107,7 @@ static int auxadc_init_imix_r(struct mt635x_auxadc_device *adc_dev,
 		return 0;
 	ret = of_property_read_u32(imix_r_node, "val", &val);
 	if (ret)
-		dev_notice(adc_dev->dev, "no imix_r, ret=%d\n", ret);
+		dev_dbg(adc_dev->dev, "no imix_r, ret=%d\n", ret);
 	adc_dev->imix_r = (int)val;
 	auxadc_cali_imix_r(adc_dev);
 	return 0;
@@ -1267,7 +1267,7 @@ static int mt635x_auxadc_probe(struct platform_device *pdev)
 
 	ret = devm_iio_device_register(&pdev->dev, indio_dev);
 	if (ret < 0) {
-		dev_notice(&pdev->dev, "failed to register iio device!\n");
+		dev_dbg(&pdev->dev, "failed to register iio device!\n");
 		return ret;
 	}
 	register_syscore_ops(&auxadc_syscore_ops);
