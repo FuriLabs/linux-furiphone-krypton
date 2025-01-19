@@ -201,7 +201,7 @@ do {                                    \
 } while (0)
 
 #define tscpu_printk(fmt, args...) pr_debug(TSCPU_LOG_TAG fmt, ##args)
-#define tscpu_warn(fmt, args...)  pr_notice(TSCPU_LOG_TAG fmt, ##args)
+#define tscpu_warn(fmt, args...)  pr_debug(TSCPU_LOG_TAG fmt, ##args)
 
 /*=============================================================
  * Structures
