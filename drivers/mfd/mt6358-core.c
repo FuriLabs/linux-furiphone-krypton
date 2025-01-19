@@ -173,7 +173,7 @@ static void mt6358_irq_sp_handler(struct mt6358_chip *chip,
 		sta_reg = sp_top_ints[sp].sta_reg + 0x2 * i;
 		ret = regmap_read(chip->regmap, sta_reg, &sp_int_status);
 		if (ret) {
-			dev_notice(chip->dev,
+			dev_dbg(chip->dev,
 				"Failed to read irq status: %d\n", ret);
 			return;
 		}
@@ -184,7 +184,7 @@ static void mt6358_irq_sp_handler(struct mt6358_chip *chip,
 				continue;
 			hwirq = sp_top_ints[sp].hwirq_base + 16 * i + j;
 			virq = irq_find_mapping(chip->irq_domain, hwirq);
-			dev_info(chip->dev,
+			dev_dbg(chip->dev,
 				"Reg[0x%x]=0x%x,name=%s,hwirq=%d,type=%d\n",
 				sta_reg, sp_int_status,
 				pmic_irqs[hwirq].name, hwirq,
@@ -213,7 +213,7 @@ static irqreturn_t mt6358_irq_handler(int irq, void *data)
 			  chip->top_int_status_reg,
 			  &top_int_status);
 	if (ret) {
-		dev_notice(chip->dev, "Can't read TOP_INT_STATUS ret=%d\n",
+		dev_dbg(chip->dev, "Can't read TOP_INT_STATUS ret=%d\n",
 			ret);
 		return IRQ_NONE;
 	}
@@ -320,7 +320,7 @@ static int mt6358_irq_init(struct mt6358_chip *chip)
 	int i, ret = 0;
 
 	if (chip->irq <= 0) {
-		dev_notice(chip->dev,
+		dev_dbg(chip->dev,
 			   "failed to get platform irq, ret=%d", chip->irq);
 		return 0;
 	}
@@ -329,7 +329,7 @@ static int mt6358_irq_init(struct mt6358_chip *chip)
 				   "mediatek,num-pmic-irqs",
 				   &chip->num_pmic_irqs);
 	if (ret) {
-		dev_notice(chip->dev, "no number of pmic_irqs\n");
+		dev_dbg(chip->dev, "no number of pmic_irqs\n");
 		return -EINVAL;
 	}
 	chip->num_sps = ARRAY_SIZE(sp_top_ints);
@@ -352,10 +352,10 @@ static int mt6358_irq_init(struct mt6358_chip *chip)
 						 "mediatek,pmic-irqs",
 						 i * 2 + 1, &sp);
 		if (ret < 0) {
-			dev_notice(chip->dev, "%s missing pmic-irqs\n", name);
+			dev_dbg(chip->dev, "%s missing pmic-irqs\n", name);
 			break;
 		} else if (sp >= chip->num_sps) {
-			dev_notice(chip->dev, "%s has invalid sp %d\n",
+			dev_dbg(chip->dev, "%s has invalid sp %d\n",
 				   name, sp);
 			break;
 		}
@@ -369,7 +369,7 @@ static int mt6358_irq_init(struct mt6358_chip *chip)
 		else if (hwirq - pmic_irq->sp_top->hwirq_base >= num_int_bits)
 			pmic_irq->sp_top->num_int_regs++;
 #if 0
-		dev_info(chip->dev,
+		dev_dbg(chip->dev,
 			"name:%s, hwirq:%d, sp_top:%d, hwirq_base:%d, num_int_regs:%d, ret:%d\n"
 			, pmic_irq->name, pmic_irq->hwirq,
 			sp, pmic_irq->sp_top->hwirq_base,
@@ -391,7 +391,7 @@ static int mt6358_irq_init(struct mt6358_chip *chip)
 						 &mt6358_irq_domain_ops,
 						 chip);
 	if (!chip->irq_domain) {
-		dev_notice(chip->dev, "could not create irq domain\n");
+		dev_dbg(chip->dev, "could not create irq domain\n");
 		return -ENODEV;
 	}
 
@@ -400,7 +400,7 @@ static int mt6358_irq_init(struct mt6358_chip *chip)
 					IRQF_ONESHOT,
 					mt6358_irq_chip.name, chip);
 	if (ret) {
-		dev_notice(chip->dev, "failed to register irq=%d; err: %d\n",
+		dev_dbg(chip->dev, "failed to register irq=%d; err: %d\n",
 			chip->irq, ret);
 		return 0;
 	}
@@ -445,7 +445,7 @@ static int mt6358_probe(struct platform_device *pdev)
 
 	chip->irq = platform_get_irq(pdev, 0);
 	if (chip->irq <= 0) {
-		dev_notice(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"failed to get platform irq, ret=%d", chip->irq);
 	}
 
@@ -456,10 +456,10 @@ static int mt6358_probe(struct platform_device *pdev)
 		ret = regmap_read(chip->regmap, PMIC_HWCID_ADDR, &id);
 	#endif
 	if (ret) {
-		dev_notice(chip->dev, "Failed to read chip id: %d\n", ret);
+		dev_dbg(chip->dev, "Failed to read chip id: %d\n", ret);
 		return ret;
 	}
-	dev_info(chip->dev, "PMIC irq=%d, PMIC HWCID=0x%x, ret=%d\n",
+	dev_dbg(chip->dev, "PMIC irq=%d, PMIC HWCID=0x%x, ret=%d\n",
 		 chip->irq, id, ret);
 
 	mt6358_pm_off = chip;
@@ -508,14 +508,14 @@ static int mt6358_probe(struct platform_device *pdev)
 					   0, NULL);
 		break;
 	default:
-		dev_notice(&pdev->dev, "unsupported chip: %d\n", id);
+		dev_dbg(&pdev->dev, "unsupported chip: %d\n", id);
 		ret = -ENODEV;
 		break;
 	}
 
 	if (ret) {
 		irq_domain_remove(chip->irq_domain);
-		dev_notice(&pdev->dev, "failed to add child devices: %d\n",
+		dev_dbg(&pdev->dev, "failed to add child devices: %d\n",
 			ret);
 	}
 
