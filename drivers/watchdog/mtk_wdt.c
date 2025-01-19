@@ -154,7 +154,7 @@ static int toprgu_register_reset_controller(struct platform_device *pdev,
 	mtk_wdt->rcdev.of_node = pdev->dev.of_node;
 	ret = devm_reset_controller_register(&pdev->dev, &mtk_wdt->rcdev);
 	if (ret != 0)
-		pr_info("couldn't register wdt reset controller: %d\n", ret);
+		pr_debug("couldn't register wdt reset controller: %d\n", ret);
 	return ret;
 }
 
@@ -227,7 +227,7 @@ static int mtk_wdt_ping(struct watchdog_device *wdt_dev)
 	void __iomem *wdt_base = mtk_wdt->wdt_base;
 
 	iowrite32(WDT_RST_RELOAD, wdt_base + WDT_RST);
-	pr_info("[wdtk] kick watchdog\n");
+	pr_debug("[wdtk] kick watchdog\n");
 
 	return 0;
 }
