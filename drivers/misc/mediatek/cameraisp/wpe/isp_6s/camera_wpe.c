@@ -175,9 +175,9 @@ pr_debug(MyTag "[%s] " format, __func__, ##args)
 #endif
 
 #define LOG_INF(format, args...) \
-pr_info(MyTag "[%s] " format, __func__, ##args)
+pr_debug(MyTag "[%s] " format, __func__, ##args)
 #define LOG_NOTICE(format, args...) \
-pr_notice(MyTag "[%s] " format, __func__, ##args)
+pr_debug(MyTag "[%s] " format, __func__, ##args)
 #define LOG_WRN(format, args...) \
 pr_warn(MyTag "[%s] " format, __func__, ##args)
 #define LOG_ERR(format, args...) \

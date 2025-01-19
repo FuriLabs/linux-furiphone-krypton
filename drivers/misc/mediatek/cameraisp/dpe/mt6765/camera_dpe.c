@@ -107,9 +107,10 @@ struct DPE_CLK_STRUCT dpe_clk;
 #else
 #define log_dbg(format, args...)
 #endif
-#define LOG_ERR(format, args...)    pr_info(MyTag format,  ##args)
-#define LOG_INF(format, args...)    pr_info(MyTag format,  ##args)
-#define LOG_NOTICE(format, args...) pr_notice(MyTag format,  ##args)
+
+#define LOG_ERR(format, args...)    pr_debug(MyTag format,  ##args)
+#define LOG_INF(format, args...)    pr_debug(MyTag format,  ##args)
+#define LOG_NOTICE(format, args...) pr_debug(MyTag format,  ##args)
 
 /* For other projects. */
 /* #define DPE_WR32(addr, data)    iowrite32(data, addr) */
@@ -4103,7 +4104,7 @@ static signed int DPE_probe(struct platform_device *pDev)
 #ifdef CONFIG_OF
 
 	if (pDev == NULL) {
-		dev_info(&pDev->dev, "pDev is NULL");
+		dev_dbg(&pDev->dev, "pDev is NULL");
 		return -ENXIO;
 	}
 
@@ -4111,7 +4112,7 @@ static signed int DPE_probe(struct platform_device *pDev)
 	_dpedev = krealloc(DPE_devs,
 		sizeof(struct DPE_device) * nr_DPE_devs, GFP_KERNEL);
 	if (!_dpedev) {
-		dev_info(&pDev->dev, "Unable to allocate DPE_devs\n");
+		dev_dbg(&pDev->dev, "Unable to allocate DPE_devs\n");
 		return -ENOMEM;
 	}
 	DPE_devs = _dpedev;
@@ -4124,7 +4125,7 @@ static signed int DPE_probe(struct platform_device *pDev)
 	/* gISPSYS_Reg[nr_DPE_devs - 1] = DPE_dev->regs; */
 
 	if (!DPE_dev->regs) {
-		dev_info(&pDev->dev,
+		dev_dbg(&pDev->dev,
 "Unable to ioremap registers, of_iomap fail,nr_DPE_devs=%d, devnode(%s).\n",
 			nr_DPE_devs, pDev->dev.of_node->name);
 		return -ENOMEM;
@@ -4141,7 +4142,7 @@ static signed int DPE_probe(struct platform_device *pDev)
 		if (of_property_read_u32_array
 		    (pDev->dev.of_node, "interrupts", irq_info,
 		    ARRAY_SIZE(irq_info))) {
-			dev_info(&pDev->dev, "get irq flags from DTS fail!!\n");
+			dev_dbg(&pDev->dev, "get irq flags from DTS fail!!\n");
 			return -ENODEV;
 		}
 
@@ -4155,7 +4156,7 @@ static signed int DPE_probe(struct platform_device *pDev)
 				(const char *)DPE_IRQ_CB_TBL[i].device_name,
 				NULL);
 			if (Ret) {
-				dev_info(&pDev->dev,
+				dev_dbg(&pDev->dev,
 "Unable to request IRQ, request_irq fail,nr_DPE_devs=%d, devnode(%s), irq=%d, ISR: %s\n",
 				nr_DPE_devs, pDev->dev.of_node->name,
 				DPE_dev->irq,
@@ -4190,7 +4191,7 @@ static signed int DPE_probe(struct platform_device *pDev)
 		/* Register char driver */
 		Ret = DPE_RegCharDev();
 		if (Ret) {
-			dev_info(&pDev->dev, "register char failed");
+			dev_dbg(&pDev->dev, "register char failed");
 			return Ret;
 		}
 #ifndef __DPE_EP_NO_CLKMGR__
@@ -4222,7 +4223,7 @@ static signed int DPE_probe(struct platform_device *pDev)
 
 		if (IS_ERR(dev)) {
 			Ret = PTR_ERR(dev);
-			dev_info(&pDev->dev,
+			dev_dbg(&pDev->dev,
 				"Failed to create device: /dev/%s, err = %d",
 				DPE_DEV_NAME, Ret);
 			goto EXIT;

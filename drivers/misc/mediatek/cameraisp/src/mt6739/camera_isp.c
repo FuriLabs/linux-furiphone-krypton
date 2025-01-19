@@ -96,11 +96,11 @@
 #define LOG_DBG(format, args...)
 #endif
 
-#define LOG_INF(format, args...)         pr_info(MyTag "[%s] " format, __func__,  ##args)
-#define LOG_NOTICE(format, args...)      pr_notice(MyTag "[%s] " format, __func__,  ##args)
-#define LOG_WARN(format, args...)     pr_notice(MyTag "[%s] " format, __func__,  ##args)
-#define LOG_ERR(format, args...)      pr_notice(MyTag "[%s] " format, __func__,  ##args)
-#define LOG_ALERT(format, args...)    pr_notice(MyTag "[%s] " format, __func__, ##args)
+#define LOG_INF(format, args...)         pr_debug(MyTag "[%s] " format, __func__,  ##args)
+#define LOG_NOTICE(format, args...)      pr_debug(MyTag "[%s] " format, __func__,  ##args)
+#define LOG_WARN(format, args...)     pr_debug(MyTag "[%s] " format, __func__,  ##args)
+#define LOG_ERR(format, args...)      pr_debug(MyTag "[%s] " format, __func__,  ##args)
+#define LOG_ALERT(format, args...)    pr_debug(MyTag "[%s] " format, __func__, ##args)
 
 /* --------------------------------------------------------------- */
 #define camera_isp_aee(key, string) \

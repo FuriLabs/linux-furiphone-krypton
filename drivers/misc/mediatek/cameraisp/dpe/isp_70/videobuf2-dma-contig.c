@@ -150,7 +150,7 @@ void *vb2_dc_alloc(struct device *dev, unsigned long attrs,
 	buf->cookie = dma_alloc_attrs(dev, size, &buf->dma_addr,
 					GFP_KERNEL | gfp_flags, buf->attrs);
 	if (!buf->cookie) {
-		dev_info(dev, "dma_alloc_coherent of size %ld failed\n", size);
+		dev_dbg(dev, "dma_alloc_coherent of size %ld failed\n", size);
 		kfree(buf);
 		return ERR_PTR(-ENOMEM);
 	}
@@ -370,14 +370,14 @@ static struct sg_table *vb2_dc_get_base_sgt(struct vb2_dc_buf *buf)
 
 	sgt = kmalloc(sizeof(*sgt), GFP_KERNEL);
 	if (!sgt) {
-		//dev_info(buf->dev, "failed to alloc sg table\n");
+		//dev_dbg(buf->dev, "failed to alloc sg table\n");
 		return NULL;
 	}
 
 	ret = dma_get_sgtable_attrs(buf->dev, sgt, buf->cookie, buf->dma_addr,
 		buf->size, buf->attrs);
 	if (ret < 0) {
-		dev_info(buf->dev, "failed to get scatterlist from DMA API\n");
+		dev_dbg(buf->dev, "failed to get scatterlist from DMA API\n");
 		kfree(sgt);
 		return NULL;
 	}
@@ -537,7 +537,7 @@ static void *vb2_dc_get_userptr(struct device *dev, unsigned long vaddr,
 
 	sgt = kzalloc(sizeof(*sgt), GFP_KERNEL);
 	if (!sgt) {
-		//pr_info("failed to allocate sg table\n");
+		//pr_debug("failed to allocate sg table\n");
 		ret = -ENOMEM;
 		goto fail_pfnvec;
 	}

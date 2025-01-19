@@ -160,10 +160,10 @@ static int camP1mem_use_m4u = 1;
 #define LOG_DBG(format, args...)
 #endif
 
-#define LOG_INF(format, args...) pr_info(MyTag "[%s] " format, __func__, ##args)
+#define LOG_INF(format, args...) pr_debug(MyTag "[%s] " format, __func__, ##args)
 
 #define LOG_NOTICE(format, args...)                                            \
-	pr_notice(MyTag "[%s] " format, __func__, ##args)
+	pr_debug(MyTag "[%s] " format, __func__, ##args)
 
 /******************************************************************************
  *

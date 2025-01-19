@@ -131,11 +131,11 @@ static u32 PMQoS_BW_value;
 #endif
 
 // #define log_inf(format, args...) pr_debug(MyTag format, ##args)
-#define log_inf(format, args...) pr_info(MyTag "[%s] " format, __func__, ##args)
-#define log_notice(format, args...) pr_notice(MyTag "[%s] " format, __func__, ##args)
-#define log_wrn(format, args...) pr_info(MyTag "[%s] " format, __func__, ##args)
-#define log_err(format, args...) pr_info(MyTag "[%s] " format, __func__, ##args)
-#define log_ast(format, args...) pr_info(MyTag "[%s] " format, __func__, ##args)
+#define log_inf(format, args...) pr_debug(MyTag "[%s] " format, __func__, ##args)
+#define log_notice(format, args...) pr_debug(MyTag "[%s] " format, __func__, ##args)
+#define log_wrn(format, args...) pr_debug(MyTag "[%s] " format, __func__, ##args)
+#define log_err(format, args...) pr_debug(MyTag "[%s] " format, __func__, ##args)
+#define log_ast(format, args...) pr_debug(MyTag "[%s] " format, __func__, ##args)
 
 /*******************************************************************
  *
@@ -1060,7 +1060,7 @@ static unsigned int g_DmaErr_p1[nDMA_ERR] = {0};
 		}                                                              \
 	} while (0)
 // #define IRQ_LOG_KEEPER(irq, ppb, logT, fmt, args...)
-// pr_info(IRQTag fmt, ##args)
+// pr_debug(IRQTag fmt, ##args)
 
 #define IRQ_LOG_PRINTER(irq, ppb_in, logT_in)                                  \
 	do {                                                                   \
@@ -1632,7 +1632,7 @@ bool ISP_chkModuleSetting(void)
 		FLK_NUM_X = cam_flk_num & 0x7;
 		FLK_NUM_Y = (cam_flk_num >> 4) & 0x7;
 		if ((flk_en == 1) && (sgg3_en == 0))
-			pr_info("HwRWCtrl:: Flicker Error: SGG3_EN should be 1 when FLK_EN = 1");
+			pr_debug("HwRWCtrl:: Flicker Error: SGG3_EN should be 1 when FLK_EN = 1");
 		/*1. The window size must be multiples of 2 */
 		/*2. horizontally and vertically */
 		/*5. CAM_FLK_SIZE.FLK_SIZE_X.value can't be 0 */
@@ -1640,8 +1640,8 @@ bool ISP_chkModuleSetting(void)
 		if ((FLK_SIZE_X % 2 != 0) || (FLK_SIZE_Y % 2 != 0) ||
 		    (FLK_SIZE_X == 0) || (FLK_SIZE_Y == 0)) {
 			/* Error */
-			pr_info("HwRWCtrl:: Flicker Error: The window size must be multiples of 2. horizontally and vertically!!");
-			pr_info("HwRWCtrl:: Flicker Error: CAM_FLK_SIZE.FLK_SIZE_X(%d) and CAM_FLK_SIZE.FLK_SIZE_Y(%d) value can't be 0!!",
+			pr_debug("HwRWCtrl:: Flicker Error: The window size must be multiples of 2. horizontally and vertically!!");
+			pr_debug("HwRWCtrl:: Flicker Error: CAM_FLK_SIZE.FLK_SIZE_X(%d) and CAM_FLK_SIZE.FLK_SIZE_Y(%d) value can't be 0!!",
 				FLK_SIZE_X, FLK_SIZE_Y);
 		}
 		if (bmx_enable == MTRUE) {
@@ -1661,13 +1661,13 @@ bool ISP_chkModuleSetting(void)
 		if ((((FLK_NUM_X * FLK_SIZE_X) + FLK_OFST_X) > sggmux_h_size) ||
 		    (((FLK_NUM_Y * FLK_SIZE_Y) + FLK_OFST_Y) > sggmux_v_size)) {
 			/*Error */
-			pr_info("HwRWCtrl:: Flicker Error: bmx_enable(%d), sgg_sel(%d), grab_width(%d),	grab_height(%d), bmx_width(%d), bmx_height(%d)!!",
+			pr_debug("HwRWCtrl:: Flicker Error: bmx_enable(%d), sgg_sel(%d), grab_width(%d),	grab_height(%d), bmx_width(%d), bmx_height(%d)!!",
 				bmx_enable, sgg_sel, grab_width, grab_height,
 				bmx_width, bmx_height);
-			pr_info("HwRWCtrl:: Flicker Error: (CAM_FLK_NUM.FLK_NUM_X.value(%d) *	CAM_FLK_SIZE.FLK_SIZE_X.value(%d)) + CAM_FLK_OFST.FLK_OFST_X.value(%d) <= sggmux_h_size.value(%d)!!",
+			pr_debug("HwRWCtrl:: Flicker Error: (CAM_FLK_NUM.FLK_NUM_X.value(%d) *	CAM_FLK_SIZE.FLK_SIZE_X.value(%d)) + CAM_FLK_OFST.FLK_OFST_X.value(%d) <= sggmux_h_size.value(%d)!!",
 				FLK_NUM_X, FLK_SIZE_X, FLK_OFST_X,
 				sggmux_h_size);
-			pr_info("HwRWCtrl:: Flicker Error: (CAM_FLK_NUM.FLK_NUM_Y.value(%d) *	CAM_FLK_SIZE.FLK_SIZE_Y.value(%d)) + CAM_FLK_OFST.FLK_OFST_Y.value(%d) <= sggmux_v_size.value(%d)!!",
+			pr_debug("HwRWCtrl:: Flicker Error: (CAM_FLK_NUM.FLK_NUM_Y.value(%d) *	CAM_FLK_SIZE.FLK_SIZE_Y.value(%d)) + CAM_FLK_OFST.FLK_OFST_Y.value(%d) <= sggmux_v_size.value(%d)!!",
 				FLK_NUM_Y, FLK_SIZE_Y, FLK_OFST_Y,
 				sggmux_v_size);
 		}
@@ -1679,7 +1679,7 @@ bool ISP_chkModuleSetting(void)
 		if (esfko_xsize !=
 		    ((FLK_NUM_X * FLK_NUM_Y * FLK_SIZE_Y * 2) - 1)) {
 			/*Error */
-			pr_info("HwRWCtrl:: Flicker Error: flko_xs(%d) must be equal ((CAM_FLK_NUM.FLK_NUM_X.value(%d) * CAM_FLK_NUM.FLK_NUM_Y.value(%d) * CAM_FLK_SIZE.FLK_SIZE_Y.value(%d) * 2) - 1)!!",
+			pr_debug("HwRWCtrl:: Flicker Error: flko_xs(%d) must be equal ((CAM_FLK_NUM.FLK_NUM_X.value(%d) * CAM_FLK_NUM.FLK_NUM_Y.value(%d) * CAM_FLK_SIZE.FLK_SIZE_Y.value(%d) * 2) - 1)!!",
 				esfko_xsize, FLK_NUM_X, FLK_NUM_Y, FLK_SIZE_Y);
 		}
 		/*Check AF setting */
@@ -1715,7 +1715,7 @@ bool ISP_chkModuleSetting(void)
 		//
 		if (AF_EN == 0) {
 			if (AFO_EN == 1) {
-				pr_info("DO NOT enable AFO_D without enable AF\n");
+				pr_debug("DO NOT enable AFO_D without enable AF\n");
 				rst = MFALSE;
 				goto AF_EXIT;
 			} else
@@ -1735,7 +1735,7 @@ bool ISP_chkModuleSetting(void)
 
 		// AFO and AF relaterd module enable check
 		if ((AFO_EN == 0) || (SGG1_EN == 0)) {
-			pr_info("AF is enabled, MUST enable AFO/SGG1:0x%x_0x%x\n",
+			pr_debug("AF is enabled, MUST enable AFO/SGG1:0x%x_0x%x\n",
 				AFO_EN, SGG1_EN);
 			rst = MFALSE;
 		}
@@ -1857,18 +1857,18 @@ bool ISP_chkModuleSetting(void)
 		af_h_gonly = (cam_af_con >> 16) & 0x1;
 		if (af_ext_stat_en == 1) {
 			if (af_blk_xsize < 8) {
-				pr_info("AF_EXT_STAT_EN=1, af min h win size::8 cur:0x%x\n",
+				pr_debug("AF_EXT_STAT_EN=1, af min h win size::8 cur:0x%x\n",
 					af_blk_xsize);
 				rst = MFALSE;
 			}
 			if ((SGG5_EN == 0) || (af_h_gonly != 0)) {
-				pr_info("AF_EXT_STAT_EN=1, MUST enable sgg5 & disable AF_H_GONLY:0x%x_0x%x\n",
+				pr_debug("AF_EXT_STAT_EN=1, MUST enable sgg5 & disable AF_H_GONLY:0x%x_0x%x\n",
 					SGG5_EN, af_h_gonly);
 				rst = MFALSE;
 			}
 		} else {
 			if (SGG5_EN == 1) {
-				pr_info("AF_EXT_STAT_EN=0, sgg5 must be disabled:0x%x\n",
+				pr_debug("AF_EXT_STAT_EN=0, sgg5 must be disabled:0x%x\n",
 					SGG5_EN);
 				rst = MFALSE;
 			}
@@ -1918,7 +1918,7 @@ bool ISP_chkModuleSetting(void)
 		af_sat_th3 = (cam_af_th_2 >> 24) & 0xff;
 		if ((af_sat_th0 > af_sat_th1) || (af_sat_th1 > af_sat_th2) ||
 		    (af_sat_th2 > af_sat_th3)) {
-			pr_info("af sat th, MUST th3 >= th2 >= th1 >= th0:0x%x_0x%x_0x%x_0x%x\n",
+			pr_debug("af sat th, MUST th3 >= th2 >= th1 >= th0:0x%x_0x%x_0x%x_0x%x\n",
 				af_sat_th3, af_sat_th2, af_sat_th1, af_sat_th0);
 			rst = MFALSE;
 		}
@@ -1964,7 +1964,7 @@ AF_EXIT:
 			if ((AAO_XSIZE + 1) != (AWB_W_HNUM * AWB_W_VNUM *
 					aa_size_per_blk +
 					(histogramen_num << 8)))
-				pr_info("Error HwRWCtrl::AAO_XSIZE(%d) = AWB_W_HNUM(%d)*AWB_W_VNUM(%d)*(%d) + (how many histogram enable(%d)(AE_HST0/1/2/3_EN))*2*128 !!",
+				pr_debug("Error HwRWCtrl::AAO_XSIZE(%d) = AWB_W_HNUM(%d)*AWB_W_VNUM(%d)*(%d) + (how many histogram enable(%d)(AE_HST0/1/2/3_EN))*2*128 !!",
 					AAO_XSIZE, AWB_W_HNUM, AWB_W_VNUM,
 					aa_size_per_blk, histogramen_num);
 		}
@@ -1997,25 +1997,25 @@ AF_EXIT:
 		AWB_W_VORG = ((cam_awb_win_org >> 16) & 0x1fff);
 		if (AAO_InWidth < (AWB_W_HNUM * AWB_W_HPIT + AWB_W_HORG)) {
 			/*Error */
-			pr_info("Error HwRWCtrl:: bmx_enable(%d), bmx_width(%d), bmx_height(%d), grab_width(%d), grab_height(%d)!!",
+			pr_debug("Error HwRWCtrl:: bmx_enable(%d), bmx_width(%d), bmx_height(%d), grab_width(%d), grab_height(%d)!!",
 				bmx_enable, bmx_width, bmx_height, grab_width,
 				grab_height);
-			pr_info("Error HwRWCtrl:: input frame width(%d) >= AWB_W_HNUM(%d)	* AWB_W_HPIT(%d) + AWB_W_HORG(%d) !!",
+			pr_debug("Error HwRWCtrl:: input frame width(%d) >= AWB_W_HNUM(%d)	* AWB_W_HPIT(%d) + AWB_W_HORG(%d) !!",
 				AAO_InWidth, AWB_W_HNUM, AWB_W_HPIT,
 				AWB_W_HORG);
 		}
 		if (AAO_InHeight < (AWB_W_VNUM * AWB_W_VPIT + AWB_W_VORG)) {
 			/*Error */
-			pr_info("Error HwRWCtrl:: bmx_enable(%d), bmx_width(%d), bmx_height(%d), grab_width(%d), grab_height(%d)!!",
+			pr_debug("Error HwRWCtrl:: bmx_enable(%d), bmx_width(%d), bmx_height(%d), grab_width(%d), grab_height(%d)!!",
 				bmx_enable, bmx_width, bmx_height, grab_width,
 				grab_height);
-			pr_info("Error HwRWCtrl:: input frame height(%d) >= AWB_W_VNUM(%d) * AWB_W_VPIT(%d) + AWB_W_VORG(%d) !!",
+			pr_debug("Error HwRWCtrl:: input frame height(%d) >= AWB_W_VNUM(%d) * AWB_W_VPIT(%d) + AWB_W_VORG(%d) !!",
 				AAO_InHeight, AWB_W_VNUM, AWB_W_VPIT,
 				AWB_W_VORG);
 		}
 		if (AWB_W_HPIT < AWB_W_HSIZ || AWB_W_VPIT < AWB_W_VSIZ) {
 			/*Error */
-			pr_info("Error HwRWCtrl:: AWB_W_HPIT(%d) >= AWB_W_HSIZ(%d), AWB_W_VPIT(%d) >= AWB_W_VSIZ(%d) !!",
+			pr_debug("Error HwRWCtrl:: AWB_W_HPIT(%d) >= AWB_W_HSIZ(%d), AWB_W_VPIT(%d) >= AWB_W_VSIZ(%d) !!",
 				AWB_W_HPIT, AWB_W_HSIZ, AWB_W_VPIT, AWB_W_VSIZ);
 		}
 
@@ -2107,15 +2107,15 @@ AF_EXIT:
 		    (EIS_NUM_VRP > 8) || (EIS_NUM_HRP > 16) ||
 		    (EIS_RP_VOFST < 16) || (EIS_RP_HOFST <= 16)) {
 			/*Error */
-			pr_info("EIS Error, 1. The max horizontal window size is 4, EIS_NUM_HWIN(%d)!!",
+			pr_debug("EIS Error, 1. The max horizontal window size is 4, EIS_NUM_HWIN(%d)!!",
 				EIS_NUM_HWIN);
-			pr_info("EIS Error, 2. The max vertical window size is 8, EIS_NUM_VWIN(%d)!!",
+			pr_debug("EIS Error, 2. The max vertical window size is 8, EIS_NUM_VWIN(%d)!!",
 				EIS_NUM_VWIN);
-			pr_info("EIS Error, 3. EIS_MF_OFFSET.EIS_RP_VOFST or EIS_RP_HOFST  > 16!!, EIS_RP_VOFST(%d), EIS_RP_HOFST(%d)",
+			pr_debug("EIS Error, 3. EIS_MF_OFFSET.EIS_RP_VOFST or EIS_RP_HOFST  > 16!!, EIS_RP_VOFST(%d), EIS_RP_HOFST(%d)",
 				EIS_RP_VOFST, EIS_RP_HOFST);
-			pr_info("EIS Error, 6. EIS_PREP_ME_CTRL1.EIS_NUM_HRP <= 16, EIS_NUM_HRP(%d)!!",
+			pr_debug("EIS Error, 6. EIS_PREP_ME_CTRL1.EIS_NUM_HRP <= 16, EIS_NUM_HRP(%d)!!",
 				EIS_NUM_HRP);
-			pr_info("EIS Error, 7. EIS_PREP_ME_CTRL1.EIS_NUM_VRP <= 8, EIS_NUM_VRP(%d)!!",
+			pr_debug("EIS Error, 7. EIS_PREP_ME_CTRL1.EIS_NUM_VRP <= 8, EIS_NUM_VRP(%d)!!",
 				EIS_NUM_VRP);
 		}
 		/* It's special changing HW constraint limitation for EIS
@@ -2127,9 +2127,9 @@ AF_EXIT:
 		if ((EIS_WIN_HSIZE < (((EIS_NUM_HRP + 1) << 4) + 1)) ||
 		    (EIS_WIN_VSIZE < (((EIS_NUM_VRP + 1) << 4) + 1))) {
 			/*Error */
-			pr_info("EIS Error, 8. EIS_MB_INTERVAL.EIS_WIN_HSIZE >= (EIS_PREP_ME_CTRL1.EIS_NUM_HRP+1)*16+1!!, EIS_WIN_HSIZE:%d, EIS_NUM_HRP:%d",
+			pr_debug("EIS Error, 8. EIS_MB_INTERVAL.EIS_WIN_HSIZE >= (EIS_PREP_ME_CTRL1.EIS_NUM_HRP+1)*16+1!!, EIS_WIN_HSIZE:%d, EIS_NUM_HRP:%d",
 				EIS_WIN_HSIZE, EIS_NUM_HRP);
-			pr_info("EIS Error, 9. EIS_MB_INTERVAL.EIS_WIN_VSIZE >=	(EIS_PREP_ME_CTRL1.EIS_NUM_VRP+1)*16+1!!, EIS_WIN_VSIZE:%d, EIS_NUM_VRP:%d",
+			pr_debug("EIS Error, 9. EIS_MB_INTERVAL.EIS_WIN_VSIZE >=	(EIS_PREP_ME_CTRL1.EIS_NUM_VRP+1)*16+1!!, EIS_WIN_VSIZE:%d, EIS_NUM_VRP:%d",
 				EIS_WIN_VSIZE, EIS_NUM_VRP);
 		}
 /*10. (EIS_MB_OFFSET.EIS_RP_HOFST +
@@ -2150,10 +2150,10 @@ AF_EXIT:
 		       (EIS_NUM_VRP << 4)) *
 		      EIS_OP_VERT) >= EIS_IMG_HEIGHT)) {
 			/*Error */
-			pr_info("EIS Error, 10. (EIS_MB_OFFSET.EIS_RP_HOFST(%d) + ((EIS_MB_INTERVAL.EIS_WIN_HSIZE(%d)-1)*(EIS_PREP_ME_CTRL1.EIS_NUM_HWIN(%d)-1))+EIS_PREP_ME_CTRL1.EIS_NUM_HRP(%d)*16)*EIS_PREP_ME_CTRL1.EIS_OP_HORI(%d) < EIS_IMAGE_CTRL.WIDTH(%d)!!",
+			pr_debug("EIS Error, 10. (EIS_MB_OFFSET.EIS_RP_HOFST(%d) + ((EIS_MB_INTERVAL.EIS_WIN_HSIZE(%d)-1)*(EIS_PREP_ME_CTRL1.EIS_NUM_HWIN(%d)-1))+EIS_PREP_ME_CTRL1.EIS_NUM_HRP(%d)*16)*EIS_PREP_ME_CTRL1.EIS_OP_HORI(%d) < EIS_IMAGE_CTRL.WIDTH(%d)!!",
 				EIS_RP_HOFST, EIS_WIN_HSIZE, EIS_NUM_HWIN,
 				EIS_NUM_HRP, EIS_OP_HORI, EIS_IMG_WIDTH);
-			pr_info("EIS Error, 10. (EIS_MB_OFFSET.EIS_RP_VOFST(%d) + ((EIS_MB_INTERVAL.EIS_WIN_VSIZE(%d)-1)*(EIS_PREP_ME_CTRL1.EIS_NUM_VWIN(%d)-1))+EIS_PREP_ME_CTRL1.EIS_NUM_VRP(%d)*16)*EIS_PREP_ME_CTRL1.EIS_OP_VERT(%d) < EIS_IMG_HEIGHT.WIDTH(%d)!!",
+			pr_debug("EIS Error, 10. (EIS_MB_OFFSET.EIS_RP_VOFST(%d) + ((EIS_MB_INTERVAL.EIS_WIN_VSIZE(%d)-1)*(EIS_PREP_ME_CTRL1.EIS_NUM_VWIN(%d)-1))+EIS_PREP_ME_CTRL1.EIS_NUM_VRP(%d)*16)*EIS_PREP_ME_CTRL1.EIS_OP_VERT(%d) < EIS_IMG_HEIGHT.WIDTH(%d)!!",
 				EIS_RP_VOFST, EIS_WIN_VSIZE, EIS_NUM_VWIN,
 				EIS_NUM_VRP, EIS_OP_VERT, EIS_IMG_HEIGHT);
 		}
@@ -2220,14 +2220,14 @@ AF_EXIT:
 			break;
 		}
 		if (bError == MTRUE) {
-			pr_info("EIS Error, 4. EIS_IMAGE_CTRL.WIDTH = EIS input image width but if (two_pix mode) EIS_IMAGE_CTRL.WIDTH = input image width/2!!\n");
-			pr_info("EIS Error, 5. EIS_IMAGE_CTRL.HEIGHT != EIS input image height!!\n");
-			pr_info("eis_sel:%d, scenario:%d, sgg_sel:%d, twin_mode:%d",
+			pr_debug("EIS Error, 4. EIS_IMAGE_CTRL.WIDTH = EIS input image width but if (two_pix mode) EIS_IMAGE_CTRL.WIDTH = input image width/2!!\n");
+			pr_debug("EIS Error, 5. EIS_IMAGE_CTRL.HEIGHT != EIS input image height!!\n");
+			pr_debug("eis_sel:%d, scenario:%d, sgg_sel:%d, twin_mode:%d",
 				eis_sel, scenario, sgg_sel, bmx_enable);
-			pr_info("EIS_IMG_WIDTH:%d, EIS_IMG_HEIGHT:%d, rrz_out_width:%d, rrz_out_height:%d",
+			pr_debug("EIS_IMG_WIDTH:%d, EIS_IMG_HEIGHT:%d, rrz_out_width:%d, rrz_out_height:%d",
 				EIS_IMG_WIDTH, EIS_IMG_HEIGHT, rrz_out_width,
 				rrz_out_height);
-			pr_info("grab_width:%d, grab_height:%d, bmx_width:%d, bmx_height:%d",
+			pr_debug("grab_width:%d, grab_height:%d, bmx_width:%d, bmx_height:%d",
 				grab_width, grab_height, bmx_width, bmx_height);
 		}
 EIS_EXIT:
@@ -2347,7 +2347,7 @@ EIS_EXIT:
 		//
 		if (AF_EN == 0) {
 			if (AFO_EN == 1) {
-				pr_info("DO NOT enable AFO_D without enable AF\n");
+				pr_debug("DO NOT enable AFO_D without enable AF\n");
 				rst = MFALSE;
 				goto AF_D_EXIT;
 			} else
@@ -2367,7 +2367,7 @@ EIS_EXIT:
 
 		// AFO and AF relaterd module enable check
 		if ((AFO_EN == 0) || (SGG1_EN == 0)) {
-			pr_info("AF is enabled, MUST enable AFO/SGG1:0x%x_0x%x\n",
+			pr_debug("AF is enabled, MUST enable AFO/SGG1:0x%x_0x%x\n",
 				AFO_EN, SGG1_EN);
 			rst = MFALSE;
 		}
@@ -2487,18 +2487,18 @@ EIS_EXIT:
 		af_h_gonly = (cam_af_con >> 16) & 0x1;
 		if (af_ext_stat_en == 1) {
 			if (af_blk_xsize < 8) {
-				pr_info("AF_EXT_STAT_EN=1, af min h win size::8 cur:0x%x\n",
+				pr_debug("AF_EXT_STAT_EN=1, af min h win size::8 cur:0x%x\n",
 					af_blk_xsize);
 				rst = MFALSE;
 			}
 			if ((SGG5_EN == 0) || (af_h_gonly != 0)) {
-				pr_info("AF_EXT_STAT_EN=1, MUST enable sgg5 & disable AF_H_GONLY:0x%x_0x%x\n",
+				pr_debug("AF_EXT_STAT_EN=1, MUST enable sgg5 & disable AF_H_GONLY:0x%x_0x%x\n",
 					SGG5_EN, af_h_gonly);
 				rst = MFALSE;
 			}
 		} else {
 			if (SGG5_EN == 1) {
-				pr_info("AF_EXT_STAT_EN=0, sgg5 must be disabled:0x%x\n",
+				pr_debug("AF_EXT_STAT_EN=0, sgg5 must be disabled:0x%x\n",
 					SGG5_EN);
 				rst = MFALSE;
 			}
@@ -2548,7 +2548,7 @@ EIS_EXIT:
 		af_sat_th3 = (cam_af_th_2 >> 24) & 0xff;
 		if ((af_sat_th0 > af_sat_th1) || (af_sat_th1 > af_sat_th2) ||
 		    (af_sat_th2 > af_sat_th3)) {
-			pr_info("af sat th, MUST th3 >= th2 >= th1 >= th0:0x%x_0x%x_0x%x_0x%x\n",
+			pr_debug("af sat th, MUST th3 >= th2 >= th1 >= th0:0x%x_0x%x_0x%x_0x%x\n",
 				af_sat_th3, af_sat_th2, af_sat_th1, af_sat_th0);
 			rst = MFALSE;
 		}
@@ -2590,7 +2590,7 @@ AF_D_EXIT:
 					cam_aao_ysize);
 			if ((AAO_XSIZE + 1) != (AWB_W_HNUM * AWB_W_VNUM * 7 +
 						(histogramen_num << 8)))
-				pr_info("Error HwRWCtrl::AAO_D_XSIZE(%d) = AWB_W_HNUM(%d)*AWB_W_VNUM(%d)*7 + (how many histogram enable(%d)(AE_HST0/1/2/3_EN))*2*128 !!",
+				pr_debug("Error HwRWCtrl::AAO_D_XSIZE(%d) = AWB_W_HNUM(%d)*AWB_W_VNUM(%d)*7 + (how many histogram enable(%d)(AE_HST0/1/2/3_EN))*2*128 !!",
 					AAO_XSIZE, AWB_W_HNUM, AWB_W_VNUM,
 					histogramen_num);
 		}
@@ -2630,25 +2630,25 @@ AF_D_EXIT:
 		AWB_W_VORG = ((cam_awb_win_org >> 16) & 0x1fff);
 		if (AAO_InWidth < (AWB_W_HNUM * AWB_W_HPIT + AWB_W_HORG)) {
 			/*Error */
-			pr_info("Error HwRWCtrl:: AWB_D bmx_enable(%d), bmx_width(%d), bmx_height(%d), grab_width(%d), grab_height(%d)!!",
+			pr_debug("Error HwRWCtrl:: AWB_D bmx_enable(%d), bmx_width(%d), bmx_height(%d), grab_width(%d), grab_height(%d)!!",
 				bmx_enable, bmx_width, bmx_height, grab_width,
 				grab_height);
-			pr_info("Error HwRWCtrl:: AWB_D input frame width(%d) >= AWB_W_HNUM(%d) * AWB_W_HPIT(%d) + AWB_W_HORG(%d) !!",
+			pr_debug("Error HwRWCtrl:: AWB_D input frame width(%d) >= AWB_W_HNUM(%d) * AWB_W_HPIT(%d) + AWB_W_HORG(%d) !!",
 				AAO_InWidth, AWB_W_HNUM, AWB_W_HPIT,
 				AWB_W_HORG);
 		}
 		if (AAO_InHeight < (AWB_W_VNUM * AWB_W_VPIT + AWB_W_VORG)) {
 			/*Error */
-			pr_info("Error HwRWCtrl:: AWB_D bmx_enable(%d), bmx_width(%d), bmx_height(%d), grab_width(%d), grab_height(%d)!!",
+			pr_debug("Error HwRWCtrl:: AWB_D bmx_enable(%d), bmx_width(%d), bmx_height(%d), grab_width(%d), grab_height(%d)!!",
 				bmx_enable, bmx_width, bmx_height, grab_width,
 				grab_height);
-			pr_info("Error HwRWCtrl:: AWB_D input frame height(%d) >=	AWB_W_VNUM(%d) * AWB_W_VPIT(%d) + AWB_W_VORG(%d) !!",
+			pr_debug("Error HwRWCtrl:: AWB_D input frame height(%d) >=	AWB_W_VNUM(%d) * AWB_W_VPIT(%d) + AWB_W_VORG(%d) !!",
 				AAO_InHeight, AWB_W_VNUM, AWB_W_VPIT,
 				AWB_W_VORG);
 		}
 		if (AWB_W_HPIT < AWB_D_W_HSIZ || AWB_W_VPIT < AWB_D_W_VSIZ) {
 			/*Error */
-			pr_info("Error HwRWCtrl:: AWB_W_D_HPIT(%d) >= AWB_D_W_HSIZ(%d),	AWB_W_D_VPIT(%d) >= AWB_D_W_VSIZ(%d) !!",
+			pr_debug("Error HwRWCtrl:: AWB_W_D_HPIT(%d) >= AWB_D_W_HSIZ(%d),	AWB_W_D_VPIT(%d) >= AWB_D_W_VSIZ(%d) !!",
 			AWB_W_HPIT, AWB_D_W_HSIZ, AWB_W_VPIT, AWB_D_W_VSIZ);
 		}
 	}
@@ -8917,7 +8917,7 @@ static signed int ISP_GET_MARKtoQEURY_TIME(struct ISP_WAIT_IRQ_STRUCT *irqinfo)
 		Ret = -EFAULT;
 		return Ret;
 	}
-	pr_info("[%s] user/type/idx(%d/%d/%d),mark sec/usec (%d/%d), irq sec/usec (%d/%d),query sec/usec(%d/%d),sig(%d)\n",
+	pr_debug("[%s] user/type/idx(%d/%d/%d),mark sec/usec (%d/%d), irq sec/usec (%d/%d),query sec/usec(%d/%d),sig(%d)\n",
 		__func__,
 		irqinfo->UserInfo.UserKey, irqinfo->UserInfo.Type, idx,
 		IspInfo.IrqInfo.MarkedTime_sec[irqinfo->UserInfo.UserKey]
@@ -9125,7 +9125,7 @@ static signed int ISP_WaitIrq(struct ISP_WAIT_IRQ_STRUCT *WaitIrq)
 	if ((Timeout != 0) &&
 	    (!ISP_GetIRQState(eIrq, WaitIrq->Type, WaitIrq->UserNumber,
 			      WaitIrq->Status))) {
-		pr_info("interrupted by	system signal,return value(%d),irq Type/User/Sts(0x%x/%d/0x%x)",
+		pr_debug("interrupted by	system signal,return value(%d),irq Type/User/Sts(0x%x/%d/0x%x)",
 			Timeout, WaitIrq->Type, WaitIrq->UserNumber,
 			WaitIrq->Status);
 		Ret = -ERESTARTSYS; /* actually     it should be -ERESTARTSYS */
@@ -9459,7 +9459,7 @@ static signed int ISP_WaitIrq_v3(struct ISP_WAIT_IRQ_STRUCT *WaitIrq)
 	if ((Timeout != 0) && (!ISP_GetIRQState(eIrq, WaitIrq->UserInfo.Type,
 						WaitIrq->UserInfo.UserKey,
 						WaitIrq->UserInfo.Status))) {
-		pr_info("interrupted by	system signal,return value(%d),irq Type/User/Sts(0x%x/%d/0x%x)",
+		pr_debug("interrupted by	system signal,return value(%d),irq Type/User/Sts(0x%x/%d/0x%x)",
 			Timeout, WaitIrq->UserInfo.Type,
 			WaitIrq->UserInfo.UserKey, WaitIrq->UserInfo.Status);
 		Ret = -ERESTARTSYS; /* actually     it should be -ERESTARTSYS */
@@ -11403,7 +11403,7 @@ static long ISP_ioctl(struct file *pFile, unsigned int Cmd, unsigned long Param)
 	struct ISP_REGISTER_USERKEY_STRUCT RegUserKey;
 	/*      */
 	if (pFile->private_data == NULL) {
-		pr_info("private_data is NULL,(process,	pid, tgid)=(%s,	%d, %d)",
+		pr_debug("private_data is NULL,(process,	pid, tgid)=(%s,	%d, %d)",
 			current->comm, current->pid, current->tgid);
 		return -EFAULT;
 	}
@@ -13378,7 +13378,7 @@ static signed int ISP_probe(struct platform_device *pDev)
 #ifdef CONFIG_OF
 
 	if (pDev == NULL) {
-		dev_info(&pDev->dev, "pDev is NULL");
+		dev_dbg(&pDev->dev, "pDev is NULL");
 		return -ENXIO;
 	}
 
@@ -13388,7 +13388,7 @@ static signed int ISP_probe(struct platform_device *pDev)
 			 sizeof(struct cam_isp_device) * new_count,
 								    GFP_KERNEL);
 	if (!cam_isp_devs) {
-		dev_info(&pDev->dev, "Unable to allocate cam_isp_devs\n");
+		dev_dbg(&pDev->dev, "Unable to allocate cam_isp_devs\n");
 		return -ENOMEM;
 	}
 
@@ -13399,7 +13399,7 @@ static signed int ISP_probe(struct platform_device *pDev)
 	for (i = 0; i < ISP_CAM_BASEADDR_NUM; i++) {
 		cam_isp_dev->regs[i] = of_iomap(pDev->dev.of_node, i);
 		if (!cam_isp_dev->regs[i]) {
-			dev_info(&pDev->dev,
+			dev_dbg(&pDev->dev,
 			"Unable to ioremap registers, of_iomap fail, i=%d\n",
 				i);
 			return -ENOMEM;
@@ -13439,7 +13439,7 @@ static signed int ISP_probe(struct platform_device *pDev)
 		}
 
 		if (Ret) {
-			dev_info(&pDev->dev,
+			dev_dbg(&pDev->dev,
 				"Unable to request IRQ, request_irq fail, j=%d, irq=%d\n",
 				j, cam_isp_dev->irq[j]);
 			return Ret;
@@ -13451,7 +13451,7 @@ static signed int ISP_probe(struct platform_device *pDev)
 	/* Register char driver */
 	Ret = ISP_RegCharDev();
 	if (Ret) {
-		dev_info(&pDev->dev, "register char failed");
+		dev_dbg(&pDev->dev, "register char failed");
 		return Ret;
 	}
 /* Mapping CAM_REGISTERS */
@@ -13461,14 +13461,14 @@ static signed int ISP_probe(struct platform_device *pDev)
 	/* log_dbg("Mapping CAM_REGISTERS.	i: %d.", i);
 	 * pRes = platform_get_resource(pDev, IORESOURCE_MEM, i);
 	 * if (pRes == NULL) {
-	 * dev_info(&pDev->dev, "platform_get_resource failed");
+	 * dev_dbg(&pDev->dev, "platform_get_resource failed");
 	 * Ret = -ENOMEM;
 	 * goto EXIT;
 	 * }
 	 * pRes = request_mem_region(pRes->start,
 	 * pRes->end - pRes->start + 1, pDev->name);
 	 * if (pRes == NULL) {
-	 * dev_info(&pDev->dev, "request_mem_region	failed");
+	 * dev_dbg(&pDev->dev, "request_mem_region	failed");
 	 * Ret = -ENOMEM;
 	 * goto EXIT;
 	 * }
