@@ -33,7 +33,7 @@ static int dvfsrc_rsrv;
 #ifndef CONFIG_MTK_DRAMC
 static int dram_steps_freq(unsigned int step)
 {
-	pr_info("get dram steps_freq fail\n");
+	pr_debug("get dram steps_freq fail\n");
 	return 4266;
 }
 #endif
@@ -101,7 +101,7 @@ static int get_vb_volt(int vcore_opp)
 	int ret = 0;
 	int ptpod = get_devinfo_with_index(69);
 
-	pr_info("%s: PTPOD: 0x%x\n", __func__, ptpod);
+	pr_debug("%s: PTPOD: 0x%x\n", __func__, ptpod);
 
 	switch (vcore_opp) {
 	case VCORE_OPP_0:
@@ -177,7 +177,7 @@ static int check_power_leakage(void)
 	if (temp_lkg != 0)
 		temp_lkg = (int)devinfo_table[temp_lkg];
 
-	pr_info("cpu efuse leakage : 0x%x\n", temp_lkg);
+	pr_debug("cpu efuse leakage : 0x%x\n", temp_lkg);
 
 	if (temp_lkg > 0 && temp_lkg <= 40)
 		return 1;
@@ -191,7 +191,7 @@ static int is_rising_need(void)
 	int ptpod = get_devinfo_with_index(69);
 	int leakage = check_power_leakage();
 
-	pr_info("%s: PTPOD: 0x%x\n", __func__, ptpod);
+	pr_debug("%s: PTPOD: 0x%x\n", __func__, ptpod);
 
 	if (leakage) {
 		idx = ptpod & 0xF;
@@ -246,7 +246,7 @@ static int __init dvfsrc_opp_init(void)
 			dvfsrc_rsrv = readl(dvfsrc_base + 0x610);
 			iounmap(dvfsrc_base);
 		}
-		pr_info("%s: vcore_arg = %08x\n", __func__, dvfsrc_rsrv);
+		pr_debug("%s: vcore_arg = %08x\n", __func__, dvfsrc_rsrv);
 		dvfs_v_mode = (dvfsrc_rsrv >> V_VMODE_SHIFT) & 0x3;
 		is_vcore_ct = (dvfsrc_rsrv >> V_CT_SHIFT) & 0x1;
 		ct_test = (dvfsrc_rsrv >> V_CT_TEST_SHIFT) & 0x1;
@@ -283,13 +283,13 @@ static int __init dvfsrc_opp_init(void)
 		vcore_opp_2_uv = roundup((vcore_opp_2_uv * 105) / 100, 6250);
 	}
 
-	pr_info("%s: CT=%d, VMODE=%d, RSV4=%x\n",
+	pr_debug("%s: CT=%d, VMODE=%d, RSV4=%x\n",
 		__func__,
 		is_vcore_ct,
 			dvfs_v_mode,
 			dvfsrc_rsrv);
 
-	pr_info("%s: FINAL vcore_opp_uv: %d, %d, %d\n",
+	pr_debug("%s: FINAL vcore_opp_uv: %d, %d, %d\n",
 		__func__,
 		vcore_opp_0_uv,
 		vcore_opp_1_uv,

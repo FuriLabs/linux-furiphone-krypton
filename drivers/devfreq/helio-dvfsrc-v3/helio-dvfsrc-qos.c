@@ -127,7 +127,7 @@ void helio_dvfsrc_enable(int dvfsrc_en)
 		return;
 
 	if (dvfsrc->dvfsrc_enabled == dvfsrc_en && dvfsrc_en == 1) {
-		pr_info("DVFSRC already enabled\n");
+		pr_debug("DVFSRC already enabled\n");
 		return;
 	}
 
@@ -141,10 +141,10 @@ void helio_dvfsrc_enable(int dvfsrc_en)
 	dvfsrc->opp_forced = 0;
 	ret = sprintf(dvfsrc->force_start, "0");
 	if (ret < 0)
-		pr_info("sprintf fail\n");
+		pr_debug("sprintf fail\n");
 	ret = sprintf(dvfsrc->force_end, "0");
 	if (ret < 0)
-		pr_info("sprintf fail\n");
+		pr_debug("sprintf fail\n");
 
 	dvfsrc_restore();
 	if (dvfsrc_en)
@@ -238,7 +238,7 @@ u32 dvfsrc_dump_reg(char *ptr, u32 count)
 		index += scnprintf(&ptr[index], (count - index - 1),
 		"%s\n", buf);
 	} else
-		pr_info("%s\n", buf);
+		pr_debug("%s\n", buf);
 
 	memset(buf, '\0', sizeof(buf));
 	get_dvfsrc_reg(buf);
@@ -246,7 +246,7 @@ u32 dvfsrc_dump_reg(char *ptr, u32 count)
 		index += scnprintf(&ptr[index], (count - index - 1),
 		"%s\n", buf);
 	} else
-		pr_info("%s\n", buf);
+		pr_debug("%s\n", buf);
 
 	memset(buf, '\0', sizeof(buf));
 	get_dvfsrc_record(buf);
@@ -254,7 +254,7 @@ u32 dvfsrc_dump_reg(char *ptr, u32 count)
 		index += scnprintf(&ptr[index], (count - index - 1),
 		"%s\n", buf);
 	} else
-		pr_info("%s\n", buf);
+		pr_debug("%s\n", buf);
 
 	memset(buf, '\0', sizeof(buf));
 	get_spm_reg(buf);
@@ -262,7 +262,7 @@ u32 dvfsrc_dump_reg(char *ptr, u32 count)
 		index += scnprintf(&ptr[index], (count - index - 1),
 		"%s\n", buf);
 	} else
-		pr_info("%s\n", buf);
+		pr_debug("%s\n", buf);
 
 	memset(buf, '\0', sizeof(buf));
 	get_mtk_pm_qos_info(buf);
@@ -270,7 +270,7 @@ u32 dvfsrc_dump_reg(char *ptr, u32 count)
 		index += scnprintf(&ptr[index], (count - index - 1),
 		"%s\n", buf);
 	} else
-		pr_info("%s\n", buf);
+		pr_debug("%s\n", buf);
 
 	return index;
 }
@@ -494,7 +494,7 @@ static int helio_dvfsrc_probe(struct platform_device *pdev)
 	helio_dvfsrc_platform_pre_init(dvfsrc);
 	helio_dvfsrc_config(dvfsrc);
 
-	pr_info("%s: init done\n", __func__);
+	pr_debug("%s: init done\n", __func__);
 
 	return 0;
 }

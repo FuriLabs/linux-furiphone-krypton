@@ -85,7 +85,7 @@ static void dvfsrc_get_timestamp(char *p)
 	ret = snprintf(p, TIME_STAMP_SIZE, "%llu.%06llu",
 		sec, usec);
 	if (ret < 0)
-		pr_info("dvfsrc snprintf fail\n");
+		pr_debug("dvfsrc snprintf fail\n");
 }
 
 static int is_dvfsrc_forced(void)
@@ -252,7 +252,7 @@ int commit_data(int type, int data, int check_spmfw)
 			data = VCORE_OPP_NUM - 1;
 
 		if (data < 0) {
-			pr_info("VCORE OPP = %d\n", data);
+			pr_debug("VCORE OPP = %d\n", data);
 			data = 0;
 		}
 
@@ -277,7 +277,7 @@ int commit_data(int type, int data, int check_spmfw)
 				vcore_uv = regulator_get_voltage(vcore_reg_id);
 				opp_uv = get_vcore_uv_table(opp);
 				if (vcore_uv < opp_uv) {
-					pr_info("DVFS FAIL= %d %d 0x%08x 0x%08x %08x\n",
+					pr_debug("DVFS FAIL= %d %d 0x%08x 0x%08x %08x\n",
 					vcore_uv, opp_uv,
 					dvfsrc_read(DVFSRC_CURRENT_LEVEL),
 					dvfsrc_read(DVFSRC_TARGET_LEVEL),
@@ -378,12 +378,12 @@ int commit_data(int type, int data, int check_spmfw)
 	}
 
 	if (!(dvfsrc_read(DVFSRC_BASIC_CONTROL) & 0x100)) {
-		pr_info("DVFSRC OUT Disable\n");
+		pr_debug("DVFSRC OUT Disable\n");
 		return ret;
 	}
 
 	if (ret < 0) {
-		pr_info("%s: type: 0x%x, data: 0x%x, opp: %d, level: %d\n",
+		pr_debug("%s: type: 0x%x, data: 0x%x, opp: %d, level: %d\n",
 				__func__, type, data, opp, level);
 		dvfsrc_dump_reg(NULL, 0);
 		aee_kernel_warning("DVFSRC", "%s: failed.", __func__);
@@ -472,7 +472,7 @@ int helio_dvfsrc_config(struct helio_dvfsrc *dvfsrc)
 
 	vcore_reg_id = dvfsrc_vcore_requlator(&pdev->dev);
 	if (!vcore_reg_id)
-		pr_info("[DVFSRC] No Vcore regulator\n");
+		pr_debug("[DVFSRC] No Vcore regulator\n");
 
 #if defined(CONFIG_MTK_WATCHDOG_COMMON) || defined(CONFIG_MTK_DBGTOP)
 	dvfsrc_latch_register(1);
@@ -498,7 +498,7 @@ int helio_dvfsrc_config(struct helio_dvfsrc *dvfsrc)
 	ret = request_irq(dvfsrc->irq, helio_dvfsrc_interrupt
 		, IRQF_TRIGGER_NONE, "dvfsrc", dvfsrc);
 	if (ret)
-		pr_info("dvfsrc interrupt no use\n");
+		pr_debug("dvfsrc interrupt no use\n");
 
 	dvfsrc->resume = dvfsrc_resume;
 	dvfsrc->suspend = dvfsrc_suspend;

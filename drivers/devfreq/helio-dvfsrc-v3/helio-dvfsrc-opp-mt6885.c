@@ -20,7 +20,7 @@
 #ifndef CONFIG_MEDIATEK_DRAMC
 static int mtk_dramc_get_steps_freq(unsigned int step)
 {
-	pr_info("get dram steps_freq fail\n");
+	pr_debug("get dram steps_freq fail\n");
 	return 4266;
 }
 #endif
@@ -166,11 +166,11 @@ static int __init dvfsrc_opp_init(void)
 		if (of_property_read_u32(dvfsrc_node, "vcore_ct",
 			(u32 *) &doe_ct) == 0) {
 			is_vcore_ct = doe_ct;
-			pr_info("%s: DOE CT = %d\n", __func__, doe_ct);
+			pr_debug("%s: DOE CT = %d\n", __func__, doe_ct);
 		}
 		if (of_property_read_u32(dvfsrc_node, "dvfs_v_mode",
 			(u32 *) &dvfs_v_mode) == 0)
-			pr_info("%s: DOE DVFS_V_MODE = %d\n",
+			pr_debug("%s: DOE DVFS_V_MODE = %d\n",
 				__func__, dvfs_v_mode);
 
 	}
@@ -205,7 +205,7 @@ static int __init dvfsrc_opp_init(void)
 	}
 #endif
 
-	pr_info("%s: CT=%d, AGING=%d, QEA=%d, VMODE=%d val=%d\n",
+	pr_debug("%s: CT=%d, AGING=%d, QEA=%d, VMODE=%d val=%d\n",
 		__func__,
 		is_vcore_ct,
 		is_vcore_aging,
@@ -213,7 +213,7 @@ static int __init dvfsrc_opp_init(void)
 		dvfs_v_mode,
 		val);
 
-	pr_info("%s: FINAL vcore_opp_uv: %d, %d, %d %d\n",
+	pr_debug("%s: FINAL vcore_opp_uv: %d, %d, %d %d\n",
 		__func__,
 		vcore_opp_0_uv,
 		vcore_opp_1_uv,

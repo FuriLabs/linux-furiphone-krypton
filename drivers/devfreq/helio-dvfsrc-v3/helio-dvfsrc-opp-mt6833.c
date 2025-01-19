@@ -36,7 +36,7 @@ static int dvfsrc_rsrv;
 #ifndef CONFIG_MEDIATEK_DRAMC
 static int mtk_dramc_get_steps_freq(unsigned int step)
 {
-	pr_info("get dram steps_freq fail\n");
+	pr_debug("get dram steps_freq fail\n");
 	return 4266;
 }
 #endif
@@ -129,7 +129,7 @@ static int get_vb_volt(int vcore_opp)
 	int ret = 0;
 	int ptpod = get_devinfo_with_index(209);
 
-	pr_info("%s: PTPOD: 0x%x\n", __func__, ptpod);
+	pr_debug("%s: PTPOD: 0x%x\n", __func__, ptpod);
 
 	switch (vcore_opp) {
 	case VCORE_OPP_0:
@@ -155,7 +155,7 @@ static int is_rising_need(void)
 	int idx;
 	int ptpod = get_devinfo_with_index(209);
 
-	pr_info("%s: PTPOD: 0x%x\n", __func__, ptpod);
+	pr_debug("%s: PTPOD: 0x%x\n", __func__, ptpod);
 
 	idx = ptpod & 0xF;
 	if (idx == 1 || idx == 2)
@@ -194,7 +194,7 @@ static int __init dvfsrc_opp_init(void)
 			dvfsrc_rsrv = readl(dvfsrc_base + 0x610);
 			iounmap(dvfsrc_base);
 	}
-		pr_info("%s: vcore_arg = %08x\n",
+		pr_debug("%s: vcore_arg = %08x\n",
 			__func__, dvfsrc_rsrv);
 		dvfs_v_mode = (dvfsrc_rsrv >> V_VMODE_SHIFT) & 0x3;
 		is_vcore_ct = (dvfsrc_rsrv >> V_CT_SHIFT) & 0x1;
@@ -267,13 +267,13 @@ static int __init dvfsrc_opp_init(void)
 	if (vcore_opp_3_uv < VCORE_BASE_UV)
 		vcore_opp_3_uv = VCORE_BASE_UV;
 
-	pr_info("%s: CT=%d, VMODE=%d, RSV4=%x\n",
+	pr_debug("%s: CT=%d, VMODE=%d, RSV4=%x\n",
 		__func__,
 		is_vcore_ct,
 			dvfs_v_mode,
 			dvfsrc_rsrv);
 
-	pr_info("%s: FINAL vcore_opp_uv: %d, %d, %d, %d\n",
+	pr_debug("%s: FINAL vcore_opp_uv: %d, %d, %d, %d\n",
 		__func__,
 		vcore_opp_0_uv,
 		vcore_opp_1_uv,

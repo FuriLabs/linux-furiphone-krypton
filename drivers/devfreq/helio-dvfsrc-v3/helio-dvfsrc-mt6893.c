@@ -263,19 +263,19 @@ struct regulator *dvfsrc_vcore_requlator(struct device *dev)
 #ifdef AUTOK_ENABLE
 __weak int emmc_autok(void)
 {
-	pr_info("NOT SUPPORT EMMC AUTOK\n");
+	pr_debug("NOT SUPPORT EMMC AUTOK\n");
 	return 0;
 }
 
 __weak int sd_autok(void)
 {
-	pr_info("NOT SUPPORT SD AUTOK\n");
+	pr_debug("NOT SUPPORT SD AUTOK\n");
 	return 0;
 }
 
 __weak int sdio_autok(void)
 {
-	pr_info("NOT SUPPORT SDIO AUTOK\n");
+	pr_debug("NOT SUPPORT SDIO AUTOK\n");
 	return 0;
 }
 
@@ -296,7 +296,7 @@ void finish_autok_task(void)
 	mmdvfs_prepare_action(MMDVFS_PREPARE_CALIBRATION_END);
 
 	if (force >= 0 && force < VCORE_DVFS_OPP_NUM)
-		pr_info("autok task not release force opp: %d\n", force);
+		pr_debug("autok task not release force opp: %d\n", force);
 }
 
 static void dvfsrc_autok_manager(void)
@@ -306,13 +306,13 @@ static void dvfsrc_autok_manager(void)
 	begin_autok_task();
 
 	r = emmc_autok();
-	pr_info("EMMC autok done: %s\n", (r == 0) ? "Yes" : "No");
+	pr_debug("EMMC autok done: %s\n", (r == 0) ? "Yes" : "No");
 
 	r = sd_autok();
-	pr_info("SD autok done: %s\n", (r == 0) ? "Yes" : "No");
+	pr_debug("SD autok done: %s\n", (r == 0) ? "Yes" : "No");
 
 	r = sdio_autok();
-	pr_info("SDIO autok done: %s\n", (r == 0) ? "Yes" : "No");
+	pr_debug("SDIO autok done: %s\n", (r == 0) ? "Yes" : "No");
 
 	finish_autok_task();
 }
@@ -328,7 +328,7 @@ void helio_dvfsrc_platform_pre_init(struct helio_dvfsrc *dvfsrc)
 	dvfsrc->spm_regs = devm_ioremap(&pdev->dev,
 				res->start, resource_size(res));
 	if (IS_ERR(dvfsrc->spm_regs))
-		pr_info("not get spm register\n");
+		pr_debug("not get spm register\n");
 
 }
 
@@ -341,7 +341,7 @@ void dvfsrc_suspend_cb(struct helio_dvfsrc *dvfsrc)
 	int sw_req;
 
 	sw_req = dvfsrc_read(DVFSRC_SW_REQ3);
-	pr_info("[DVFSRC] V:%d, F_OPP:%d, RG:%08x, %08x, %08x, %08x\n",
+	pr_debug("[DVFSRC] V:%d, F_OPP:%d, RG:%08x, %08x, %08x, %08x\n",
 		get_cur_vcore_uv(),
 		mtk_pm_qos_request(MTK_PM_QOS_VCORE_DVFS_FORCE_OPP),
 		dvfsrc_read(DVFSRC_CURRENT_LEVEL),

@@ -18,7 +18,7 @@
 #ifndef CONFIG_MTK_DRAMC
 static int dram_steps_freq(unsigned int step)
 {
-	pr_info("get dram steps_freq fail\n");
+	pr_debug("get dram steps_freq fail\n");
 	return 4266;
 }
 #endif
@@ -50,7 +50,7 @@ static int get_vb_volt(int vcore_opp)
 	int opp_min_ct = get_opp_min_ct();
 	int ptpod = get_devinfo_with_index(64);
 
-	pr_info("%s: PTPOD: 0x%x\n", __func__, ptpod);
+	pr_debug("%s: PTPOD: 0x%x\n", __func__, ptpod);
 
 	switch (vcore_opp) {
 	case VCORE_OPP_0:
@@ -138,7 +138,7 @@ static int is_ct_support(void)
 #if defined(CONFIG_ARM64) && \
 	defined(CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE_NAMES)
 
-	pr_info("[VcoreFS] flavor name: %s\n",
+	pr_debug("[VcoreFS] flavor name: %s\n",
 		CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE_NAMES);
 
 	if ((strstr(CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE_NAMES,
@@ -147,7 +147,7 @@ static int is_ct_support(void)
 			"evb6785_64_hqact") != NULL) ||
 		(strstr(CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE_NAMES,
 			"k85v1_64_ctighten") != NULL)) {
-		pr_info("[VcoreFS]: CT flavor !!!\n");
+		pr_debug("[VcoreFS]: CT flavor !!!\n");
 		return 1;
 	}
 #endif
@@ -161,12 +161,12 @@ static int is_aging_test(void)
 #if defined(CONFIG_ARM64) && \
 	defined(CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE_NAMES)
 
-	pr_info("[VcoreFS] flavor name: %s\n",
+	pr_debug("[VcoreFS] flavor name: %s\n",
 		CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE_NAMES);
 
 	if ((strstr(CONFIG_BUILD_ARM64_DTB_OVERLAY_IMAGE_NAMES,
 			"k85v1_64_aging") != NULL)) {
-		pr_info("[VcoreFS]: AGING flavor !!!\n");
+		pr_debug("[VcoreFS]: AGING flavor !!!\n");
 		return 1;
 	}
 #endif
@@ -212,16 +212,16 @@ static int __init dvfsrc_opp_init(void)
 		if (of_property_read_u32(dvfsrc_node, "vcore_ct",
 			(u32 *) &doe_ct) == 0) {
 			is_vcore_ct = doe_ct;
-			pr_info("%s: DOE CT = %d\n", __func__, doe_ct);
+			pr_debug("%s: DOE CT = %d\n", __func__, doe_ct);
 		}
 		if (of_property_read_u32(dvfsrc_node, "dvfs_v_mode",
 			(u32 *) &dvfs_v_mode) == 0)
-			pr_info("%s: DOE DVFS_V_MODE = %d\n",
+			pr_debug("%s: DOE DVFS_V_MODE = %d\n",
 				__func__, dvfs_v_mode);
 
 		if (of_property_read_u32(dvfsrc_node, "doe_vcore_mode",
 			(u32 *) &doe_vcore_mode) == 0) {
-			pr_info("%s: DOE DRAM_VCORE_MODE = %d\n",
+			pr_debug("%s: DOE DRAM_VCORE_MODE = %d\n",
 				__func__, doe_vcore_mode);
 			if (doe_vcore_mode == 1) {	/*Doe HV */
 				vcore_opp_0_uv = 868750;
@@ -246,7 +246,7 @@ static int __init dvfsrc_opp_init(void)
 					vcore_arg = readl(dvfsrc_base + 0x94);
 					iounmap(dvfsrc_base);
 				}
-				pr_info("%s: vcore_cpe = %08x\n",
+				pr_debug("%s: vcore_cpe = %08x\n",
 					__func__, vcore_arg);
 			}
 
@@ -258,7 +258,7 @@ static int __init dvfsrc_opp_init(void)
 					vcore_opp_1_uv -=
 						get_vb_volt(VCORE_OPP_1);
 			} else {
-				pr_info("%s: CPE not support\n", __func__);
+				pr_debug("%s: CPE not support\n", __func__);
 				vcore_opp_0_uv -= get_vb_volt(VCORE_OPP_0);
 				vcore_opp_1_uv -= get_vb_volt(VCORE_OPP_1);
 			}
@@ -298,14 +298,14 @@ static int __init dvfsrc_opp_init(void)
 		}
 	}
 
-	pr_info("%s: CT=%d, AGING=%d, QEA=%d, VMODE=%d\n",
+	pr_debug("%s: CT=%d, AGING=%d, QEA=%d, VMODE=%d\n",
 		__func__,
 		is_vcore_ct,
 		is_vcore_aging,
 		is_vcore_qea,
 		dvfs_v_mode);
 
-	pr_info("%s: FINAL vcore_opp_uv: %d, %d, %d\n",
+	pr_debug("%s: FINAL vcore_opp_uv: %d, %d, %d\n",
 		__func__,
 		vcore_opp_0_uv,
 		vcore_opp_1_uv,

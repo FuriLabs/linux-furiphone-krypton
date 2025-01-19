@@ -224,19 +224,19 @@ struct regulator *dvfsrc_vcore_requlator(struct device *dev)
 #ifdef AUTOK_ENABLE
 __weak int emmc_autok(void)
 {
-	pr_info("NOT SUPPORT EMMC AUTOK\n");
+	pr_debug("NOT SUPPORT EMMC AUTOK\n");
 	return 0;
 }
 
 __weak int sd_autok(void)
 {
-	pr_info("NOT SUPPORT SD AUTOK\n");
+	pr_debug("NOT SUPPORT SD AUTOK\n");
 	return 0;
 }
 
 __weak int sdio_autok(void)
 {
-	pr_info("NOT SUPPORT SDIO AUTOK\n");
+	pr_debug("NOT SUPPORT SDIO AUTOK\n");
 	return 0;
 }
 
@@ -257,7 +257,7 @@ void finish_autok_task(void)
 	mmdvfs_prepare_action(MMDVFS_PREPARE_CALIBRATION_END);
 
 	if (force >= 0 && force < 13)
-		pr_info("autok task not release force opp: %d\n", force);
+		pr_debug("autok task not release force opp: %d\n", force);
 }
 
 static void dvfsrc_autok_manager(void)
@@ -267,13 +267,13 @@ static void dvfsrc_autok_manager(void)
 	begin_autok_task();
 
 	r = emmc_autok();
-	pr_info("EMMC autok done: %s\n", (r == 0) ? "Yes" : "No");
+	pr_debug("EMMC autok done: %s\n", (r == 0) ? "Yes" : "No");
 
 	r = sd_autok();
-	pr_info("SD autok done: %s\n", (r == 0) ? "Yes" : "No");
+	pr_debug("SD autok done: %s\n", (r == 0) ? "Yes" : "No");
 
 	r = sdio_autok();
-	pr_info("SDIO autok done: %s\n", (r == 0) ? "Yes" : "No");
+	pr_debug("SDIO autok done: %s\n", (r == 0) ? "Yes" : "No");
 
 	finish_autok_task();
 }

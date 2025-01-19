@@ -34,7 +34,7 @@ static const char vcore_550_bin_mp[10] = {0, 0, 0, 0, 0, 0, 2, 2, 4, 4};
 #ifndef CONFIG_MEDIATEK_DRAMC
 static int mtk_dramc_get_steps_freq(unsigned int step)
 {
-	pr_info("get dram steps_freq fail\n");
+	pr_debug("get dram steps_freq fail\n");
 	return 4266;
 }
 #endif
@@ -128,7 +128,7 @@ static int get_vb_volt(int vcore_opp, int ct_test)
 	int ret = 0;
 	int ptpod = get_devinfo_with_index(210);
 
-	pr_info("%s: PTPOD: 0x%x\n", __func__, ptpod);
+	pr_debug("%s: PTPOD: 0x%x\n", __func__, ptpod);
 	switch (vcore_opp) {
 	case VCORE_OPP_0:
 		idx = (ptpod >> 8) & 0xF;
@@ -138,7 +138,7 @@ static int get_vb_volt(int vcore_opp, int ct_test)
 			ret = vcore_750_bin_tst[idx];
 		else
 			ret = vcore_750_bin_mp[idx];
-		pr_info("%s: VCORE_OPP_750 bin: 0x%x, %d\n", __func__, idx, ret);
+		pr_debug("%s: VCORE_OPP_750 bin: 0x%x, %d\n", __func__, idx, ret);
 		break;
 	case VCORE_OPP_1:
 		idx = (ptpod >> 4) & 0xF;
@@ -148,7 +148,7 @@ static int get_vb_volt(int vcore_opp, int ct_test)
 			ret = vcore_725_bin_tst[idx];
 		else
 			ret = vcore_725_bin_mp[idx];
-		pr_info("%s: VCORE_OPP_725 bin: 0x%x, %d\n", __func__, idx, ret);
+		pr_debug("%s: VCORE_OPP_725 bin: 0x%x, %d\n", __func__, idx, ret);
 		break;
 	case VCORE_OPP_4:
 		idx = ptpod & 0xF;
@@ -158,7 +158,7 @@ static int get_vb_volt(int vcore_opp, int ct_test)
 			ret = vcore_550_bin_tst[idx];
 		else
 			ret = vcore_550_bin_mp[idx];
-		pr_info("%s: VCORE_OPP_550 bin: 0x%x, %d\n", __func__, idx, ret);
+		pr_debug("%s: VCORE_OPP_550 bin: 0x%x, %d\n", __func__, idx, ret);
 		break;
 	default:
 		break;
@@ -172,7 +172,7 @@ static int is_rising_need(void)
 	int idx;
 	int ptpod = get_devinfo_with_index(210);
 
-	pr_info("%s: PTPOD: 0x%x\n", __func__, ptpod);
+	pr_debug("%s: PTPOD: 0x%x\n", __func__, ptpod);
 	idx = ptpod & 0xF;
 	if (idx == 1 || idx == 2)
 		return idx;
@@ -208,7 +208,7 @@ static int __init dvfsrc_opp_init(void)
 			dvfsrc_rsrv = readl(dvfsrc_base + 0x610);
 			iounmap(dvfsrc_base);
 		}
-		pr_info("%s: vcore_arg = %08x\n", __func__, dvfsrc_rsrv);
+		pr_debug("%s: vcore_arg = %08x\n", __func__, dvfsrc_rsrv);
 		dvfs_v_mode = (dvfsrc_rsrv >> V_VMODE_SHIFT) & 0x3;
 		is_vcore_ct = (dvfsrc_rsrv >> V_CT_V2_SHIFT) & 0x1;
 		ct_test = (dvfsrc_rsrv >> V_CT_TEST_SHIFT) & 0x1;
@@ -266,12 +266,12 @@ static int __init dvfsrc_opp_init(void)
 		vcore_opp_4_uv = roundup((vcore_opp_4_uv * 105) / 100, 6250);
 	}
 
-	pr_info("%s: VMODE=%d, RSV4=%x\n",
+	pr_debug("%s: VMODE=%d, RSV4=%x\n",
 			__func__,
 			dvfs_v_mode,
 			dvfsrc_rsrv);
 
-	pr_info("%s: FINAL vcore_opp_uv: %d, %d, %d, %d, %d\n",
+	pr_debug("%s: FINAL vcore_opp_uv: %d, %d, %d, %d, %d\n",
 		__func__,
 		vcore_opp_0_uv,
 		vcore_opp_1_uv,
