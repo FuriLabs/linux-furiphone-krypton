@@ -64,7 +64,7 @@ int get_task_group_path(struct task_group *tg, char *buf, size_t buf_len)
 int set_sched_boost_type(int type)
 {
 	if (type < SCHED_NO_BOOST || type > SCHED_ALL_BOOST) {
-		pr_info("Sched boost type should between %d-%d but your valuse is %d\n",
+		pr_debug("Sched boost type should between %d-%d but your valuse is %d\n",
 		       SCHED_NO_BOOST, SCHED_ALL_BOOST, type);
 		return -1;
 	}
