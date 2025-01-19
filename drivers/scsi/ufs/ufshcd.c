@@ -8122,7 +8122,7 @@ static int ufshcd_ioctl(struct scsi_device *dev, int cmd, void __user *buffer)
 	int err = 0;
 
 	if (!buffer) {
-		dev_err(hba->dev, "%s: user buffer is NULL\n", __func__);
+		dev_dbg(hba->dev, "%s: user buffer is NULL\n", __func__);
 		return -EINVAL;
 	}
 
