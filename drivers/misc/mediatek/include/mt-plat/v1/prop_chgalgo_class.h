@@ -16,19 +16,19 @@
 #define PCA_DBG(fmt, ...) \
 	do { \
 		if (PCA_DBG_EN) \
-			pr_info("[PCA]%s " fmt, __func__, ##__VA_ARGS__); \
+			pr_debug("[PCA]%s " fmt, __func__, ##__VA_ARGS__); \
 	} while (0)
 
 #define PCA_INFO(fmt, ...) \
 	do { \
 		if (PCA_INFO_EN) \
-			pr_info("[PCA]%s " fmt, __func__, ##__VA_ARGS__); \
+			pr_debug("[PCA]%s " fmt, __func__, ##__VA_ARGS__); \
 	} while (0)
 
 #define PCA_ERR(fmt, ...) \
 	do { \
 		if (PCA_ERR_EN) \
-			pr_info("[PCA]%s " fmt, __func__, ##__VA_ARGS__); \
+			pr_debug("[PCA]%s " fmt, __func__, ##__VA_ARGS__); \
 	} while (0)
 
 #define SIMPLE_PCA_TA_DESC(_name, ops) \
