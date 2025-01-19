@@ -108,7 +108,7 @@ uint32_t memorydump_size_probe(struct platform_device *pdev)
 		ret = of_property_read_u32_index(pdev->dev.of_node,
 			"memorydump", i - 1, &scp_dump.prefix[i]);
 		if (ret) {
-			pr_notice("[SCP] %s:Cannot get memorydump size(%d)\n", __func__, i - 1);
+			pr_debug("[SCP] %s:Cannot get memorydump size(%d)\n", __func__, i - 1);
 			return -1;
 		}
 		scp_dump.prefix[i] += scp_dump.prefix[i - 1];
@@ -156,37 +156,37 @@ void scp_dump_last_regs(void)
 
 void scp_show_last_regs(void)
 {
-	pr_notice("[SCP] c0h0_status = %08x\n", c0_m->status);
-	pr_notice("[SCP] c0h0_pc = %08x\n", c0_m->pc);
-	pr_notice("[SCP] c0h0_lr = %08x\n", c0_m->lr);
-	pr_notice("[SCP] c0h0_sp = %08x\n", c0_m->sp);
-	pr_notice("[SCP] c0h0_pc_latch = %08x\n", c0_m->pc_latch);
-	pr_notice("[SCP] c0h0_lr_latch = %08x\n", c0_m->lr_latch);
-	pr_notice("[SCP] c0h0_sp_latch = %08x\n", c0_m->sp_latch);
+	pr_debug("[SCP] c0h0_status = %08x\n", c0_m->status);
+	pr_debug("[SCP] c0h0_pc = %08x\n", c0_m->pc);
+	pr_debug("[SCP] c0h0_lr = %08x\n", c0_m->lr);
+	pr_debug("[SCP] c0h0_sp = %08x\n", c0_m->sp);
+	pr_debug("[SCP] c0h0_pc_latch = %08x\n", c0_m->pc_latch);
+	pr_debug("[SCP] c0h0_lr_latch = %08x\n", c0_m->lr_latch);
+	pr_debug("[SCP] c0h0_sp_latch = %08x\n", c0_m->sp_latch);
 	if (scpreg.twohart) {
-		pr_notice("[SCP] c0h1_pc = %08x\n", c0_t1_m->pc);
-		pr_notice("[SCP] c0h1_lr = %08x\n", c0_t1_m->lr);
-		pr_notice("[SCP] c0h1_sp = %08x\n", c0_t1_m->sp);
-		pr_notice("[SCP] c0h1_pc_latch = %08x\n", c0_t1_m->pc_latch);
-		pr_notice("[SCP] c0h1_lr_latch = %08x\n", c0_t1_m->lr_latch);
-		pr_notice("[SCP] c0h1_sp_latch = %08x\n", c0_t1_m->sp_latch);
+		pr_debug("[SCP] c0h1_pc = %08x\n", c0_t1_m->pc);
+		pr_debug("[SCP] c0h1_lr = %08x\n", c0_t1_m->lr);
+		pr_debug("[SCP] c0h1_sp = %08x\n", c0_t1_m->sp);
+		pr_debug("[SCP] c0h1_pc_latch = %08x\n", c0_t1_m->pc_latch);
+		pr_debug("[SCP] c0h1_lr_latch = %08x\n", c0_t1_m->lr_latch);
+		pr_debug("[SCP] c0h1_sp_latch = %08x\n", c0_t1_m->sp_latch);
 	}
 	if (scpreg.core_nums == 2) {
-		pr_notice("[SCP] c1h0_status = %08x\n", c1_m->status);
-		pr_notice("[SCP] c1h0_pc = %08x\n", c1_m->pc);
-		pr_notice("[SCP] c1h0_lr = %08x\n", c1_m->lr);
-		pr_notice("[SCP] c1h0_sp = %08x\n", c1_m->sp);
-		pr_notice("[SCP] c1h0_pc_latch = %08x\n", c1_m->pc_latch);
-		pr_notice("[SCP] c1h0_lr_latch = %08x\n", c1_m->lr_latch);
-		pr_notice("[SCP] c1h0_sp_latch = %08x\n", c1_m->sp_latch);
+		pr_debug("[SCP] c1h0_status = %08x\n", c1_m->status);
+		pr_debug("[SCP] c1h0_pc = %08x\n", c1_m->pc);
+		pr_debug("[SCP] c1h0_lr = %08x\n", c1_m->lr);
+		pr_debug("[SCP] c1h0_sp = %08x\n", c1_m->sp);
+		pr_debug("[SCP] c1h0_pc_latch = %08x\n", c1_m->pc_latch);
+		pr_debug("[SCP] c1h0_lr_latch = %08x\n", c1_m->lr_latch);
+		pr_debug("[SCP] c1h0_sp_latch = %08x\n", c1_m->sp_latch);
 	}
 	if (scpreg.core_nums == 2 && scpreg.twohart) {
-		pr_notice("[SCP] c1h1_pc = %08x\n", c1_t1_m->pc);
-		pr_notice("[SCP] c1h1_lr = %08x\n", c1_t1_m->lr);
-		pr_notice("[SCP] c1h1_sp = %08x\n", c1_t1_m->sp);
-		pr_notice("[SCP] c1h1_pc_latch = %08x\n", c1_t1_m->pc_latch);
-		pr_notice("[SCP] c1h1_lr_latch = %08x\n", c1_t1_m->lr_latch);
-		pr_notice("[SCP] c1h1_sp_latch = %08x\n", c1_t1_m->sp_latch);
+		pr_debug("[SCP] c1h1_pc = %08x\n", c1_t1_m->pc);
+		pr_debug("[SCP] c1h1_lr = %08x\n", c1_t1_m->lr);
+		pr_debug("[SCP] c1h1_sp = %08x\n", c1_t1_m->sp);
+		pr_debug("[SCP] c1h1_pc_latch = %08x\n", c1_t1_m->pc_latch);
+		pr_debug("[SCP] c1h1_lr_latch = %08x\n", c1_t1_m->lr_latch);
+		pr_debug("[SCP] c1h1_sp_latch = %08x\n", c1_t1_m->sp_latch);
 	}
 	scp_show_bus_tracker_status();
 }
@@ -224,12 +224,12 @@ void scp_show_bus_tracker_status(void)
 	struct scp_bus_tracker_status *bus_tracker;
 
 	bus_tracker = &scpreg.tracker_status;
-	pr_notice("BUS DBG CON: %x\n", bus_tracker->dbg_con);
+	pr_debug("BUS DBG CON: %x\n", bus_tracker->dbg_con);
 	for (i = 3; i >= 0; --i) {
 		offset = i << 3;
 		if (!bus_tracker->dbg_r[offset + 7])
 			continue;
-		pr_notice("R[%u-%u] %08x %08x %08x %08x %08x %08x %08x %08x\n",
+		pr_debug("R[%u-%u] %08x %08x %08x %08x %08x %08x %08x %08x\n",
 				offset, offset + 7,
 				bus_tracker->dbg_r[offset],
 				bus_tracker->dbg_r[offset + 1],
@@ -239,7 +239,7 @@ void scp_show_bus_tracker_status(void)
 				bus_tracker->dbg_r[offset + 5],
 				bus_tracker->dbg_r[offset + 6],
 				bus_tracker->dbg_r[offset + 7]);
-		pr_notice("W[%u-%u] %08x %08x %08x %08x %08x %08x %08x %08x\n",
+		pr_debug("W[%u-%u] %08x %08x %08x %08x %08x %08x %08x %08x\n",
 				offset, offset + 7,
 				bus_tracker->dbg_w[offset],
 				bus_tracker->dbg_w[offset + 1],
@@ -263,7 +263,7 @@ void scp_do_regdump(uint32_t *out, uint32_t *out_end)
 	for (i = 0; i < size_limit; i++) {
 		if (((void *)buf + reg_save_list[i].size
 			+ sizeof(struct reg_save_st)) > (void *)out_end) {
-			pr_notice("[SCP] %s overflow\n", __func__);
+			pr_debug("[SCP] %s overflow\n", __func__);
 			break;
 		}
 		*buf = reg_save_list[i].addr;
@@ -288,7 +288,7 @@ void scp_do_l1cdump(uint32_t *out, uint32_t *out_end)
 	/* enable cache debug */
 	writel(tmp | B_CORE0_CACHE_DBG_EN | B_CORE1_CACHE_DBG_EN, R_SEC_CTRL);
 	if ((void *)buf + l1c_size > (void *)out_end) {
-		pr_notice("[SCP] %s overflow\n", __func__);
+		pr_debug("[SCP] %s overflow\n", __func__);
 		return;
 	}
 	memcpy_from_scp(buf, R_CORE0_CACHE_RAM, l1c_size);
@@ -325,11 +325,11 @@ void scp_do_tbufdump_RV33(uint32_t *out, uint32_t *out_end)
 	}
 
 	for (i = 0; i < 16; i++) {
-		pr_notice("[SCP] C0:%02d:0x%08x::0x%08x\n",
+		pr_debug("[SCP] C0:%02d:0x%08x::0x%08x\n",
 			i, *(out + i * 2), *(out + i * 2 + 1));
 	}
 	for (i = 0; i < 16; i++) {
-		pr_notice("[SCP] C1:%02d:0x%08x::0x%08x\n",
+		pr_debug("[SCP] C1:%02d:0x%08x::0x%08x\n",
 			i, *(out + i * 2 + 16), *(out + i * 2 + 17));
 	}
 }
@@ -354,7 +354,7 @@ void scp_do_tbufdump_RV55(uint32_t *out, uint32_t *out_end)
 		buf += 2;
 	}
 	for (i = 0; i < 32; i++) {
-		pr_notice("[SCP] C0:H0:%02d:0x%08x::0x%08x\n",
+		pr_debug("[SCP] C0:H0:%02d:0x%08x::0x%08x\n",
 			i, *(out + i * 2), *(out + i * 2 + 1));
 	}
 	for (i = 0; i < 32; i++) {
@@ -367,7 +367,7 @@ void scp_do_tbufdump_RV55(uint32_t *out, uint32_t *out_end)
 		buf += 2;
 	}
 	for (i = 0; i < 32; i++) {
-		pr_notice("[SCP] C0:H1:%02d:0x%08x::0x%08x\n",
+		pr_debug("[SCP] C0:H1:%02d:0x%08x::0x%08x\n",
 			i, *(out + 64 + i * 2), *(out + 64 + i * 2 + 1));
 	}
 
@@ -388,7 +388,7 @@ void scp_do_tbufdump_RV55(uint32_t *out, uint32_t *out_end)
 		buf += 2;
 	}
 	for (i = 0; i < 32; i++) {
-		pr_notice("[SCP] C1:H0:%02d:0x%08x::0x%08x\n",
+		pr_debug("[SCP] C1:H0:%02d:0x%08x::0x%08x\n",
 			i, *(out + i * 2), *(out + i * 2 + 1));
 	}
 	for (i = 0; i < 32; i++) {
@@ -401,7 +401,7 @@ void scp_do_tbufdump_RV55(uint32_t *out, uint32_t *out_end)
 		buf += 2;
 	}
 	for (i = 0; i < 32; i++) {
-		pr_notice("[SCP] C1:H1:%02d:0x%08x::0x%08x\n",
+		pr_debug("[SCP] C1:H1:%02d:0x%08x::0x%08x\n",
 			i, *(out + 64 + i * 2), *(out + 64 + i * 2 + 1));
 	}
 }
@@ -430,7 +430,7 @@ static unsigned int scp_crash_dump(enum scp_core_id id)
 
 	/*check SRAM lock ,awake scp*/
 	if (scp_awake_lock((void *)id) == -1) {
-		pr_notice("[SCP] %s: awake scp fail, scp id=%u\n", __func__, id);
+		pr_debug("[SCP] %s: awake scp fail, scp id=%u\n", __func__, id);
 		scp_awake_fail_flag = 1;
 	}
 
@@ -481,22 +481,22 @@ static unsigned int scp_crash_dump(enum scp_core_id id)
 				retry--;
 			}
 			if (retry == 0)	{
-				pr_notice("[SCP] Dump timed out:%d\n", POLLING_RETRY);
+				pr_debug("[SCP] Dump timed out:%d\n", POLLING_RETRY);
 #if SCP_SECURE_DUMP_DEBUG
-				pr_notice("[SCP] Dump timeout dump once again.\n");
+				pr_debug("[SCP] Dump timeout dump once again.\n");
 				print_clk_registers();
 #endif
 			}
 		}
 		dump_end = ktime_get_boot_ns();
-		pr_notice("[SCP] Dump: %lld ns\n", (dump_end - dump_start));
+		pr_debug("[SCP] Dump: %lld ns\n", (dump_end - dump_start));
 
 #if SCP_SECURE_DUMP_MEASURE
 		scpdump_cal[0].end = ktime_get_boot_ns();
 		for (idx = 0; idx < POLLING_RETRY; idx++) {
 			if (scpdump_cal[idx].type == 0)
 				break;
-			pr_notice("[SCP] scpdump:%d Type:%d %lldns\n", idx, scpdump_cal[idx].type,
+			pr_debug("[SCP] scpdump:%d Type:%d %lldns\n", idx, scpdump_cal[idx].type,
 						(scpdump_cal[idx].end - scpdump_cal[idx].start));
 		}
 #endif
@@ -508,22 +508,22 @@ static unsigned int scp_crash_dump(enum scp_core_id id)
 			int i;
 
 			for (i = 0; i < 32; i++) {
-				pr_notice("[SCP] C0:H0:%02d:0x%08x::0x%08x\n",
+				pr_debug("[SCP] C0:H0:%02d:0x%08x::0x%08x\n",
 					i, *(out + i * 2), *(out + i * 2 + 1));
 			}
 
 
 			for (i = 0; i < 32; i++) {
-				pr_notice("[SCP] C0:H1:%02d:0x%08x::0x%08x\n",
+				pr_debug("[SCP] C0:H1:%02d:0x%08x::0x%08x\n",
 					i, *(out + 64 + i * 2), *(out + 64 + i * 2 + 1));
 			}
 			if (scpreg.core_nums > 1) {
 				for (i = 0; i < 32; i++) {
-					pr_notice("[SCP] C1:H0:%02d:0x%08x::0x%08x\n",
+					pr_debug("[SCP] C1:H0:%02d:0x%08x::0x%08x\n",
 						i, *(out + 128 + i * 2), *(out + 128 + i * 2 + 1));
 				}
 				for (i = 0; i < 32; i++) {
-					pr_notice("[SCP] C1:H1:%02d:0x%08x::0x%08x\n",
+					pr_debug("[SCP] C1:H1:%02d:0x%08x::0x%08x\n",
 						i, *(out + 192 + i * 2), *(out + 192 + i * 2 + 1));
 				}
 			}
@@ -533,11 +533,11 @@ static unsigned int scp_crash_dump(enum scp_core_id id)
 			int i;
 
 			for (i = 0; i < 16; i++) {
-				pr_notice("[SCP] C0:%02d:0x%08x::0x%08x\n",
+				pr_debug("[SCP] C0:%02d:0x%08x::0x%08x\n",
 					i, *(out + i * 2), *(out + i * 2 + 1));
 			}
 			for (i = 0; i < 16; i++) {
-				pr_notice("[SCP] C1:%02d:0x%08x::0x%08x\n",
+				pr_debug("[SCP] C1:%02d:0x%08x::0x%08x\n",
 					i, *(out + i * 2 + 16), *(out + i * 2 + 17));
 			}
 		}
@@ -546,7 +546,7 @@ static unsigned int scp_crash_dump(enum scp_core_id id)
 
 		/* dram support? */
 		if ((int)(scp_region_info_copy.ap_dram_size) <= 0) {
-			pr_notice("[scp] ap_dram_size <=0\n");
+			pr_debug("[scp] ap_dram_size <=0\n");
 		} else {
 			dram_start = scp_region_info_copy.ap_dram_start;
 			dram_size = scp_region_info_copy.ap_dram_size;
@@ -571,7 +571,7 @@ static unsigned int scp_crash_dump(enum scp_core_id id)
 
 	/* dram support? */
 	if ((int)(scp_region_info_copy.ap_dram_size) <= 0) {
-		pr_notice("[scp] ap_dram_size <=0\n");
+		pr_debug("[scp] ap_dram_size <=0\n");
 	} else {
 		dram_start = scp_region_info_copy.ap_dram_start;
 		dram_size = scp_region_info_copy.ap_dram_size;
@@ -612,7 +612,7 @@ static void scp_prepare_aed_dump(char *aed_str,
 	scp_A_log = scp_pickup_log_for_aee();
 
 	if (scp_dump.detail_buff == NULL) {
-		pr_notice("[SCP AEE]detail buf is null\n");
+		pr_debug("[SCP AEE]detail buf is null\n");
 	} else {
 		/* prepare scp aee detail information*/
 		memset(scp_dump.detail_buff, 0, SCP_AED_STR_LEN);
@@ -660,7 +660,7 @@ end:
 	scp_dump.ramdump_length = 0;
 	scp_dump.ramdump_length = scp_crash_dump(SCP_A_ID);
 
-	pr_notice("[SCP] %s ends, @%p, size = %x\n", __func__,
+	pr_debug("[SCP] %s ends, @%p, size = %x\n", __func__,
 		scp_dump.ramdump, scp_dump.ramdump_length);
 }
 
@@ -687,7 +687,7 @@ void scp_aed(enum SCP_RESET_TYPE type, enum scp_core_id id)
 		ret = wait_for_completion_interruptible_timeout(
 			&scp_coredump_comp, timeout);
 		if (ret == 0) {
-			pr_notice("[SCP] %s:TIMEOUT, skip\n",
+			pr_debug("[SCP] %s:TIMEOUT, skip\n",
 				__func__);
 			break;
 		}
@@ -701,7 +701,7 @@ void scp_aed(enum SCP_RESET_TYPE type, enum scp_core_id id)
 		}
 	}
 	if (atomic_read(&coredumping) == true)
-		pr_notice("[SCP] coredump overwrite happen\n");
+		pr_debug("[SCP] coredump overwrite happen\n");
 	atomic_set(&coredumping, true);
 
 	/* get scp title and exception type*/
@@ -767,7 +767,7 @@ static ssize_t scp_A_dump_show(struct file *filep,
 		memset(scp_dump.ramdump + offset, 0x0, size);
 		/* log for the first and latest cleanup */
 		if (offset == 0 || size == (scp_dump.ramdump_length - offset))
-			pr_notice("[SCP] %s ramdump cleaned of:0x%llx sz:0x%lx\n", __func__,
+			pr_debug("[SCP] %s ramdump cleaned of:0x%llx sz:0x%lx\n", __func__,
 				offset, size);
 
 		/* the last time read scp_dump buffer has done
@@ -775,7 +775,7 @@ static ssize_t scp_A_dump_show(struct file *filep,
 		 */
 		if (size == scp_dump.ramdump_length - offset) {
 			atomic_set(&coredumping, false);
-			pr_notice("[SCP] coredumping:%d, coredump complete\n",
+			pr_debug("[SCP] coredumping:%d, coredump complete\n",
 				atomic_read(&coredumping));
 			complete(&scp_coredump_comp);
 		}
@@ -835,7 +835,7 @@ int scp_excep_init(void)
 		return -1;
 	}
 	memset(scp_dump.ramdump, 0x0, get_MDUMP_size_accumulate(MDUMP_DRAM));
-	pr_notice("[SCP] %s cleaned ramdump\n", __func__);
+	pr_debug("[SCP] %s cleaned ramdump\n", __func__);
 
 	/* scp_status_reg init */
 	c0_m = vmalloc(sizeof(struct scp_status_reg));

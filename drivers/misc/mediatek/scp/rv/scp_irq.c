@@ -37,7 +37,7 @@ static void scp_A_wdt_handler(unsigned long data)
 		scp_dump_last_regs();
 		scp_send_reset_wq(RESET_TYPE_WDT);
 	} else
-		pr_notice("%s: scp resetting\n", __func__);
+		pr_debug("%s: scp resetting\n", __func__);
 #endif
 #if SCP_RESERVED_MEM && IS_ENABLED(CONFIG_OF_RESERVED_MEM)
 	if (scpreg.secure_dump) {

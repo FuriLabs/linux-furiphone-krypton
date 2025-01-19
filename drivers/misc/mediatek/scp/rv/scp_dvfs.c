@@ -159,7 +159,7 @@ static void slp_ipi_init(void)
 	ret = mtk_ipi_register(&scp_ipidev, IPI_OUT_C_SLEEP_0,
 		NULL, NULL, &scp_ipi_ackdata0);
 	if (ret) {
-		pr_notice("scp0 slp ipi register failed\n");
+		pr_debug("scp0 slp ipi register failed\n");
 		WARN_ON(1);
 	}
 
@@ -167,7 +167,7 @@ static void slp_ipi_init(void)
 		ret = mtk_ipi_register(&scp_ipidev, IPI_OUT_C_SLEEP_1,
 			NULL, NULL, &scp_ipi_ackdata1);
 		if (ret)
-			pr_notice("scp1 slp ipi register failed\n");
+			pr_debug("scp1 slp ipi register failed\n");
 	}
 	if (!ret)
 		dvfs.ipi_init_done = true;
@@ -183,7 +183,7 @@ static int scp_get_vcore_table(unsigned int gear)
 	if (!(res.a0))
 		return res.a1;
 
-	pr_notice("[%s]: should not end here\n", __func__);
+	pr_debug("[%s]: should not end here\n", __func__);
 	return -1;
 }
 #endif
@@ -206,7 +206,7 @@ int scp_resource_req(unsigned int req_type)
 	if (!res.a0)
 		scp_resrc_current_req = req_type;
 	else
-		pr_notice("[%s]: resource request failed, req: %u\n",
+		pr_debug("[%s]: resource request failed, req: %u\n",
 			__func__, req_type);
 
 	return res.a0;
@@ -218,7 +218,7 @@ static int scp_reg_update(struct regmap *regmap, struct reg_info *reg, u32 val)
 	int ret = 0;
 
 	if (!reg->msk) {
-		pr_notice("[%s]: reg not support\n", __func__);
+		pr_debug("[%s]: reg not support\n", __func__);
 		return -ESCP_REG_NOT_SUPPORTED;
 	}
 	mask = reg->msk << reg->bit;
@@ -239,7 +239,7 @@ static int scp_reg_read(struct regmap *regmap, struct reg_info *reg, u32 *val)
 	int ret = 0;
 
 	if (!reg->msk) {
-		pr_notice("[%s]: reg not support\n", __func__);
+		pr_debug("[%s]: reg not support\n", __func__);
 		return -ESCP_REG_NOT_SUPPORTED;
 	}
 
@@ -263,7 +263,7 @@ static int scp_get_freq_idx(unsigned int clk_opp)
 			break;
 
 	if (i == dvfs.scp_opp_nums) {
-		pr_notice("no available opp, freq: %u\n", clk_opp);
+		pr_debug("no available opp, freq: %u\n", clk_opp);
 		return -EINVAL;
 	}
 
@@ -275,7 +275,7 @@ static int scp_update_pmic_vow_lp_mode(bool on)
 	int ret = 0;
 
 	if (dvfs.vlp_support) {
-		pr_notice("[%s]: VCORE DVS is not supported\n", __func__);
+		pr_debug("[%s]: VCORE DVS is not supported\n", __func__);
 		WARN_ON(1);
 		return -ESCP_DVFS_DVS_SHOULD_BE_BYPASSED;
 	}
@@ -296,7 +296,7 @@ static int scp_set_pmic_vcore(unsigned int cur_freq)
 	int idx = 0;
 
 	if (dvfs.vlp_support) {
-		pr_notice("[%s]: VCORE DVS is not supported\n", __func__);
+		pr_debug("[%s]: VCORE DVS is not supported\n", __func__);
 		return -ESCP_DVFS_DVS_SHOULD_BE_BYPASSED;
 	}
 
@@ -329,7 +329,7 @@ static int scp_set_pmic_vcore(unsigned int cur_freq)
 		}
 	} else {
 		ret = -ESCP_DVFS_OPP_OUT_OF_BOUND;
-		pr_notice("[%s]: cur_freq=%d is not supported\n",
+		pr_debug("[%s]: cur_freq=%d is not supported\n",
 			__func__, cur_freq);
 		WARN_ON(1);
 	}
@@ -343,7 +343,7 @@ static uint32_t sum_required_freq(uint32_t core_id)
 	uint32_t sum = 0;
 
 	if (core_id >= dvfs.core_nums) {
-		pr_notice("[%s]: ERROR: core_id is invalid: %u\n",
+		pr_debug("[%s]: ERROR: core_id is invalid: %u\n",
 				__func__, core_id);
 		WARN_ON(1);
 		core_id = SCPSYS_CORE0;
@@ -377,7 +377,7 @@ static uint32_t _mt_scp_dvfs_set_test_freq(uint32_t sum)
 	if (scp_dvfs_debug_flag == -1)
 		return 0;
 
-	pr_info("manually set opp = %d\n", scp_dvfs_debug_flag);
+	pr_debug("manually set opp = %d\n", scp_dvfs_debug_flag);
 
 	for (i = 0; i < dvfs.scp_opp_nums; i++) {
 		freq = dvfs.opp[i].freq;
@@ -388,7 +388,7 @@ static uint32_t _mt_scp_dvfs_set_test_freq(uint32_t sum)
 		}
 	}
 	feature_table[VCORE_TEST_FEATURE_ID].freq = added_freq;
-	pr_notice("[%s]test freq: %d + %d = %d (MHz)\n",
+	pr_debug("[%s]test freq: %d + %d = %d (MHz)\n",
 			__func__,
 			sum,
 			added_freq,
@@ -434,7 +434,7 @@ uint32_t scp_get_freq(void)
 
 	if (i == dvfs.scp_opp_nums) {
 		return_freq = dvfs.opp[dvfs.scp_opp_nums - 1].freq;
-		pr_notice("warning: request freq %d > max opp %d\n",
+		pr_debug("warning: request freq %d > max opp %d\n",
 				sum, return_freq);
 	}
 
@@ -457,7 +457,7 @@ static void scp_vcore_request(unsigned int clk_opp)
 
 	idx = scp_get_freq_idx(clk_opp);
 	if (idx < 0) {
-		pr_notice("[%s]: invalid clk_opp %d\n", __func__, clk_opp);
+		pr_debug("[%s]: invalid clk_opp %d\n", __func__, clk_opp);
 		WARN_ON(1);
 		return;
 	}
@@ -530,12 +530,12 @@ int scp_request_freq_vcore(void)
 				IPI_SEND_WAIT, &scp_expected_freq,
 				PIN_OUT_SIZE_DVFS_SET_FREQ_0, 0);
 			if (ret != IPI_ACTION_DONE)
-				pr_notice("SCP send IPI fail - %d\n", ret);
+				pr_debug("SCP send IPI fail - %d\n", ret);
 
 			mdelay(2);
 			timeout -= 1; /*try 50 times, total about 100ms*/
 			if (timeout <= 0) {
-				pr_notice("set freq fail, current(%d) != expect(%d)\n",
+				pr_debug("set freq fail, current(%d) != expect(%d)\n",
 					scp_current_freq, scp_expected_freq);
 				__pm_relax(scp_suspend_lock);
 				WARN_ON(1);
@@ -584,7 +584,7 @@ int scp_request_freq_vlp(void)
 	}
 
 	if (!dvfs.vlp_support) {
-		pr_notice("[%s]: should not end here: vlp not supported!\n", __func__);
+		pr_debug("[%s]: should not end here: vlp not supported!\n", __func__);
 		return 0;
 	}
 
@@ -620,7 +620,7 @@ int scp_request_freq_vlp(void)
 				PIN_OUT_SIZE_DVFS_SET_FREQ_0, 0);
 			mdelay(2);
 			if (ret != IPI_ACTION_DONE) {
-				pr_notice("SCP send IPI fail - %d\n", ret);
+				pr_debug("SCP send IPI fail - %d\n", ret);
 			} else {
 				last_scp_expected_freq = scp_expected_freq;
 				break;
@@ -635,7 +635,7 @@ int scp_request_freq_vlp(void)
 			spin_lock_irqsave(&scp_awake_spinlock, spin_flags);
 			scp_current_freq = readl(CURRENT_FREQ_REG);
 			spin_unlock_irqrestore(&scp_awake_spinlock, spin_flags);
-			pr_notice("set expected_freq(%d) fail, current is %d\n",
+			pr_debug("set expected_freq(%d) fail, current is %d\n",
 				scp_expected_freq, scp_current_freq);
 			__pm_relax(scp_suspend_lock);
 			WARN_ON(1);
@@ -673,7 +673,7 @@ void wait_scp_dvfs_init_done(void)
 		mdelay(1);
 		count++;
 		if (count > 3000) {
-			pr_notice("SCP dvfs driver init fail\n");
+			pr_debug("SCP dvfs driver init fail\n");
 			WARN_ON(1);
 		}
 	}
@@ -687,7 +687,7 @@ static int set_scp_clk_mux(unsigned int  pll_ctrl_flag)
 		if (!dvfs.pre_mux_en) {
 			ret = clk_prepare_enable(mt_scp_pll.clk_mux);
 			if (ret) {
-				pr_notice("[%s]: clk_prepare_enable failed\n",
+				pr_debug("[%s]: clk_prepare_enable failed\n",
 					__func__);
 				WARN_ON(1);
 				return -1;
@@ -716,7 +716,7 @@ static int __scp_pll_sel_26M(unsigned int pll_ctrl_flag, unsigned int pll_sel)
 	if (pll_ctrl_flag == PLL_ENABLE) {
 		ret = clk_set_parent(mt_scp_pll.clk_mux, mt_scp_pll.clk_pll[0]);
 		if (ret) {
-			pr_notice("[%s]: clk_set_parent() failed for 26M\n", __func__);
+			pr_debug("[%s]: clk_set_parent() failed for 26M\n", __func__);
 			WARN_ON(1);
 		}
 	}
@@ -737,7 +737,7 @@ int scp_pll_ctrl_set(unsigned int pll_ctrl_flag, unsigned int pll_sel)
 
 	idx = scp_get_freq_idx(pll_sel);
 	if (idx < 0) {
-		pr_notice("invalid idx %d\n", idx);
+		pr_debug("invalid idx %d\n", idx);
 		WARN_ON(1);
 		return -EINVAL;
 	}
@@ -745,7 +745,7 @@ int scp_pll_ctrl_set(unsigned int pll_ctrl_flag, unsigned int pll_sel)
 	mux_idx = dvfs.opp[idx].clk_mux;
 
 	if (mux_idx < 0) {
-		pr_notice("invalid mux_idx %d\n", mux_idx);
+		pr_debug("invalid mux_idx %d\n", mux_idx);
 		WARN_ON(1);
 		return -EINVAL;
 	}
@@ -759,13 +759,13 @@ int scp_pll_ctrl_set(unsigned int pll_ctrl_flag, unsigned int pll_sel)
 			ret = clk_set_parent(mt_scp_pll.clk_mux,
 					mt_scp_pll.clk_pll[mux_idx]);
 		else {
-			pr_notice("[%s]: not support opp freq %d\n",
+			pr_debug("[%s]: not support opp freq %d\n",
 				__func__, pll_sel);
 			WARN_ON(1);
 		}
 
 		if (ret) {
-			pr_notice("[%s]: clk_set_parent() failed, opp=%d\n",
+			pr_debug("[%s]: clk_set_parent() failed, opp=%d\n",
 				__func__, pll_sel);
 			WARN_ON(1);
 		}
@@ -806,12 +806,12 @@ void mt_scp_dvfs_state_dump(void)
 	if (dvfs.vlp_support) {
 		slp_pwr_ctrl = readl(SCP_SLP_PWR_CTRL);
 		power_status = readl(SCP_POWER_STATUS);
-		pr_info("scp status: %s, cpu-off config: %s, power status: %s\n",
+		pr_debug("scp status: %s, cpu-off config: %s, power status: %s\n",
 			scp_status,
 			((slp_pwr_ctrl & R_CPU_OFF) == R_CPU_OFF) ? "enable" : "disable",
 			((power_status & POW_ON) == POW_ON) ? "on" : "off");
 	} else {
-		pr_info("scp status: %s\n", scp_status);
+		pr_debug("scp status: %s\n", scp_status);
 	}
 }
 
@@ -873,18 +873,18 @@ static int mt_scp_dvfs_sleep_cnt_proc_show(struct seq_file *m, void *v)
 			IPI_SEND_WAIT, &ipi_data, PIN_OUT_C_SIZE_SLEEP_1, 500);
 		scp_ack_data = &scp_ipi_ackdata1;
 	} else {
-		pr_notice("[%s]: invalid scp core num: %d\n",
+		pr_debug("[%s]: invalid scp core num: %d\n",
 			__func__, dvfs.cur_dbg_core);
 		return -ESCP_DVFS_DBG_INVALID_CMD;
 	}
 	if (ret != IPI_ACTION_DONE) {
-		pr_notice("[%s] ipi send failed with error: %d\n",
+		pr_debug("[%s] ipi send failed with error: %d\n",
 			__func__, ret);
 		return -ESCP_DVFS_IPI_FAILED;
 	}
 	seq_printf(m, "scp core%d sleep count: %d\n",
 		dvfs.cur_dbg_core, *scp_ack_data);
-	pr_notice("[%s]: scp core%d sleep count :%d\n",
+	pr_debug("[%s]: scp core%d sleep count :%d\n",
 		__func__, dvfs.cur_dbg_core, *scp_ack_data);
 
 
@@ -922,7 +922,7 @@ static ssize_t mt_scp_dvfs_sleep_cnt_proc_write(
 
 	n = sscanf(desc, "%31s", cmd);
 	if (n != 1) {
-		pr_notice("[%s]: invalid command", __func__);
+		pr_debug("[%s]: invalid command", __func__);
 		return -ESCP_DVFS_DBG_INVALID_CMD;
 	}
 
@@ -935,19 +935,19 @@ static ssize_t mt_scp_dvfs_sleep_cnt_proc_write(
 			ipi_cmd = IPI_OUT_C_SLEEP_1;
 			ipi_cmd_size = PIN_OUT_C_SIZE_SLEEP_1;
 		} else {
-			pr_notice("[%s]: invalid core index: %d\n",
+			pr_debug("[%s]: invalid core index: %d\n",
 				__func__, dvfs.cur_dbg_core);
 			return -ESCP_DVFS_DBG_INVALID_CMD;
 		}
 		ret = mtk_ipi_send(&scp_ipidev, ipi_cmd, IPI_SEND_WAIT,
 			&ipi_data, ipi_cmd_size, 500);
 		if (ret != SCP_IPI_DONE) {
-			pr_info("[%s]: SCP send IPI failed - %d\n",
+			pr_debug("[%s]: SCP send IPI failed - %d\n",
 				__func__, ret);
 			return -ESCP_DVFS_IPI_FAILED;
 		}
 	} else {
-		pr_notice("[%s]: invalid command: %s\n", __func__, cmd);
+		pr_debug("[%s]: invalid command: %s\n", __func__, cmd);
 		return -ESCP_DVFS_DBG_INVALID_CMD;
 	}
 
@@ -977,12 +977,12 @@ static int mt_scp_dvfs_sleep_proc_show(struct seq_file *m, void *v)
 			IPI_SEND_WAIT, &ipi_data, PIN_OUT_C_SIZE_SLEEP_1, 500);
 		scp_ack_data = &scp_ipi_ackdata1;
 	} else {
-		pr_notice("[%s]: invalid scp core index: %d\n",
+		pr_debug("[%s]: invalid scp core index: %d\n",
 			__func__, dvfs.cur_dbg_core);
 		return -ESCP_DVFS_DBG_INVALID_CMD;
 	}
 	if (ret != IPI_ACTION_DONE) {
-		pr_notice("[%s] ipi send failed with error: %d\n",
+		pr_debug("[%s] ipi send failed with error: %d\n",
 			__func__, ret);
 	} else {
 		if (*scp_ack_data >= SCP_SLEEP_OFF &&
@@ -1029,13 +1029,13 @@ static ssize_t mt_scp_dvfs_sleep_proc_write(
 
 	n = sscanf(desc, "%31s %d", cmd, &slp_cmd);
 	if (n != 2) {
-		pr_notice("[%s]: invalid command", __func__);
+		pr_debug("[%s]: invalid command", __func__);
 		return -ESCP_DVFS_DBG_INVALID_CMD;
 	}
 	if (!strcmp(cmd, "sleep")) {
 		if (slp_cmd < SCP_SLEEP_OFF
 				|| slp_cmd > SCP_SLEEP_NO_CONDITION) {
-			pr_info("[%s]: invalid slp cmd: %d\n",
+			pr_debug("[%s]: invalid slp cmd: %d\n",
 				__func__, slp_cmd);
 			return -ESCP_DVFS_DBG_INVALID_CMD;
 		}
@@ -1047,13 +1047,13 @@ static ssize_t mt_scp_dvfs_sleep_proc_write(
 			ipi_cmd = IPI_OUT_C_SLEEP_1;
 			ipi_cmd_size = PIN_OUT_C_SIZE_SLEEP_1;
 		} else {
-			pr_notice("[%s]: invalid debug core: %d\n",
+			pr_debug("[%s]: invalid debug core: %d\n",
 				__func__, dvfs.cur_dbg_core);
 		}
 		ret = mtk_ipi_send(&scp_ipidev, ipi_cmd, IPI_SEND_WAIT,
 			&ipi_data, ipi_cmd_size, 500);
 		if (ret != SCP_IPI_DONE) {
-			pr_info("%s: SCP send IPI fail - %d\n",
+			pr_debug("%s: SCP send IPI fail - %d\n",
 				__func__, ret);
 			return -ESCP_DVFS_IPI_FAILED;
 		}
@@ -1062,7 +1062,7 @@ static ssize_t mt_scp_dvfs_sleep_proc_write(
 		if (dbg_core >= SCP_CORE_0 && dbg_core < SCP_MAX_CORE_NUM)
 			dvfs.cur_dbg_core = dbg_core;
 	} else {
-		pr_notice("[%s]: invalid command: %s\n", __func__, cmd);
+		pr_debug("[%s]: invalid command: %s\n", __func__, cmd);
 		return -ESCP_DVFS_DBG_INVALID_CMD;
 	}
 
@@ -1126,14 +1126,14 @@ static ssize_t mt_scp_dvfs_ctrl_proc_write(
 	if (n == 1 || n == 2) {
 		if (!strcmp(cmd, "on")) {
 			scp_dvfs_flag = 1;
-			pr_info("SCP DVFS: ON\n");
+			pr_debug("SCP DVFS: ON\n");
 		} else if (!strcmp(cmd, "off")) {
 			scp_dvfs_flag = -1;
-			pr_info("SCP DVFS: OFF\n");
+			pr_debug("SCP DVFS: OFF\n");
 		} else if (!strcmp(cmd, "opp")) {
 			if (dvfs_opp == -1) {
 				/* deregister dvfs debug feature */
-				pr_info("remove the opp setting of command\n");
+				pr_debug("remove the opp setting of command\n");
 				feature_table[VCORE_TEST_FEATURE_ID].freq = 0;
 				scp_deregister_feature(
 						VCORE_TEST_FEATURE_ID);
@@ -1145,13 +1145,13 @@ static ssize_t mt_scp_dvfs_ctrl_proc_write(
 				scp_register_feature(
 						VCORE_TEST_FEATURE_ID);
 			} else {
-				pr_info("invalid opp value %d\n", dvfs_opp);
+				pr_debug("invalid opp value %d\n", dvfs_opp);
 			}
 		} else {
-			pr_info("invalid command %s\n", cmd);
+			pr_debug("invalid command %s\n", cmd);
 		}
 	} else {
-		pr_info("invalid length %d\n", n);
+		pr_debug("invalid length %d\n", n);
 	}
 
 	return count;
@@ -1219,7 +1219,7 @@ static int mt_scp_dvfs_create_procfs(void)
 
 	dir = proc_mkdir("scp_dvfs", NULL);
 	if (!dir) {
-		pr_notice("fail to create /proc/scp_dvfs @ %s()\n", __func__);
+		pr_debug("fail to create /proc/scp_dvfs @ %s()\n", __func__);
 		return -ENOMEM;
 	}
 
@@ -1228,7 +1228,7 @@ static int mt_scp_dvfs_create_procfs(void)
 						0664,
 						dir,
 						entries[i].fops)) {
-			pr_notice("ERROR: %s: create /proc/scp_dvfs/%s failed\n",
+			pr_debug("ERROR: %s: create /proc/scp_dvfs/%s failed\n",
 						__func__, entries[i].name);
 			ret = -ENOMEM;
 		}
@@ -1253,7 +1253,7 @@ static void __init mt_pmic_sshub_init(void)
 	if (dvfs.pmic_sshub_en) {
 		/* set SCP VCORE voltage */
 		if (pmic_scp_set_vcore(dvfs.opp[0].tuned_vcore) != 0) {
-			pr_notice("Set wrong vcore voltage\n");
+			pr_debug("Set wrong vcore voltage\n");
 			WARN_ON(1);
 		}
 
@@ -1269,14 +1269,14 @@ static void __init mt_pmic_sshub_init(void)
 		/* pmrc_mode: OFF */
 		pmic_scp_ctrl_enable(true, false, false);
 	} else {
-		pr_notice("shouldn't be here\n");
+		pr_debug("shouldn't be here\n");
 		WARN_ON(1);
 	}
 #elif defined(CONFIG_MACH_MT6853) || defined(CONFIG_MACH_MT6833)
 	if (!dvfs.pmic_sshub_en)
 		pmic_buck_vcore_lp(SRCLKEN11, 0, 1, HW_OFF);
 	else {
-		pr_notice("shouldn't be here\n");
+		pr_debug("shouldn't be here\n");
 		WARN_ON(1);
 	}
 #else
@@ -1294,13 +1294,13 @@ void sync_ulposc_cali_data_to_scp(void)
 	int i, ret;
 
 	if (!dvfs.ulposc_hw.do_ulposc_cali) {
-		pr_notice("[%s]: ulposc2 calibration is not done by AP\n",
+		pr_debug("[%s]: ulposc2 calibration is not done by AP\n",
 			__func__);
 		return;
 	}
 
 	if (dvfs.ulposc_hw.cali_failed) {
-		pr_notice("[%s]: ulposc2 calibration failed\n", __func__);
+		pr_debug("[%s]: ulposc2 calibration failed\n", __func__);
 		return;
 	}
 
@@ -1316,7 +1316,7 @@ void sync_ulposc_cali_data_to_scp(void)
 			*(p + 1) = dvfs.ulposc_hw.cali_val[i] |
 				(dvfs.ulposc_hw.cali_val_ext[i] << CAL_BITS);
 
-		pr_notice("[%s]: ipi to scp: freq=%d, cali_val=0x%x\n",
+		pr_debug("[%s]: ipi to scp: freq=%d, cali_val=0x%x\n",
 			__func__,
 			dvfs.ulposc_hw.cali_freq[i],
 			*(p + 1));
@@ -1328,7 +1328,7 @@ void sync_ulposc_cali_data_to_scp(void)
 					PIN_OUT_C_SIZE_SLEEP_0,
 					500);
 		if (ret != IPI_ACTION_DONE) {
-			pr_notice("[%s]: ipi send ulposc cali val(%d, 0x%x) fail\n",
+			pr_debug("[%s]: ipi send ulposc cali val(%d, 0x%x) fail\n",
 				__func__,
 				dvfs.ulposc_hw.cali_freq[i],
 				*(p + 1));
@@ -1339,7 +1339,7 @@ void sync_ulposc_cali_data_to_scp(void)
 	scp_reg_read(dvfs.clk_hw->scp_clk_regmap,
 		&dvfs.clk_hw->_sel_clk, &sel_clk);
 	if ((sel_clk & (SCP_ULPOSC_SEL_CORE | SCP_ULPOSC_SEL_PERI)) == 0) {
-		pr_notice("[%s]:ERROR scp is not switched to ULPOSC, CLK_SW_SEL=0x%x\n",
+		pr_debug("[%s]:ERROR scp is not switched to ULPOSC, CLK_SW_SEL=0x%x\n",
 			__func__, sel_clk);
 		WARN_ON(1);
 	}
@@ -1353,7 +1353,7 @@ static inline bool __init is_ulposc_cali_pass(unsigned int cur,
 		return 1;
 
 	/* calibrated failed here */
-	pr_notice("[%s]: cur: %dMHz, target: %dMHz calibrate failed\n",
+	pr_debug("[%s]: cur: %dMHz, target: %dMHz calibrate failed\n",
 		__func__,
 		FM_CNT2FREQ(cur),
 		FM_CNT2FREQ(target));
@@ -1365,7 +1365,7 @@ static unsigned int __init get_ulposc_clk_by_fmeter(void)
 	if (dvfs.ccf_fmeter_support)
 		return mt_get_abist_freq(dvfs.ulposc_hw.fmeter_id_ulposc2);
 	else {
-		pr_notice("shouldn't be here\n");
+		pr_debug("shouldn't be here\n");
 		WARN_ON(1);
 	}
 
@@ -1423,7 +1423,7 @@ static int __init ulposc_cali_process(unsigned int cali_idx,
 	set_ulposc_cali_value(*cali_res);
 	current_val = get_ulposc_clk_by_fmeter();
 	if (!is_ulposc_cali_pass(current_val, target_val)) {
-		pr_notice("[%s]: calibration failed for: %dMHz\n",
+		pr_debug("[%s]: calibration failed for: %dMHz\n",
 			__func__,
 			dvfs.ulposc_hw.cali_freq[cali_idx]);
 		*cali_res = 0;
@@ -1431,7 +1431,7 @@ static int __init ulposc_cali_process(unsigned int cali_idx,
 		return -ESCP_DVFS_CALI_FAILED;
 	}
 
-	pr_notice("[%s]: target: %uMhz, calibrated = %uMHz\n",
+	pr_debug("[%s]: target: %uMhz, calibrated = %uMHz\n",
 		__func__, target_val/1000, current_val/1000);
 
 	return 0;
@@ -1462,7 +1462,7 @@ static void turn_onoff_ulposc2(enum ulposc_onoff_enum on)
 	if (on) {
 		/* turn on ulposc */
 		if (dvfs.vlp_support) {
-			pr_notice("shouldn't be here\n");
+			pr_debug("shouldn't be here\n");
 			WARN_ON(1);
 		} else {
 			scp_reg_update(dvfs.clk_hw->scp_clk_regmap,
@@ -1479,7 +1479,7 @@ static void turn_onoff_ulposc2(enum ulposc_onoff_enum on)
 	} else {
 		/* turn off ulposc */
 		if (dvfs.vlp_support) {
-			pr_notice("shouldn't be here\n");
+			pr_debug("shouldn't be here\n");
 			WARN_ON(1);
 		} else {
 			scp_reg_update(dvfs.clk_hw->scp_clk_regmap,
@@ -1498,7 +1498,7 @@ static int __init mt_scp_dvfs_do_ulposc_cali_process(void)
 	unsigned int i;
 
 	if (!dvfs.ulposc_hw.do_ulposc_cali) {
-		pr_notice("[%s]: ulposc2 calibration is not done by AP\n",
+		pr_debug("[%s]: ulposc2 calibration is not done by AP\n",
 			__func__);
 		return 0;
 	}
@@ -1516,7 +1516,7 @@ static int __init mt_scp_dvfs_do_ulposc_cali_process(void)
 			&dvfs.ulposc_hw.ulposc_regs->_con2,
 			dvfs.ulposc_hw.cali_configs[i].con2_val);
 		if (ret) {
-			pr_notice("[%s]: config ulposc register failed\n",
+			pr_debug("[%s]: config ulposc register failed\n",
 				__func__);
 			return ret;
 		}
@@ -1525,7 +1525,7 @@ static int __init mt_scp_dvfs_do_ulposc_cali_process(void)
 
 		ret = ulposc_cali_process(i, &dvfs.ulposc_hw.cali_val[i]);
 		if (ret) {
-			pr_notice("[%s]: cali %uMHz ulposc failed\n",
+			pr_debug("[%s]: cali %uMHz ulposc failed\n",
 				__func__, dvfs.ulposc_hw.cali_freq[i]);
 			dvfs.ulposc_hw.cali_failed = true;
 			return -ESCP_DVFS_CALI_FAILED;
@@ -1534,7 +1534,7 @@ static int __init mt_scp_dvfs_do_ulposc_cali_process(void)
 
 	turn_onoff_ulposc2(ULPOSC_OFF);
 
-	pr_notice("[%s]: ulposc calibration all done\n", __func__);
+	pr_debug("[%s]: ulposc calibration all done\n", __func__);
 
 	return ret;
 }
@@ -1550,7 +1550,7 @@ static int __init mt_scp_dts_get_cali_hw_setting(struct device_node *node,
 	ret = of_property_count_u32_elems(node, "ulposc-cali-config");
 	if ((ret / CALI_CONFIG_ELEM_CNT) <= 0
 		|| (ret % CALI_CONFIG_ELEM_CNT) != 0) {
-		pr_notice("[%s]: cali config count does not equal to cali nums\n",
+		pr_debug("[%s]: cali config count does not equal to cali nums\n",
 			__func__);
 		return ret;
 	}
@@ -1566,7 +1566,7 @@ static int __init mt_scp_dts_get_cali_hw_setting(struct device_node *node,
 			(i * CALI_CONFIG_ELEM_CNT),
 			&(cali_hw->cali_configs[i].con0_val));
 		if (ret) {
-			pr_notice("[%s]: get con0 setting failed\n", __func__);
+			pr_debug("[%s]: get con0 setting failed\n", __func__);
 			goto CALI_DATA_INIT_FAILED;
 		}
 
@@ -1574,7 +1574,7 @@ static int __init mt_scp_dts_get_cali_hw_setting(struct device_node *node,
 			(i * CALI_CONFIG_ELEM_CNT + 1),
 			&(cali_hw->cali_configs[i].con1_val));
 		if (ret) {
-			pr_notice("[%s]: get con1 setting failed\n", __func__);
+			pr_debug("[%s]: get con1 setting failed\n", __func__);
 			goto CALI_DATA_INIT_FAILED;
 		}
 
@@ -1582,7 +1582,7 @@ static int __init mt_scp_dts_get_cali_hw_setting(struct device_node *node,
 			(i * CALI_CONFIG_ELEM_CNT + 2),
 			&(cali_hw->cali_configs[i].con2_val));
 		if (ret) {
-			pr_notice("[%s]: get con2 setting failed\n", __func__);
+			pr_debug("[%s]: get con2 setting failed\n", __func__);
 			goto CALI_DATA_INIT_FAILED;
 		}
 	}
@@ -1604,14 +1604,14 @@ static int __init mt_scp_dts_get_cali_target(struct device_node *node,
 	ret = of_property_read_u32(node, "ulposc-cali-num",
 		&cali_hw->cali_nums);
 	if (ret) {
-		pr_notice("[%s]: find ulposc calibration numbers failed\n",
+		pr_debug("[%s]: find ulposc calibration numbers failed\n",
 			__func__);
 		return ret;
 	}
 
 	ret = of_property_count_u32_elems(node, "ulposc-cali-target");
 	if (ret != cali_hw->cali_nums) {
-		pr_notice("[%s]: target nums does not equals to ulposc-cali-num\n",
+		pr_debug("[%s]: target nums does not equals to ulposc-cali-num\n",
 			__func__);
 		return ret;
 	}
@@ -1643,7 +1643,7 @@ static int __init mt_scp_dts_get_cali_target(struct device_node *node,
 		ret = of_property_read_u32_index(node, "ulposc-cali-target",
 			i, &tmp);
 		if (ret) {
-			pr_notice("[%s]: find cali target failed, idx: %d\n",
+			pr_debug("[%s]: find cali target failed, idx: %d\n",
 				__func__, i);
 			goto FIND_TARGET_FAILED;
 		}
@@ -1671,7 +1671,7 @@ static int __init mt_scp_dts_get_cali_hw_regs(struct device_node *node,
 	/* find ulposc register hw version */
 	ret = of_property_read_string(node, "ulposc-cali-ver", &str);
 	if (ret) {
-		pr_notice("[%s]: find ulposc-cali-ver failed with err: %d\n",
+		pr_debug("[%s]: find ulposc-cali-ver failed with err: %d\n",
 			__func__, ret);
 		return ret;
 	}
@@ -1681,7 +1681,7 @@ static int __init mt_scp_dts_get_cali_hw_regs(struct device_node *node,
 			cali_hw->ulposc_regs = &cali_regs[i];
 
 	if (!cali_hw->ulposc_regs) {
-		pr_notice("[%s]: no ulposc cali reg found\n", __func__);
+		pr_debug("[%s]: no ulposc cali reg found\n", __func__);
 		return -ESCP_DVFS_NO_CALI_HW_FOUND;
 	}
 
@@ -1689,7 +1689,7 @@ static int __init mt_scp_dts_get_cali_hw_regs(struct device_node *node,
 	if (!dvfs.ccf_fmeter_support) {
 		ret = of_property_read_string(node, "clk-dbg-ver", &str);
 		if (ret) {
-			pr_notice("[%s]: find clk-dbg-ver failed with err: %d\n",
+			pr_debug("[%s]: find clk-dbg-ver failed with err: %d\n",
 				__func__, ret);
 			return ret;
 		}
@@ -1698,7 +1698,7 @@ static int __init mt_scp_dts_get_cali_hw_regs(struct device_node *node,
 			if (!strcmp(clk_dbg_ver[i], str))
 				cali_hw->clkdbg_regs = &clk_dbg_reg[i];
 		if (!cali_hw->clkdbg_regs) {
-			pr_notice("[%s]: no clkfbg regs found\n",
+			pr_debug("[%s]: no clkfbg regs found\n",
 				__func__);
 			return -ESCP_DVFS_NO_CALI_HW_FOUND;
 		}
@@ -1720,13 +1720,13 @@ static int mt_scp_dump_sleep_count(void)
 	ret = mtk_ipi_send_compl(&scp_ipidev, IPI_OUT_C_SLEEP_0,
 		IPI_SEND_WAIT, &ipi_data, PIN_OUT_C_SIZE_SLEEP_0, 500);
 	if (ret != IPI_ACTION_DONE) {
-		pr_notice("[SCP] [%s:%d] - scp ipi failed, ret = %d\n",
+		pr_debug("[SCP] [%s:%d] - scp ipi failed, ret = %d\n",
 			__func__, __LINE__, ret);
 		goto FINISH;
 	}
 
 	if (dvfs.core_nums < 2) {
-		pr_notice("[SCP] [%s:%d] - scp_sleep_cnt_0 = %d\n",
+		pr_debug("[SCP] [%s:%d] - scp_sleep_cnt_0 = %d\n",
 			__func__, __LINE__, scp_ipi_ackdata0);
 		goto FINISH;
 	}
@@ -1735,12 +1735,12 @@ static int mt_scp_dump_sleep_count(void)
 	ret = mtk_ipi_send_compl(&scp_ipidev, IPI_OUT_C_SLEEP_1,
 		IPI_SEND_WAIT, &ipi_data, PIN_OUT_C_SIZE_SLEEP_1, 500);
 	if (ret != IPI_ACTION_DONE) {
-		pr_notice("[SCP] [%s:%d] - scp ipi failed, ret = %d\n",
+		pr_debug("[SCP] [%s:%d] - scp ipi failed, ret = %d\n",
 			__func__, __LINE__, ret);
 		goto FINISH;
 	}
 
-	pr_notice("[SCP] [%s:%d] - scp_sleep_cnt_0 = %d, scp_sleep_cnt_1 = %d\n",
+	pr_debug("[SCP] [%s:%d] - scp_sleep_cnt_0 = %d, scp_sleep_cnt_1 = %d\n",
 		__func__, __LINE__, scp_ipi_ackdata0, scp_ipi_ackdata1);
 
 FINISH:
@@ -1779,7 +1779,7 @@ static int __init mt_scp_dts_init_scp_clk_hw(struct device_node *node)
 
 	ret = of_property_read_string(node, "scp-clk-hw-ver", &str);
 	if (ret) {
-		pr_notice("[%s]: find scp-clk-hw-ver failed with err: %d\n",
+		pr_debug("[%s]: find scp-clk-hw-ver failed with err: %d\n",
 			__func__, ret);
 		return ret;
 	}
@@ -1791,7 +1791,7 @@ static int __init mt_scp_dts_init_scp_clk_hw(struct device_node *node)
 		}
 	}
 
-	pr_notice("[%s]: no scp clk hw reg found\n", __func__);
+	pr_debug("[%s]: no scp clk hw reg found\n", __func__);
 
 	return -ESCP_DVFS_NO_CALI_HW_FOUND;
 }
@@ -1803,7 +1803,7 @@ static int __init mt_scp_dts_init_cali_regmap(struct device_node *node,
 	cali_hw->ulposc_regmap = syscon_regmap_lookup_by_phandle(node,
 							ULPOSC_CLK_PHANDLE_NAME);
 	if (IS_ERR(cali_hw->ulposc_regmap)) {
-		pr_notice("ulposc regmap init failed: %d\n",
+		pr_debug("ulposc regmap init failed: %d\n",
 			PTR_ERR(cali_hw->ulposc_regmap));
 		return PTR_ERR(cali_hw->ulposc_regmap);
 	}
@@ -1818,7 +1818,7 @@ static int __init mt_scp_dts_ulposc_cali_init(struct device_node *node,
 	unsigned int val;
 
 	if (!cali_hw) {
-		pr_notice("[%s]: ulposc calibration hw is NULL\n",
+		pr_debug("[%s]: ulposc calibration hw is NULL\n",
 			__func__);
 		WARN_ON(1);
 		return -ESCP_DVFS_NO_CALI_HW_FOUND;
@@ -1828,7 +1828,7 @@ static int __init mt_scp_dts_ulposc_cali_init(struct device_node *node,
 	dvfs.ulposc_hw.do_ulposc_cali = of_property_read_bool(node,
 							"do-ulposc-cali");
 	if (!dvfs.ulposc_hw.do_ulposc_cali) {
-		pr_notice("[%s]: skip ulposc calibration process\n", __func__);
+		pr_debug("[%s]: skip ulposc calibration process\n", __func__);
 		return 0;
 	}
 
@@ -1847,7 +1847,7 @@ static int __init mt_scp_dts_ulposc_cali_init(struct device_node *node,
 	dvfs.clk_hw->scp_clk_regmap = syscon_regmap_lookup_by_phandle(node,
 						SCP_CLK_CTRL_PHANDLE_NAME);
 	if (!dvfs.clk_hw->scp_clk_regmap) {
-		pr_notice("[%s]: get scp clk regmap failed\n", __func__);
+		pr_debug("[%s]: get scp clk regmap failed\n", __func__);
 		return ret;
 	}
 
@@ -1863,7 +1863,7 @@ static int __init mt_scp_dts_ulposc_cali_init(struct device_node *node,
 	ret = of_property_read_u32(node, "fmeter-id-ulposc2",
 			&dvfs.ulposc_hw.fmeter_id_ulposc2);
 	if (ret) {
-		pr_notice("[%s]: ulposc2-fmeter-id not config in dts\n", __func__);
+		pr_debug("[%s]: ulposc2-fmeter-id not config in dts\n", __func__);
 		WARN_ON(1);
 	}
 
@@ -1872,9 +1872,9 @@ static int __init mt_scp_dts_ulposc_cali_init(struct device_node *node,
 			&val);
 	if (!ret)
 		/* read 26M by freq-meter to check if freq-meter API is correct */
-		pr_notice("freq-meter 26M(id=%d) = %u Hz\n", val, mt_get_abist_freq(val));
+		pr_debug("freq-meter 26M(id=%d) = %u Hz\n", val, mt_get_abist_freq(val));
 	else
-		pr_notice("[%s]: fmeter-id-26M not config in dts\n", __func__);
+		pr_debug("[%s]: fmeter-id-26M not config in dts\n", __func__);
 
 	return ret;
 }
@@ -1897,7 +1897,7 @@ static int __init mt_scp_dts_clk_init(struct platform_device *pdev)
 	for (i = 0; i < MAX_SUPPORTED_PLL_NUM; i++) {
 		ret = snprintf(buf, 15, "clk_pll_%d", i);
 		if (ret < 0 || ret >= 15) {
-			pr_notice("[%s]: clk name buf len: %d\n",
+			pr_debug("[%s]: clk name buf len: %d\n",
 				__func__, ret);
 			return ret;
 		}
@@ -1922,14 +1922,14 @@ static int __init mt_scp_dts_init_dvfs_data(struct device_node *node,
 	int i;
 
 	if (*opp) {
-		pr_notice("[%s]: opp is initialized\n", __func__);
+		pr_debug("[%s]: opp is initialized\n", __func__);
 		return -ESCP_DVFS_DATA_RE_INIT;
 	}
 
 	/* get scp dvfs opp count */
 	ret = of_property_count_u32_elems(node, "dvfs-opp");
 	if ((ret / OPP_ELEM_CNT) <= 0 || (ret % OPP_ELEM_CNT) != 0) {
-		pr_notice("[%s]: get dvfs opp count failed, count: %d\n",
+		pr_debug("[%s]: get dvfs opp count failed, count: %d\n",
 			__func__, ret);
 		return ret;
 	}
@@ -1945,7 +1945,7 @@ static int __init mt_scp_dts_init_dvfs_data(struct device_node *node,
 				i * OPP_ELEM_CNT,
 				&(*opp)[i].vcore);
 		if (ret) {
-			pr_notice("Cannot get property vcore(%d)\n", ret);
+			pr_debug("Cannot get property vcore(%d)\n", ret);
 			goto OPP_INIT_FAILED;
 		}
 		(*opp)[i].tuned_vcore = (*opp)[i].vcore;
@@ -1954,7 +1954,7 @@ static int __init mt_scp_dts_init_dvfs_data(struct device_node *node,
 				(i * OPP_ELEM_CNT) + 1,
 				&(*opp)[i].vsram);
 		if (ret) {
-			pr_notice("Cannot get property vsram(%d)\n", ret);
+			pr_debug("Cannot get property vsram(%d)\n", ret);
 			goto OPP_INIT_FAILED;
 		}
 
@@ -1962,7 +1962,7 @@ static int __init mt_scp_dts_init_dvfs_data(struct device_node *node,
 				(i * OPP_ELEM_CNT) + 2,
 				&(*opp)[i].dvfsrc_opp);
 		if (ret) {
-			pr_notice("Cannot get property dvfsrc opp(%d)\n", ret);
+			pr_debug("Cannot get property dvfsrc opp(%d)\n", ret);
 			goto OPP_INIT_FAILED;
 		}
 
@@ -1970,7 +1970,7 @@ static int __init mt_scp_dts_init_dvfs_data(struct device_node *node,
 				(i * OPP_ELEM_CNT) + 3,
 				&(*opp)[i].spm_opp);
 		if (ret) {
-			pr_notice("Cannot get property spm opp(%d)\n", ret);
+			pr_debug("Cannot get property spm opp(%d)\n", ret);
 			goto OPP_INIT_FAILED;
 		}
 
@@ -1979,7 +1979,7 @@ static int __init mt_scp_dts_init_dvfs_data(struct device_node *node,
 				&(*opp)[i].freq);
 
 		if (ret) {
-			pr_notice("Cannot get property freq(%d)\n", ret);
+			pr_debug("Cannot get property freq(%d)\n", ret);
 			goto OPP_INIT_FAILED;
 		}
 
@@ -1987,7 +1987,7 @@ static int __init mt_scp_dts_init_dvfs_data(struct device_node *node,
 				(i * OPP_ELEM_CNT) + 5,
 				&(*opp)[i].clk_mux);
 		if (ret) {
-			pr_notice("Cannot get property clk mux(%d)\n", ret);
+			pr_debug("Cannot get property clk mux(%d)\n", ret);
 			goto OPP_INIT_FAILED;
 		}
 
@@ -1995,7 +1995,7 @@ static int __init mt_scp_dts_init_dvfs_data(struct device_node *node,
 				(i * OPP_ELEM_CNT) + 6,
 				&(*opp)[i].resource_req);
 		if (ret) {
-			pr_notice("Cannot get property opp resource(%d)\n", ret);
+			pr_debug("Cannot get property opp resource(%d)\n", ret);
 			goto OPP_INIT_FAILED;
 		}
 
@@ -2003,7 +2003,7 @@ static int __init mt_scp_dts_init_dvfs_data(struct device_node *node,
 				(i * OPP_ELEM_CNT) + 7,
 				&(*opp)[i].uv_idx);
 		if (ret) {
-			pr_notice("Cannot get property vcore opp(%d)\n", ret);
+			pr_debug("Cannot get property vcore opp(%d)\n", ret);
 			goto OPP_INIT_FAILED;
 		}
 	}
@@ -2044,15 +2044,15 @@ static int __init mt_scp_dts_init(struct platform_device *pdev)
 	if (str) {
 		if (strcmp(str, "enable") == 0) {
 			scp_dvfs_enable = 1;
-			pr_notice("SCP DVFS feature: enable\n");
+			pr_debug("SCP DVFS feature: enable\n");
 		} else {
 			scp_dvfs_enable = 0;
-			pr_notice("SCP DVFS is disabled, so bypass its init\n");
+			pr_debug("SCP DVFS is disabled, so bypass its init\n");
 			return 0;
 		}
 	} else {
 		scp_dvfs_enable = 0;
-		pr_notice("SCP DVFS is disabled, so bypass its init\n");
+		pr_debug("SCP DVFS is disabled, so bypass its init\n");
 		return 0;
 	}
 
@@ -2062,7 +2062,7 @@ static int __init mt_scp_dts_init(struct platform_device *pdev)
 	*/
 	dvfs.vlp_support = of_property_read_bool(node, "vlp-support");
 	if (dvfs.vlp_support) {
-		pr_notice("%s: vlp not support\n", __func__);
+		pr_debug("%s: vlp not support\n", __func__);
 		WARN_ON(1);
 	}
 
@@ -2072,7 +2072,7 @@ static int __init mt_scp_dts_init(struct platform_device *pdev)
 		ret = of_property_read_u32(node, "vow-lp-en-gear",
 			&dvfs.vow_lp_en_gear);
 		if (ret) {
-			pr_notice("[%s]: no vow-lp-enable-gear property, set gear to -1\n",
+			pr_debug("[%s]: no vow-lp-enable-gear property, set gear to -1\n",
 				__func__);
 			dvfs.vow_lp_en_gear = -1;
 		}
@@ -2080,7 +2080,7 @@ static int __init mt_scp_dts_init(struct platform_device *pdev)
 
 	dvfs.vlpck_support = of_property_read_bool(node, "vlpck-support");
 	if (dvfs.vlpck_support) {
-		pr_notice("%s: vlpck not support\n", __func__);
+		pr_debug("%s: vlpck not support\n", __func__);
 		WARN_ON(1);
 	} else {
 		dvfs.vlpck_bypass_phase1 = false;
@@ -2089,7 +2089,7 @@ static int __init mt_scp_dts_init(struct platform_device *pdev)
 	ret = of_property_read_u32(node, "scp-cores",
 		&dvfs.core_nums);
 	if (ret || dvfs.core_nums > SCP_MAX_CORE_NUM) {
-		pr_notice("[%s]: find invalid core numbers, set to 1\n",
+		pr_debug("[%s]: find invalid core numbers, set to 1\n",
 			__func__);
 		dvfs.core_nums = 1;
 	}
@@ -2101,7 +2101,7 @@ static int __init mt_scp_dts_init(struct platform_device *pdev)
 
 	ret = mt_scp_dts_regmap_init(pdev, node);
 	if (ret) {
-		pr_notice("[%s]: scp regmap init failed with err: %d\n",
+		pr_debug("[%s]: scp regmap init failed with err: %d\n",
 			__func__, ret);
 		goto DTS_FAILED;
 	}
@@ -2122,14 +2122,14 @@ static int __init mt_scp_dts_init(struct platform_device *pdev)
 	 */
 	dvfs.ccf_fmeter_support = of_property_read_bool(node, "ccf-fmeter-support");
 	if (!dvfs.ccf_fmeter_support) {
-		pr_notice("[%s]: fmeter api havn't been provided, use legacy one\n", __func__);
+		pr_debug("[%s]: fmeter api havn't been provided, use legacy one\n", __func__);
 		WARN_ON(1);
 	}
 
 	/* init dvfs data */
 	ret = mt_scp_dts_init_dvfs_data(node, &dvfs.opp);
 	if (ret) {
-		pr_notice("[%s]: scp dvfs opp data init failed with err: %d\n",
+		pr_debug("[%s]: scp dvfs opp data init failed with err: %d\n",
 			__func__, ret);
 		goto DTS_FAILED;
 	}
@@ -2137,7 +2137,7 @@ static int __init mt_scp_dts_init(struct platform_device *pdev)
 	/* init clock mux/pll */
 	ret = mt_scp_dts_clk_init(pdev);
 	if (ret) {
-		pr_notice("[%s]: init scp clk failed with err: %d\n",
+		pr_debug("[%s]: init scp clk failed with err: %d\n",
 			__func__, ret);
 		goto DTS_FAILED_FREE_RES;
 	}
@@ -2145,7 +2145,7 @@ static int __init mt_scp_dts_init(struct platform_device *pdev)
 	/* init ulposc cali dts data */
 	ret = mt_scp_dts_ulposc_cali_init(node, &dvfs.ulposc_hw);
 	if (ret) {
-		pr_notice("[%s]: init scp ulposc cali data with err: %d\n",
+		pr_debug("[%s]: init scp ulposc cali data with err: %d\n",
 			__func__, ret);
 		goto DTS_FAILED_FREE_RES;
 	}
@@ -2170,13 +2170,13 @@ static int __init mt_scp_dvfs_pdrv_probe(struct platform_device *pdev)
 
 	ret = mt_scp_dts_init(pdev);
 	if (ret) {
-		pr_notice("[%s]: dts init fail, %d\n", __func__, ret);
+		pr_debug("[%s]: dts init fail, %d\n", __func__, ret);
 		goto err;
 	}
 
 	if (!scp_dvfs_enable) {
 		g_scp_dvfs_init_flag = 1;
-		pr_notice("bypass scp dvfs init\n");
+		pr_debug("bypass scp dvfs init\n");
 		return 0;
 	}
 
@@ -2203,7 +2203,7 @@ static int __init mt_scp_dvfs_pdrv_probe(struct platform_device *pdev)
 #if IS_ENABLED(CONFIG_PM)
 	ret = register_pm_notifier(&scp_pm_notifier_func);
 	if (ret) {
-		pr_notice("[%s]: failed to register PM notifier.\n", __func__);
+		pr_debug("[%s]: failed to register PM notifier.\n", __func__);
 		goto err;
 	}
 #endif
@@ -2211,13 +2211,13 @@ static int __init mt_scp_dvfs_pdrv_probe(struct platform_device *pdev)
 #ifdef CONFIG_PROC_FS
 	/* init proc */
 	if (mt_scp_dvfs_create_procfs()) {
-		pr_notice("mt_scp_dvfs_create_procfs fail..\n");
+		pr_debug("mt_scp_dvfs_create_procfs fail..\n");
 		goto err;
 	}
 #endif
 
 	g_scp_dvfs_init_flag = 1;
-	pr_notice("[%s]: scp_dvfs probe done\n", __func__);
+	pr_debug("[%s]: scp_dvfs probe done\n", __func__);
 
 	return 0;
 
@@ -2232,7 +2232,7 @@ err:
 static int mt_scp_dvfs_pdrv_remove(struct platform_device *pdev)
 {
 	if (!scp_dvfs_enable) {
-		pr_notice("bypass scp dvfs pdrv remove\n");
+		pr_debug("bypass scp dvfs pdrv remove\n");
 		return 0;
 	}
 
@@ -2266,7 +2266,7 @@ int __init scp_dvfs_init(void)
 
 	ret = platform_driver_register(&mt_scp_dvfs_pdrv);
 	if (ret) {
-		pr_notice("fail to register scp dvfs driver @ %s()\n", __func__);
+		pr_debug("fail to register scp dvfs driver @ %s()\n", __func__);
 		goto fail;
 	}
 

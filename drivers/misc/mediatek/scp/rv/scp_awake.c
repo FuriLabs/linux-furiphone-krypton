@@ -64,7 +64,7 @@ int scp_awake_lock(void *_scp_id)
 	unsigned int tmp;
 
 	if (scp_id >= SCP_CORE_TOTAL) {
-		pr_notice("%s: SCP ID >= SCP_CORE_TOTAL\n", __func__);
+		pr_debug("%s: SCP ID >= SCP_CORE_TOTAL\n", __func__);
 		return ret;
 	}
 
@@ -72,7 +72,7 @@ int scp_awake_lock(void *_scp_id)
 	core_id = core_ids[scp_id];
 
 	if (is_scp_ready(scp_id) == 0) {
-		pr_notice("%s: %s not enabled\n", __func__, core_id);
+		pr_debug("%s: %s not enabled\n", __func__, core_id);
 		return ret;
 	}
 
@@ -92,14 +92,14 @@ int scp_awake_lock(void *_scp_id)
 	while (++count != SCP_AWAKE_TIMEOUT) {
 #if SCP_RECOVERY_SUPPORT
 		if (atomic_read(&scp_reset_status) == RESET_STATUS_START) {
-			pr_notice("%s: resetting scp, break\n", __func__);
+			pr_debug("%s: resetting scp, break\n", __func__);
 			break;
 		}
 #endif  // SCP_RECOVERY_SUPPORT
 
 		tmp = readl(INFRA_IRQ_SET);
 		if ((tmp & 0xA0) != 0xA0) {
-			pr_notice("%s: INFRA_IRQ_SET %x\n", __func__, tmp);
+			pr_debug("%s: INFRA_IRQ_SET %x\n", __func__, tmp);
 			break;
 		}
 		if (!((tmp & 0x0f) & (1 << AP_AWAKE_LOCK))) {
@@ -116,11 +116,11 @@ int scp_awake_lock(void *_scp_id)
 		*scp_awake_count = *scp_awake_count + 1;
 
 	if (ret == -1) {
-		pr_notice("%s: awake %s fail..\n", __func__, core_id);
+		pr_debug("%s: awake %s fail..\n", __func__, core_id);
 #if SCP_RECOVERY_SUPPORT
 		if (atomic_read(&scp_reset_status) == RESET_STATUS_STOP) {
 			scp_set_reset_status();
-			pr_notice("%s: start to reset scp...\n", __func__);
+			pr_debug("%s: start to reset scp...\n", __func__);
 
 #if SCP_RESERVED_MEM && IS_ENABLED(CONFIG_OF_RESERVED_MEM)
 			if (scpreg.secure_dump) {
@@ -135,7 +135,7 @@ int scp_awake_lock(void *_scp_id)
 
 			scp_send_reset_wq(RESET_TYPE_AWAKE);
 		} else
-			pr_notice("%s: scp resetting\n", __func__);
+			pr_debug("%s: scp resetting\n", __func__);
 #endif
 	}
 
@@ -162,7 +162,7 @@ int scp_awake_unlock(void *_scp_id)
 	unsigned int tmp;
 
 	if (scp_id >= SCP_CORE_TOTAL) {
-		pr_notice("%s: SCP ID >= SCP_CORE_TOTAL\n", __func__);
+		pr_debug("%s: SCP ID >= SCP_CORE_TOTAL\n", __func__);
 		return -1;
 	}
 
@@ -170,7 +170,7 @@ int scp_awake_unlock(void *_scp_id)
 	core_id = core_ids[scp_id];
 
 	if (is_scp_ready(scp_id) == 0) {
-		pr_notice("%s: %s not enabled\n", __func__, core_id);
+		pr_debug("%s: %s not enabled\n", __func__, core_id);
 		return -1;
 	}
 
@@ -190,13 +190,13 @@ int scp_awake_unlock(void *_scp_id)
 	while (++count != SCP_AWAKE_TIMEOUT) {
 #if SCP_RECOVERY_SUPPORT
 		if (atomic_read(&scp_reset_status) == RESET_STATUS_START) {
-			pr_notice("%s: scp is being reset, break\n", __func__);
+			pr_debug("%s: scp is being reset, break\n", __func__);
 			break;
 		}
 #endif  // SCP_RECOVERY_SUPPORT
 		tmp = readl(INFRA_IRQ_SET);
 		if ((tmp & 0xA0) != 0xA0) {
-			pr_notice("%s: INFRA7_IRQ_SET %x\n", __func__, tmp);
+			pr_debug("%s: INFRA7_IRQ_SET %x\n", __func__, tmp);
 			break;
 		}
 		if (!((tmp & 0x0f) & (1 << AP_AWAKE_UNLOCK))) {
@@ -219,11 +219,11 @@ int scp_awake_unlock(void *_scp_id)
 	}
 
 	if (ret == -1) {
-		pr_notice("%s: awake %s fail..\n", __func__, core_id);
+		pr_debug("%s: awake %s fail..\n", __func__, core_id);
 #if SCP_RECOVERY_SUPPORT
 		if (atomic_read(&scp_reset_status) == RESET_STATUS_STOP) {
 			scp_set_reset_status();
-			pr_notice("%s: start to reset scp...\n", __func__);
+			pr_debug("%s: start to reset scp...\n", __func__);
 
 #if SCP_RESERVED_MEM && IS_ENABLED(CONFIG_OF_RESERVED_MEM)
 			if (scpreg.secure_dump) {
@@ -238,7 +238,7 @@ int scp_awake_unlock(void *_scp_id)
 
 			scp_send_reset_wq(RESET_TYPE_AWAKE);
 		} else
-			pr_notice("%s: scp resetting\n", __func__);
+			pr_debug("%s: scp resetting\n", __func__);
 #endif
 	}
 
@@ -278,7 +278,7 @@ int scp_sys_full_reset(void)
 	uint64_t restore_start, restore_end;
 #endif
 
-	pr_notice("[SCP] %s\n", __func__);
+	pr_debug("[SCP] %s\n", __func__);
 
 #if SCP_RESERVED_MEM && IS_ENABLED(CONFIG_OF_RESERVED_MEM)
 	restore_start = ktime_get_boot_ns();
@@ -321,12 +321,12 @@ int scp_sys_full_reset(void)
 		scpdump_cal[2].end = ktime_get_boot_ns();
 		scpdump_cal[0].end = ktime_get_boot_ns();
 		for (idx = 0; idx < 3; idx++) {
-			pr_notice("MDebug SCP Cal:%d %lldns\n", idx,
+			pr_debug("MDebug SCP Cal:%d %lldns\n", idx,
 					(scpdump_cal[idx].end - scpdump_cal[idx].start));
 		}
 #endif
 		restore_end = ktime_get_boot_ns();
-		pr_notice("[SCP] Restore: %lld ns\n", (restore_end - restore_start));
+		pr_debug("[SCP] Restore: %lld ns\n", (restore_end - restore_start));
 	} else {
 #else
 	{

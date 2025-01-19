@@ -145,7 +145,7 @@ static size_t scp_A_get_last_log(size_t b_len)
 	/*pr_debug("[SCP] %s\n", __func__);*/
 
 	if (!scp_A_logger_inited) {
-		pr_notice("[SCP] %s(): logger has not been init\n", __func__);
+		pr_debug("[SCP] %s(): logger has not been init\n", __func__);
 		return 0;
 	}
 
@@ -159,7 +159,7 @@ static size_t scp_A_get_last_log(size_t b_len)
 	}
 	/*cofirm last log information is less than tcm size*/
 	if (last_log_info.scp_log_end_addr > scpreg.total_tcmsize) {
-		pr_notice("[SCP] %s: last_log_info.scp_log_end_addr %x is over tcm_size %x\n",
+		pr_debug("[SCP] %s: last_log_info.scp_log_end_addr %x is over tcm_size %x\n",
 			__func__, last_log_info.scp_log_end_addr, scpreg.total_tcmsize);
 		goto exit;
 	}
@@ -249,7 +249,7 @@ ssize_t scp_A_log_read(char __user *data, size_t len)
 	r_pos_debug = r_pos;
 	log_ctl_debug = SCP_A_log_ctl->buff_ofs;
 	if (r_pos >= DRAM_BUF_LEN) {
-		pr_notice("[SCP] %s(): r_pos >= DRAM_BUF_LEN,%x,%x\n",
+		pr_debug("[SCP] %s(): r_pos >= DRAM_BUF_LEN,%x,%x\n",
 			__func__, r_pos_debug, log_ctl_debug);
 		datalen = 0;
 		goto error;
@@ -362,7 +362,7 @@ static unsigned int scp_A_log_enable_set(unsigned int enable)
 			SCP_A_log_ctl->enable = 0;
 
 		if (ret != IPI_ACTION_DONE) {
-			pr_notice("[SCP] %s: fail ret=%d\n", __func__, ret);
+			pr_debug("[SCP] %s: fail ret=%d\n", __func__, ret);
 			goto error;
 		}
 
@@ -408,7 +408,7 @@ static unsigned int scp_A_log_wakeup_set(unsigned int enable)
 			scp_A_logger_wakeup_ap = 0;
 
 		if (ret != IPI_ACTION_DONE) {
-			pr_notice("[SCP] %s: fail ret=%d\n", __func__, ret);
+			pr_debug("[SCP] %s: fail ret=%d\n", __func__, ret);
 			goto error;
 		}
 
@@ -580,15 +580,15 @@ static ssize_t log_filter_store(struct device *dev,
 			   sizeof(msg)/MBOX_SLOT_SIZE, 0);
 	switch (ret) {
 	case IPI_ACTION_DONE:
-		pr_notice("[SCP] Set log filter to 0x%08x\n", filter);
+		pr_debug("[SCP] Set log filter to 0x%08x\n", filter);
 		return count;
 
 	case IPI_PIN_BUSY:
-		pr_notice("[SCP] IPI busy. Set log filter failed!\n");
+		pr_debug("[SCP] IPI busy. Set log filter failed!\n");
 		return -EBUSY;
 
 	default:
-		pr_notice("[SCP] IPI error. Set log filter failed!\n");
+		pr_debug("[SCP] IPI error. Set log filter failed!\n");
 		return -EIO;
 	}
 }
@@ -613,20 +613,20 @@ static int scp_logger_init_handler(struct SCP_LOG_INFO *log_info)
 	last_log_info.scp_log_buf_maxlen = log_info->scp_log_buf_maxlen;
 	/*cofirm last log information is less than tcm size*/
 	if (last_log_info.scp_log_dram_addr > scpreg.total_tcmsize)
-		pr_notice("[SCP]last_log_info.scp_log_dram_addr %x is over tcm_size %x\n",
+		pr_debug("[SCP]last_log_info.scp_log_dram_addr %x is over tcm_size %x\n",
 			last_log_info.scp_log_dram_addr, scpreg.total_tcmsize);
 	if (last_log_info.scp_log_buf_addr > scpreg.total_tcmsize)
-		pr_notice("[SCP]last_log_info.scp_log_buf_addr %x is over tcm_size %x\n",
+		pr_debug("[SCP]last_log_info.scp_log_buf_addr %x is over tcm_size %x\n",
 			last_log_info.scp_log_buf_addr, scpreg.total_tcmsize);
 	if (last_log_info.scp_log_start_addr > scpreg.total_tcmsize)
-		pr_notice("[SCP]last_log_info.scp_log_start_addr %x is over tcm_size %x\n",
+		pr_debug("[SCP]last_log_info.scp_log_start_addr %x is over tcm_size %x\n",
 			last_log_info.scp_log_start_addr, scpreg.total_tcmsize);
 	if (last_log_info.scp_log_end_addr > scpreg.total_tcmsize)
-		pr_notice("[SCP]last_log_info.scp_log_end_addr %x is over tcm_size %x\n",
+		pr_debug("[SCP]last_log_info.scp_log_end_addr %x is over tcm_size %x\n",
 			last_log_info.scp_log_end_addr, scpreg.total_tcmsize);
 	if (last_log_info.scp_log_buf_addr + last_log_info.scp_log_buf_maxlen >
 		scpreg.total_tcmsize)
-		pr_notice("[SCP] end of last_log_info.scp_last_log_buf %x is over tcm_size %x\n",
+		pr_debug("[SCP] end of last_log_info.scp_last_log_buf %x is over tcm_size %x\n",
 			last_log_info.scp_log_buf_addr + last_log_info.scp_log_buf_maxlen,
 				scpreg.total_tcmsize);
 
@@ -692,7 +692,7 @@ static void scp_logger_notify_ws(struct work_struct *ws)
 	msg.u.init.addr = scp_get_reserve_mem_phys(SCP_A_LOGGER_MEM_ID);
 	msg.u.init.size = scp_get_reserve_mem_size(SCP_A_LOGGER_MEM_ID);
 
-	pr_notice("[SCP] %s: id=%u\n", __func__, scp_ipi_id);
+	pr_debug("[SCP] %s: id=%u\n", __func__, scp_ipi_id);
 	/*
 	 *send ipi to invoke scp logger
 	 */
@@ -715,7 +715,7 @@ static void scp_logger_notify_ws(struct work_struct *ws)
 	else {
 		/*scp logger ipi init fail but still let logger dump*/
 		SCP_A_log_ctl->enable = 1;
-		pr_notice("[SCP]logger initial fail, ipi ret=%d\n", ret);
+		pr_debug("[SCP]logger initial fail, ipi ret=%d\n", ret);
 	}
 
 }
@@ -779,7 +779,7 @@ int scp_logger_init(phys_addr_t start, phys_addr_t limit)
 	last_ofs += SCP_A_log_ctl->buff_size;
 
 	if (last_ofs >= limit) {
-		pr_notice("[SCP]:%s() initial fail, last_ofs=%u, limit=%u\n",
+		pr_debug("[SCP]:%s() initial fail, last_ofs=%u, limit=%u\n",
 			__func__, last_ofs, (unsigned int) limit);
 		goto error;
 	}
@@ -852,7 +852,7 @@ void scp_crash_log_move_to_buf(enum scp_core_id scp_id)
 					last_log_info.scp_log_buf_addr);
 
 	if (!scp_A_logger_inited && scp_id == SCP_A_ID) {
-		pr_notice("[SCP] %s(): logger has not been init\n", __func__);
+		pr_debug("[SCP] %s(): logger has not been init\n", __func__);
 		return;
 	}
 
@@ -867,17 +867,17 @@ void scp_crash_log_move_to_buf(enum scp_core_id scp_id)
 
 	/*cofirm last log information is less than tcm size*/
 	if (last_log_info.scp_log_buf_addr > scpreg.total_tcmsize) {
-		pr_notice("[SCP] %s: last_log_info.scp_log_buf_addr %x is over tcm_size %x\n",
+		pr_debug("[SCP] %s: last_log_info.scp_log_buf_addr %x is over tcm_size %x\n",
 			__func__, last_log_info.scp_log_buf_addr, scpreg.total_tcmsize);
 		goto exit;
 	}
 	if (last_log_info.scp_log_start_addr > scpreg.total_tcmsize) {
-		pr_notice("[SCP] %s: last_log_info.scp_log_start_addr %x is over tcm_size %x\n",
+		pr_debug("[SCP] %s: last_log_info.scp_log_start_addr %x is over tcm_size %x\n",
 			__func__, last_log_info.scp_log_start_addr, scpreg.total_tcmsize);
 		goto exit;
 	}
 	if (last_log_info.scp_log_end_addr > scpreg.total_tcmsize) {
-		pr_notice("[SCP] %s: last_log_info.scp_log_end_addr %x is over tcm_size %x\n",
+		pr_debug("[SCP] %s: last_log_info.scp_log_end_addr %x is over tcm_size %x\n",
 			__func__, last_log_info.scp_log_end_addr, scpreg.total_tcmsize);
 		goto exit;
 	}
@@ -913,7 +913,7 @@ void scp_crash_log_move_to_buf(enum scp_core_id scp_id)
 	}
 
 	if (length >= last_log_info.scp_log_buf_maxlen) {
-		pr_notice("[SCP] %s: length >= max\n", __func__);
+		pr_debug("[SCP] %s: length >= max\n", __func__);
 		length = last_log_info.scp_log_buf_maxlen;
 	}
 
@@ -952,7 +952,7 @@ void scp_crash_log_move_to_buf(enum scp_core_id scp_id)
 		w_pos = SCP_A_buf_info->w_pos;
 
 		if (w_pos >= DRAM_BUF_LEN) {
-			pr_notice("[SCP] %s(): w_pos >= DRAM_BUF_LEN, w_pos=%u",
+			pr_debug("[SCP] %s(): w_pos >= DRAM_BUF_LEN, w_pos=%u",
 				__func__, w_pos);
 			return;
 		}
@@ -976,7 +976,7 @@ void scp_crash_log_move_to_buf(enum scp_core_id scp_id)
 			dram_logger_buf++;
 			if (w_pos >= DRAM_BUF_LEN) {
 				/* warp */
-				pr_notice("[SCP] %s: dram warp\n", __func__);
+				pr_debug("[SCP] %s: dram warp\n", __func__);
 				w_pos = 0;
 
 				dram_logger_buf = ((char *) SCP_A_log_ctl) +

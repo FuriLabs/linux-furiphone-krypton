@@ -154,12 +154,12 @@ enum scp_ipi_status scp_ipi_send(enum ipi_id id, void *buf,
 		tmp_id = id;
 
 	if (is_scp_ready(scp_id) == 0) {
-		pr_notice("[SCP] %s: %s not ready\n", __func__, core_ids[scp_id]);
+		pr_debug("[SCP] %s: %s not ready\n", __func__, core_ids[scp_id]);
 		return SCP_IPI_NOT_READY;
 	}
 
 	if (len > (scp_ipi_legacy_id[tmp_id].out_size - 2) * MBOX_SLOT_SIZE) {
-		pr_notice("%s: len overflow\n", __func__);
+		pr_debug("%s: len overflow\n", __func__);
 		return SCP_IPI_ERROR;
 	}
 
@@ -289,7 +289,7 @@ void mbox_setup_pin_table(unsigned int mbox)
 
 	if (last_idx > 32 ||
 	   (last_ofs + last_slot) > (scp_mbox_info[mbox].is64d + 1) * 32) {
-		pr_notice("mbox%d ofs(%d)/slot(%d) exceed the maximum\n",
+		pr_debug("mbox%d ofs(%d)/slot(%d) exceed the maximum\n",
 			mbox, last_idx, last_ofs + last_slot);
 		WARN_ON(1);
 	}
@@ -319,7 +319,7 @@ void mt_print_scp_ipi_id(unsigned int mbox)
 					mtk_mbox_read(&scp_mboxdev, mbox,
 						    scp_mbox_pin_recv[i].offset,
 						    &buf, MBOX_SLOT_SIZE * 3);
-					pr_info("[SCP] ipi id/type/action/event/reserve = %u/%u/%u/%u/%u\n",
+					pr_debug("[SCP] ipi id/type/action/event/reserve = %u/%u/%u/%u/%u\n",
 						buf.id, buf.info[0],
 						buf.info[1], buf.info[2],
 						buf.info[3]);
@@ -328,10 +328,10 @@ void mt_print_scp_ipi_id(unsigned int mbox)
 					mtk_mbox_read(&scp_mboxdev, mbox,
 						    scp_mbox_pin_recv[i].offset,
 						    &buf.info, sizeof(buf.info));
-					pr_info("[SCP] sensor notify seq %u type %u cmd %u len %u\n",
+					pr_debug("[SCP] sensor notify seq %u type %u cmd %u len %u\n",
 						buf.info[0], buf.info[1], buf.info[2], buf.info[3]);
 				} else {
-					pr_info("[SCP] mbox%u, ipi id %u\n",
+					pr_debug("[SCP] mbox%u, ipi id %u\n",
 						mbox,
 						scp_mbox_pin_recv[i].chan_id);
 				}
