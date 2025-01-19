@@ -490,9 +490,9 @@ bool is_usb_rdy(struct device *dev)
 	node = of_parse_phandle(dev->of_node, "usb", 0);
 	if (node) {
 		ready = of_property_read_bool(node, "gadget-ready");
-		dev_info(dev, "gadget-ready=%d\n", ready);
+		dev_dbg(dev, "gadget-ready=%d\n", ready);
 	} else
-		dev_info(dev, "usb node missing or invalid\n");
+		dev_dbg(dev, "usb node missing or invalid\n");
 
 	return ready;
 }
@@ -615,7 +615,7 @@ static int mt6360_chgdet_post_process(struct mt6360_pmu_chg_info *mpci)
 	dev_dbg(mpci->dev, "%s: attach = %d\n", __func__, attach);
 	/* Plug out during BC12 */
 	if (!attach) {
-		dev_info(mpci->dev, "%s: Charger Type: UNKONWN\n", __func__);
+		dev_dbg(mpci->dev, "%s: Charger Type: UNKONWN\n", __func__);
 		mpci->psy_desc.type = POWER_SUPPLY_TYPE_UNKNOWN;
 		mpci->psy_usb_type = POWER_SUPPLY_USB_TYPE_UNKNOWN;
 		goto out;
@@ -630,25 +630,25 @@ static int mt6360_chgdet_post_process(struct mt6360_pmu_chg_info *mpci)
 		dev_dbg(mpci->dev, "%s: under going...\n", __func__);
 		return ret;
 	case MT6360_CHG_TYPE_SDP:
-		dev_info(mpci->dev,
+		dev_dbg(mpci->dev,
 			  "%s: Charger Type: STANDARD_HOST\n", __func__);
 		mpci->psy_desc.type = POWER_SUPPLY_TYPE_USB;
 		mpci->psy_usb_type = POWER_SUPPLY_USB_TYPE_SDP;
 		break;
 	case MT6360_CHG_TYPE_SDPNSTD:
-		dev_info(mpci->dev,
+		dev_dbg(mpci->dev,
 			  "%s: Charger Type: NONSTANDARD_CHARGER\n", __func__);
 		mpci->psy_desc.type = POWER_SUPPLY_TYPE_USB;
 		mpci->psy_usb_type = POWER_SUPPLY_USB_TYPE_DCP;
 		break;
 	case MT6360_CHG_TYPE_CDP:
-		dev_info(mpci->dev,
+		dev_dbg(mpci->dev,
 			  "%s: Charger Type: CHARGING_HOST\n", __func__);
 		mpci->psy_desc.type = POWER_SUPPLY_TYPE_USB_CDP;
 		mpci->psy_usb_type = POWER_SUPPLY_USB_TYPE_CDP;
 		break;
 	case MT6360_CHG_TYPE_DCP:
-		dev_info(mpci->dev,
+		dev_dbg(mpci->dev,
 			  "%s: Charger Type: STANDARD_CHARGER\n", __func__);
 		mpci->psy_desc.type = POWER_SUPPLY_TYPE_USB_DCP;
 		mpci->psy_usb_type = POWER_SUPPLY_USB_TYPE_DCP;
@@ -2600,7 +2600,7 @@ static void mt6360_get_bootmode(struct mt6360_pmu_chg_info *mpci)
 		return;
 	}
 
-	dev_info(mpci->dev, "%s: size:%d tag:0x%X mode:%d type:%d\n",
+	dev_dbg(mpci->dev, "%s: size:%d tag:0x%X mode:%d type:%d\n",
 			    __func__, tag->size, tag->tag,
 			    tag->bootmode, tag->boottype);
 	mpci->bootmode = tag->bootmode;
@@ -2821,7 +2821,7 @@ static int mt6360_pmu_chg_get_online(struct mt6360_pmu_chg_info *mpci,
 		return ret;
 	}
 #endif
-	dev_info(mpci->dev, "%s: online = %d\n", __func__, online);
+	dev_dbg(mpci->dev, "%s: online = %d\n", __func__, online);
 	val->intval = online;
 
 	return 0;
@@ -3045,7 +3045,7 @@ static int mt6360_boost_set_current_limit(struct regulator_dev *rdev,
 			"%s: out of current range\n", __func__);
 		return -EINVAL;
 	}
-	dev_info(mpci->dev, "%s: select otg_oc = %d\n",
+	dev_dbg(mpci->dev, "%s: select otg_oc = %d\n",
 		 __func__, mt6360_otg_oc_threshold[i]);
 	return mt6360_pmu_reg_update_bits(mpci->mpi,
 					  desc->csel_reg,
@@ -3113,7 +3113,7 @@ static int mt6360_get_charger_type(struct mt6360_pmu_chg_info *mpci,
 	}
 
 	if (!chg_psy) {
-		pr_notice("%s Couldn't get chg_psy\n", __func__);
+		pr_debug("%s Couldn't get chg_psy\n", __func__);
 		mpci->psy_desc.type = attach ? POWER_SUPPLY_TYPE_USB :
 					       POWER_SUPPLY_TYPE_UNKNOWN;
 		mpci->psy_usb_type = attach ? POWER_SUPPLY_USB_TYPE_DCP :
@@ -3128,12 +3128,12 @@ static int mt6360_get_charger_type(struct mt6360_pmu_chg_info *mpci,
 		ret = power_supply_get_property(chg_psy,
 						POWER_SUPPLY_PROP_TYPE, &val);
 		mpci->psy_desc.type = val.intval;
-		pr_notice("%s type:%d\n", __func__, val.intval);
+		pr_debug("%s type:%d\n", __func__, val.intval);
 		ret = power_supply_get_property(chg_psy,
 						POWER_SUPPLY_PROP_USB_TYPE,
 						&val);
 		mpci->psy_usb_type = val.intval;
-		pr_notice("%s usb_type:%d\n", __func__, val.intval);
+		pr_debug("%s usb_type:%d\n", __func__, val.intval);
 	} else {
 		mpci->psy_desc.type = POWER_SUPPLY_TYPE_UNKNOWN;
 		mpci->psy_usb_type = POWER_SUPPLY_USB_TYPE_UNKNOWN;
@@ -3152,7 +3152,7 @@ static int typec_attach_thread(void *data)
 	bool typec_attach = false, ignore_usb = false;
 	union power_supply_propval val = {.intval = 0};
 
-	pr_info("%s: ++\n", __func__);
+	pr_debug("%s: ++\n", __func__);
 	while (!kthread_should_stop()) {
 		wait_event(mpci->attach_wq,
 			   atomic_read(&mpci->chrdet_start) > 0 ||
@@ -3165,7 +3165,7 @@ static int typec_attach_thread(void *data)
 		atomic_set(&mpci->chrdet_start, 0);
 		mutex_unlock(&mpci->attach_lock);
 
-		pr_notice("%s bc12_sel:%d typec_attach:%d ignore_usb:%d\n",
+		pr_debug("%s bc12_sel:%d typec_attach:%d ignore_usb:%d\n",
 			  __func__, pdata->bc12_sel, typec_attach, ignore_usb);
 
 		if (typec_attach && ignore_usb) {
@@ -3181,7 +3181,7 @@ static int typec_attach_thread(void *data)
 			ret = power_supply_set_property(mpci->chg_psy,
 						POWER_SUPPLY_PROP_ONLINE, &val);
 			if (ret < 0)
-				dev_info(mpci->dev, "%s: set online fail(%d)\n",
+				dev_dbg(mpci->dev, "%s: set online fail(%d)\n",
 					__func__, ret);
 		} else
 			mt6360_get_charger_type(mpci, typec_attach);
@@ -3242,7 +3242,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		     new_state == TYPEC_ATTACHED_NORP_SRC ||
 		     new_state == TYPEC_ATTACHED_CUSTOM_SRC ||
 		     new_state == TYPEC_ATTACHED_DBGACC_SNK)) {
-			dev_info(mpci->dev,
+			dev_dbg(mpci->dev,
 				 "%s Charger plug in, polarity = %d\n",
 				 __func__, noti->typec_state.polarity);
 			handle_typec_attach(mpci, true, false);
@@ -3252,15 +3252,15 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			    old_state == TYPEC_ATTACHED_DBGACC_SNK ||
 			    old_state == TYPEC_ATTACHED_AUDIO) &&
 			    new_state == TYPEC_UNATTACHED) {
-			dev_info(mpci->dev, "%s Charger plug out\n", __func__);
+			dev_dbg(mpci->dev, "%s Charger plug out\n", __func__);
 			handle_typec_attach(mpci, false, false);
 		} else if (old_state == TYPEC_ATTACHED_SRC &&
 			   new_state == TYPEC_ATTACHED_SNK) {
-			dev_info(mpci->dev, "%s Source_to_Sink\n", __func__);
+			dev_dbg(mpci->dev, "%s Source_to_Sink\n", __func__);
 			handle_typec_attach(mpci, true, true);
 		}  else if (old_state == TYPEC_ATTACHED_SNK &&
 			    new_state == TYPEC_ATTACHED_SRC) {
-			dev_info(mpci->dev, "%s Sink_to_Source\n", __func__);
+			dev_dbg(mpci->dev, "%s Sink_to_Source\n", __func__);
 			handle_typec_attach(mpci, false, true);
 		}
 		break;
@@ -3450,7 +3450,7 @@ static int mt6360_pmu_chg_probe(struct platform_device *pdev)
 
 	mpci->tcpc = tcpc_dev_get_by_name("type_c_port0");
 	if (!mpci->tcpc) {
-		pr_notice("%s get tcpc device type_c_port0 fail\n", __func__);
+		pr_debug("%s get tcpc device type_c_port0 fail\n", __func__);
 		ret = -ENODEV;
 		goto err_get_tcpcdev;
 	}
@@ -3459,7 +3459,7 @@ static int mt6360_pmu_chg_probe(struct platform_device *pdev)
 	ret = register_tcp_dev_notifier(mpci->tcpc, &mpci->pd_nb,
 					TCP_NOTIFY_TYPE_ALL);
 	if (ret < 0) {
-		pr_notice("%s: register tcpc notifer fail\n", __func__);
+		pr_debug("%s: register tcpc notifer fail\n", __func__);
 		ret = -EINVAL;
 		goto err_register_tcp_notifier;
 	}

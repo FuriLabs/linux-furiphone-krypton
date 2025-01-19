@@ -379,10 +379,10 @@ static int mt6360_fled_set_mode(struct rt_fled_dev *fled,
 		break;
 	}
 
-	dev_info(fi->dev, "%s set %s mutex_lock +\n", __func__,
+	dev_dbg(fi->dev, "%s set %s mutex_lock +\n", __func__,
 		flashlight_mode_str[mode]);
 	mutex_lock(&fled_lock);
-	dev_info(fi->dev, "%s set %s mutex_lock -\n", __func__,
+	dev_dbg(fi->dev, "%s set %s mutex_lock -\n", __func__,
 		flashlight_mode_str[mode]);
 	switch (mode) {
 	case FLASHLIGHT_MODE_TORCH:
@@ -484,10 +484,10 @@ static int mt6360_fled_set_mode(struct rt_fled_dev *fled,
 		return -EINVAL;
 	}
 	if (ret < 0)
-		dev_info(fi->dev, "%s set %s mode fail\n", __func__,
+		dev_dbg(fi->dev, "%s set %s mode fail\n", __func__,
 			 flashlight_mode_str[mode]);
 	else
-		dev_info(fi->dev, "%s set %s\n", __func__,
+		dev_dbg(fi->dev, "%s set %s\n", __func__,
 			 flashlight_mode_str[mode]);
 out:
 	mutex_unlock(&fled_lock);
@@ -747,7 +747,7 @@ static int mt6360_pmu_fled_probe(struct platform_device *pdev)
 	bool use_dt = pdev->dev.of_node;
 	int ret, i;
 
-	pr_info("%s (%s) id = %d\n", __func__, MT6360_PMU_FLED_DRV_VERSION,
+	pr_debug("%s (%s) id = %d\n", __func__, MT6360_PMU_FLED_DRV_VERSION,
 					       pdev->id);
 	if (!mt6360_fled_inited) {
 		if (use_dt) {
@@ -815,7 +815,7 @@ static int mt6360_pmu_fled_probe(struct platform_device *pdev)
 							  mpfi->id, NULL, 0,
 							  NULL, 0);
 	}
-	dev_info(&pdev->dev, "%s: successfully probed\n", __func__);
+	dev_dbg(&pdev->dev, "%s: successfully probed\n", __func__);
 out:
 	return 0;
 }
