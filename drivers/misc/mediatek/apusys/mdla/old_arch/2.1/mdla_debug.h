@@ -18,7 +18,7 @@
 #ifdef CONFIG_MTK_AEE_FEATURE
 #define mdla_aee_warn(key, format, args...) \
 	do { \
-		pr_info(format, ##args); \
+		pr_debug(format, ##args); \
 		aee_kernel_warning("MDLA", \
 			"\nCRDISPATCH_KEY:" key "\n" format, ##args); \
 	} while (0)
@@ -37,9 +37,9 @@ extern void *apu_conn_top;
 #else
 #define LOG_DBG(format, args...)
 #endif
-#define LOG_INF(format, args...)    pr_info(MDLA_TAG " " format, ##args)
-#define LOG_WRN(format, args...)    pr_info(MDLA_TAG "[warn] " format, ##args)
-#define LOG_ERR(format, args...)    pr_info(MDLA_TAG "[error] " format, ##args)
+#define LOG_INF(format, args...)    pr_debug(MDLA_TAG " " format, ##args)
+#define LOG_WRN(format, args...)    pr_debug(MDLA_TAG "[warn] " format, ##args)
+#define LOG_ERR(format, args...)    pr_debug(MDLA_TAG "[error] " format, ##args)
 
 enum MdlaFuncMask {
 	VFM_NEED_WAIT_VCORE		= 0x1,
@@ -136,7 +136,7 @@ enum MDLA_DEBUG_MASK {
 extern u32 mdla_klog;
 #ifdef __APUSYS_MDLA_UT__
 #define mdla_debug(mask, ...) do { if (mdla_klog & mask) \
-		pr_info(__VA_ARGS__); \
+		pr_debug(__VA_ARGS__); \
 	} while (0)
 #else
 #define mdla_debug(mask, ...) do { if (mdla_klog & mask) \
@@ -168,7 +168,7 @@ static inline void mdla_debugfs_exit(void)
 }
 #endif
 
-#define mdla_error(...) pr_info(__VA_ARGS__)
+#define mdla_error(...) pr_debug(__VA_ARGS__)
 #define mdla_drv_debug(...) mdla_debug(MDLA_DBG_DRV, __VA_ARGS__)
 #define mdla_mem_debug(...) mdla_debug(MDLA_DBG_MEM, __VA_ARGS__)
 #define mdla_cmd_debug(...) mdla_debug(MDLA_DBG_CMD, __VA_ARGS__)
