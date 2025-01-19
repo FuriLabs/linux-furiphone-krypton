@@ -87,7 +87,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 	case TCP_NOTIFY_SINK_VBUS:
 		rpmd->sink_mv_new = noti->vbus_state.mv;
 		rpmd->sink_ma_new = noti->vbus_state.ma;
-		dev_info(rpmd->dev, "%s sink vbus %dmV %dmA type(0x%02X)\n",
+		dev_dbg(rpmd->dev, "%s sink vbus %dmV %dmA type(0x%02X)\n",
 				    __func__, rpmd->sink_mv_new,
 				    rpmd->sink_ma_new, noti->vbus_state.type);
 #ifdef CONFIG_MTK_CHARGER
@@ -118,7 +118,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		     new_state == TYPEC_ATTACHED_NORP_SRC ||
 		     new_state == TYPEC_ATTACHED_CUSTOM_SRC ||
 		     new_state == TYPEC_ATTACHED_DBGACC_SNK)) {
-			dev_info(rpmd->dev,
+			dev_dbg(rpmd->dev,
 				 "%s Charger plug in, polarity = %d\n",
 				 __func__, noti->typec_state.polarity);
 			/*
@@ -137,7 +137,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			    old_state == TYPEC_ATTACHED_CUSTOM_SRC ||
 			    old_state == TYPEC_ATTACHED_DBGACC_SNK) &&
 			    new_state == TYPEC_UNATTACHED) {
-			dev_info(rpmd->dev, "%s Charger plug out\n", __func__);
+			dev_dbg(rpmd->dev, "%s Charger plug out\n", __func__);
 			/*
 			 * report charger plug-out,
 			 * and disable device connection
@@ -145,7 +145,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		} else if (old_state == TYPEC_UNATTACHED &&
 			   (new_state == TYPEC_ATTACHED_SRC ||
 			    new_state == TYPEC_ATTACHED_DEBUG)) {
-			dev_info(rpmd->dev,
+			dev_dbg(rpmd->dev,
 				 "%s OTG plug in, polarity = %d\n",
 				 __func__, noti->typec_state.polarity);
 			/* enable host connection */
@@ -169,11 +169,11 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		} else if ((old_state == TYPEC_ATTACHED_SRC ||
 			    old_state == TYPEC_ATTACHED_DEBUG) &&
 			    new_state == TYPEC_UNATTACHED) {
-			dev_info(rpmd->dev, "%s OTG plug out\n", __func__);
+			dev_dbg(rpmd->dev, "%s OTG plug out\n", __func__);
 			/* disable host connection */
 		} else if (old_state == TYPEC_UNATTACHED &&
 			   new_state == TYPEC_ATTACHED_AUDIO) {
-			dev_info(rpmd->dev, "%s Audio plug in\n", __func__);
+			dev_dbg(rpmd->dev, "%s Audio plug in\n", __func__);
 			/* enable AudioAccessory connection */
 #ifdef CONFIG_OCP96011_I2C
 			ocp96011_switch_event(0);
@@ -184,7 +184,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 #endif  /* CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT */
 		} else if (old_state == TYPEC_ATTACHED_AUDIO &&
 			   new_state == TYPEC_UNATTACHED) {
-			dev_info(rpmd->dev, "%s Audio plug out\n", __func__);
+			dev_dbg(rpmd->dev, "%s Audio plug out\n", __func__);
 			/* disable AudioAccessory connection */
 #ifdef CONFIG_OCP96011_I2C
 			ocp96011_switch_event(1);
@@ -241,17 +241,17 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 					&rpmd->partner_desc);
 			if (IS_ERR(rpmd->partner)) {
 				ret = PTR_ERR(rpmd->partner);
-				dev_notice(rpmd->dev,
+				dev_dbg(rpmd->dev,
 				"%s typec register partner fail(%d)\n",
 					   __func__, ret);
 			}
 		}
 		break;
 	case TCP_NOTIFY_PR_SWAP:
-		dev_info(rpmd->dev, "%s power role swap, new role = %d\n",
+		dev_dbg(rpmd->dev, "%s power role swap, new role = %d\n",
 				    __func__, noti->swap_state.new_role);
 		if (noti->swap_state.new_role == PD_ROLE_SINK) {
-			dev_info(rpmd->dev, "%s swap power role to sink\n",
+			dev_dbg(rpmd->dev, "%s swap power role to sink\n",
 					    __func__);
 			/*
 			 * report charger plug-in without charger type detection
@@ -260,7 +260,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 
 			typec_set_pwr_role(rpmd->typec_port, TYPEC_SINK);
 		} else if (noti->swap_state.new_role == PD_ROLE_SOURCE) {
-			dev_info(rpmd->dev, "%s swap power role to source\n",
+			dev_dbg(rpmd->dev, "%s swap power role to source\n",
 					    __func__);
 			/* report charger plug-out */
 
@@ -268,10 +268,10 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		}
 		break;
 	case TCP_NOTIFY_DR_SWAP:
-		dev_info(rpmd->dev, "%s data role swap, new role = %d\n",
+		dev_dbg(rpmd->dev, "%s data role swap, new role = %d\n",
 				    __func__, noti->swap_state.new_role);
 		if (noti->swap_state.new_role == PD_ROLE_UFP) {
-			dev_info(rpmd->dev, "%s swap data role to device\n",
+			dev_dbg(rpmd->dev, "%s swap data role to device\n",
 					    __func__);
 			/*
 			 * disable host connection,
@@ -280,7 +280,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 
 			typec_set_data_role(rpmd->typec_port, TYPEC_DEVICE);
 		} else if (noti->swap_state.new_role == PD_ROLE_DFP) {
-			dev_info(rpmd->dev, "%s swap data role to host\n",
+			dev_dbg(rpmd->dev, "%s swap data role to host\n",
 					    __func__);
 			/*
 			 * disable device connection,
@@ -291,27 +291,27 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		}
 		break;
 	case TCP_NOTIFY_VCONN_SWAP:
-		dev_info(rpmd->dev, "%s vconn role swap, new role = %d\n",
+		dev_dbg(rpmd->dev, "%s vconn role swap, new role = %d\n",
 				    __func__, noti->swap_state.new_role);
 		if (noti->swap_state.new_role) {
-			dev_info(rpmd->dev, "%s swap vconn role to on\n",
+			dev_dbg(rpmd->dev, "%s swap vconn role to on\n",
 					    __func__);
 			typec_set_vconn_role(rpmd->typec_port, TYPEC_SOURCE);
 		} else {
-			dev_info(rpmd->dev, "%s swap vconn role to off\n",
+			dev_dbg(rpmd->dev, "%s swap vconn role to off\n",
 					    __func__);
 			typec_set_vconn_role(rpmd->typec_port, TYPEC_SINK);
 		}
 		break;
 	case TCP_NOTIFY_EXT_DISCHARGE:
-		dev_info(rpmd->dev, "%s ext discharge = %d\n",
+		dev_dbg(rpmd->dev, "%s ext discharge = %d\n",
 				    __func__, noti->en_state.en);
 #ifdef CONFIG_MTK_CHARGER
 		charger_dev_enable_discharge(rpmd->chg_dev, noti->en_state.en);
 #endif /* CONFIG_MTK_CHARGER */
 		break;
 	case TCP_NOTIFY_PD_STATE:
-		dev_info(rpmd->dev, "%s pd state = %d\n",
+		dev_dbg(rpmd->dev, "%s pd state = %d\n",
 				    __func__, noti->pd_state.connected);
 		switch (noti->pd_state.connected) {
 		case PD_CONNECT_NONE:
@@ -340,14 +340,14 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		break;
 #ifdef CONFIG_WATER_DETECTION
 	case TCP_NOTIFY_WD_STATUS:
-		dev_info(rpmd->dev, "%s wd status = %d\n",
+		dev_dbg(rpmd->dev, "%s wd status = %d\n",
 				    __func__, noti->wd_status.water_detected);
 
 		if (noti->wd_status.water_detected) {
 			usb_dpdm_pulldown(false);
 			if (!rpmd->tcpc_kpoc)
 				break;
-			dev_info(rpmd->dev, "%s Water is detected in KPOC\n",
+			dev_dbg(rpmd->dev, "%s Water is detected in KPOC\n",
 					    __func__);
 #ifdef CONFIG_MTK_CHARGER
 #ifdef ADAPT_CHARGER_V1
@@ -364,7 +364,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			usb_dpdm_pulldown(true);
 			if (!rpmd->tcpc_kpoc)
 				break;
-			dev_info(rpmd->dev, "%s Water is removed in KPOC\n",
+			dev_dbg(rpmd->dev, "%s Water is removed in KPOC\n",
 					    __func__);
 #ifdef CONFIG_MTK_CHARGER
 #ifdef ADAPT_CHARGER_V1
@@ -381,7 +381,7 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 		break;
 #endif /* CONFIG_WATER_DETECTION */
 	case TCP_NOTIFY_CABLE_TYPE:
-		dev_info(rpmd->dev, "%s cable type = %d\n",
+		dev_dbg(rpmd->dev, "%s cable type = %d\n",
 				    __func__, noti->cable_type.type);
 		break;
 	default:
@@ -396,7 +396,7 @@ static int tcpc_typec_try_role(const struct typec_capability *cap, int role)
 		container_of(cap, struct rt_pd_manager_data, typec_caps);
 	uint8_t typec_role = TYPEC_ROLE_UNKNOWN;
 
-	dev_info(rpmd->dev, "%s role = %d\n", __func__, role);
+	dev_dbg(rpmd->dev, "%s role = %d\n", __func__, role);
 
 	switch (role) {
 	case TYPEC_NO_PREFERRED_ROLE:
@@ -424,7 +424,7 @@ static int tcpc_typec_dr_set(const struct typec_capability *cap,
 	uint8_t data_role = tcpm_inquire_pd_data_role(rpmd->tcpc);
 	bool do_swap = false;
 
-	dev_info(rpmd->dev, "%s role = %d\n", __func__, role);
+	dev_dbg(rpmd->dev, "%s role = %d\n", __func__, role);
 
 	usb_boost();
 
@@ -439,14 +439,14 @@ static int tcpc_typec_dr_set(const struct typec_capability *cap,
 			data_role = PD_ROLE_UFP;
 		}
 	} else {
-		dev_notice(rpmd->dev, "%s invalid role\n", __func__);
+		dev_dbg(rpmd->dev, "%s invalid role\n", __func__);
 		return -EINVAL;
 	}
 
 	if (do_swap) {
 		ret = tcpm_dpm_pd_data_swap(rpmd->tcpc, data_role, NULL);
 		if (ret != TCPM_SUCCESS) {
-			dev_notice(rpmd->dev, "%s data role swap fail(%d)\n",
+			dev_dbg(rpmd->dev, "%s data role swap fail(%d)\n",
 					      __func__, ret);
 			return -EPERM;
 		}
@@ -464,7 +464,7 @@ static int tcpc_typec_pr_set(const struct typec_capability *cap,
 	uint8_t power_role = tcpm_inquire_pd_power_role(rpmd->tcpc);
 	bool do_swap = false;
 
-	dev_info(rpmd->dev, "%s role = %d\n", __func__, role);
+	dev_dbg(rpmd->dev, "%s role = %d\n", __func__, role);
 
 	usb_boost();
 
@@ -479,7 +479,7 @@ static int tcpc_typec_pr_set(const struct typec_capability *cap,
 			power_role = PD_ROLE_SINK;
 		}
 	} else {
-		dev_notice(rpmd->dev, "%s invalid role\n", __func__);
+		dev_dbg(rpmd->dev, "%s invalid role\n", __func__);
 		return -EINVAL;
 	}
 
@@ -488,7 +488,7 @@ static int tcpc_typec_pr_set(const struct typec_capability *cap,
 		if (ret == TCPM_ERROR_NO_PD_CONNECTED)
 			ret = tcpm_typec_role_swap(rpmd->tcpc);
 		if (ret != TCPM_SUCCESS) {
-			dev_notice(rpmd->dev, "%s power role swap fail(%d)\n",
+			dev_dbg(rpmd->dev, "%s power role swap fail(%d)\n",
 					      __func__, ret);
 			return -EPERM;
 		}
@@ -506,7 +506,7 @@ static int tcpc_typec_vconn_set(const struct typec_capability *cap,
 	uint8_t vconn_role = tcpm_inquire_pd_vconn_role(rpmd->tcpc);
 	bool do_swap = false;
 
-	dev_info(rpmd->dev, "%s role = %d\n", __func__, role);
+	dev_dbg(rpmd->dev, "%s role = %d\n", __func__, role);
 
 	if (role == TYPEC_SOURCE) {
 		if (vconn_role == PD_ROLE_VCONN_OFF) {
@@ -519,14 +519,14 @@ static int tcpc_typec_vconn_set(const struct typec_capability *cap,
 			vconn_role = PD_ROLE_VCONN_OFF;
 		}
 	} else {
-		dev_notice(rpmd->dev, "%s invalid role\n", __func__);
+		dev_dbg(rpmd->dev, "%s invalid role\n", __func__);
 		return -EINVAL;
 	}
 
 	if (do_swap) {
 		ret = tcpm_dpm_pd_vconn_swap(rpmd->tcpc, vconn_role, NULL);
 		if (ret != TCPM_SUCCESS) {
-			dev_notice(rpmd->dev, "%s vconn role swap fail(%d)\n",
+			dev_dbg(rpmd->dev, "%s vconn role swap fail(%d)\n",
 					      __func__, ret);
 			return -EPERM;
 		}
@@ -543,7 +543,7 @@ static int tcpc_typec_port_type_set(const struct typec_capability *cap,
 	bool as_sink = tcpc_typec_is_act_as_sink_role(rpmd->tcpc);
 	uint8_t typec_role = TYPEC_ROLE_UNKNOWN;
 
-	dev_info(rpmd->dev, "%s type = %d, as_sink = %d\n",
+	dev_dbg(rpmd->dev, "%s type = %d, as_sink = %d\n",
 			    __func__, type, as_sink);
 
 	usb_boost();
@@ -602,7 +602,7 @@ static int typec_init(struct rt_pd_manager_data *rpmd)
 	rpmd->typec_port = typec_register_port(rpmd->dev, &rpmd->typec_caps);
 	if (IS_ERR(rpmd->typec_port)) {
 		ret = PTR_ERR(rpmd->typec_port);
-		dev_notice(rpmd->dev, "%s typec register port fail(%d)\n",
+		dev_dbg(rpmd->dev, "%s typec register port fail(%d)\n",
 				      __func__, ret);
 		goto out;
 	}
@@ -617,7 +617,7 @@ static int rt_pd_manager_probe(struct platform_device *pdev)
 	int ret = 0;
 	struct rt_pd_manager_data *rpmd = NULL;
 
-	dev_info(&pdev->dev, "%s (%s)\n", __func__, RT_PD_MANAGER_VERSION);
+	dev_dbg(&pdev->dev, "%s (%s)\n", __func__, RT_PD_MANAGER_VERSION);
 
 	rpmd = devm_kzalloc(&pdev->dev, sizeof(*rpmd), GFP_KERNEL);
 	if (!rpmd)
@@ -628,7 +628,7 @@ static int rt_pd_manager_probe(struct platform_device *pdev)
 #ifdef CONFIG_MTK_CHARGER
 	rpmd->chg_dev = get_charger_by_name("primary_chg");
 	if (!rpmd->chg_dev) {
-		dev_notice(rpmd->dev, "%s get chg dev fail\n", __func__);
+		dev_dbg(rpmd->dev, "%s get chg dev fail\n", __func__);
 		ret = -ENODEV;
 		goto err_get_chg_dev;
 	}
@@ -636,7 +636,7 @@ static int rt_pd_manager_probe(struct platform_device *pdev)
 	rpmd->chg_consumer = charger_manager_get_by_name(rpmd->dev,
 								 "charger_port1");
 	if (!rpmd->chg_consumer) {
-		dev_notice(rpmd->dev, "%s get chg consumer fail\n", __func__);
+		dev_dbg(rpmd->dev, "%s get chg consumer fail\n", __func__);
 		ret = -ENODEV;
 		goto err_get_chg_consumer;
 	}
@@ -644,7 +644,7 @@ static int rt_pd_manager_probe(struct platform_device *pdev)
 #ifdef CONFIG_WATER_DETECTION
 	rpmd->chg_psy = power_supply_get_by_name("mtk-master-charger");
 	if (!rpmd->chg_psy) {
-		dev_notice(rpmd->dev, "%s get chg psy fail\n", __func__);
+		dev_dbg(rpmd->dev, "%s get chg psy fail\n", __func__);
 		ret = -ENODEV;
 		goto err_get_chg_psy;
 	}
@@ -654,7 +654,7 @@ static int rt_pd_manager_probe(struct platform_device *pdev)
 
 	rpmd->tcpc = tcpc_dev_get_by_name("type_c_port0");
 	if (!rpmd->tcpc) {
-		dev_notice(rpmd->dev, "%s get tcpc dev fail\n", __func__);
+		dev_dbg(rpmd->dev, "%s get tcpc dev fail\n", __func__);
 		ret = -ENODEV;
 		goto err_get_tcpc_dev;
 	}
@@ -666,7 +666,7 @@ static int rt_pd_manager_probe(struct platform_device *pdev)
 		rpmd->tcpc_kpoc = true;
 	else
 		rpmd->tcpc_kpoc = false;
-	dev_info(rpmd->dev, "%s tcpc_kpoc = %d\n", __func__, rpmd->tcpc_kpoc);
+	dev_dbg(rpmd->dev, "%s tcpc_kpoc = %d\n", __func__, rpmd->tcpc_kpoc);
 #endif /* CONFIG_WATER_DETECTION */
 
 	rpmd->sink_mv_old = -1;
@@ -674,7 +674,7 @@ static int rt_pd_manager_probe(struct platform_device *pdev)
 
 	ret = typec_init(rpmd);
 	if (ret < 0) {
-		dev_notice(rpmd->dev, "%s init typec fail(%d)\n",
+		dev_dbg(rpmd->dev, "%s init typec fail(%d)\n",
 				      __func__, ret);
 		goto err_init_typec;
 	}
@@ -683,13 +683,13 @@ static int rt_pd_manager_probe(struct platform_device *pdev)
 	ret = register_tcp_dev_notifier(rpmd->tcpc, &rpmd->pd_nb,
 					TCP_NOTIFY_TYPE_ALL);
 	if (ret < 0) {
-		dev_notice(rpmd->dev, "%s register tcpc notifier fail(%d)\n",
+		dev_dbg(rpmd->dev, "%s register tcpc notifier fail(%d)\n",
 				      __func__, ret);
 		goto err_reg_tcpc_notifier;
 	}
 
 	platform_set_drvdata(pdev, rpmd);
-	dev_info(rpmd->dev, "%s OK!!\n", __func__);
+	dev_dbg(rpmd->dev, "%s OK!!\n", __func__);
 	return 0;
 
 err_reg_tcpc_notifier:
@@ -721,7 +721,7 @@ static int rt_pd_manager_remove(struct platform_device *pdev)
 	ret = unregister_tcp_dev_notifier(rpmd->tcpc, &rpmd->pd_nb,
 					  TCP_NOTIFY_TYPE_ALL);
 	if (ret < 0)
-		dev_notice(rpmd->dev, "%s unregister tcpc notifier fail(%d)\n",
+		dev_dbg(rpmd->dev, "%s unregister tcpc notifier fail(%d)\n",
 				      __func__, ret);
 
 	typec_unregister_port(rpmd->typec_port);
