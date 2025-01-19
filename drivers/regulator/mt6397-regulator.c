@@ -360,7 +360,7 @@ static int mt6397_regulator_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "Failed to read Chip ID\n");
 		return -EIO;
 	}
-	dev_info(&pdev->dev, "Chip ID = 0x%x\n", reg_value);
+	dev_dbg(&pdev->dev, "Chip ID = 0x%x\n", reg_value);
 
 	version = (reg_value & 0xFF);
 	switch (version) {

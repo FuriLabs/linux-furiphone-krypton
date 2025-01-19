@@ -623,7 +623,7 @@ static int mt6359_regulator_disable(struct regulator_dev *rdev)
 	int ret = 0;
 
 	if (rdev->use_count == 0) {
-		dev_notice(&rdev->dev, "%s:%s should not be disable.(use_count=0)\n"
+		dev_dbg(&rdev->dev, "%s:%s should not be disable.(use_count=0)\n"
 			, __func__
 			, rdev->desc->name);
 		ret = -1;
@@ -640,13 +640,13 @@ static int mt6359_regulator_get_voltage_sel(struct regulator_dev *rdev)
 	int ret, regval = 0;
 
 	if (info == NULL) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"regulator info null pointer\n");
 		return -EINVAL;
 	}
 	ret = regmap_read(rdev->regmap, info->da_vsel_reg, &regval);
 	if (ret != 0) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"Failed to get mt6359 regulator voltage: %d\n", ret);
 		return ret;
 	}
@@ -662,13 +662,13 @@ static unsigned int mt6359_regulator_get_mode(struct regulator_dev *rdev)
 	int ret, regval = 0;
 
 	if (info == NULL) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"regulator info null pointer\n");
 		return -EINVAL;
 	}
 	ret = regmap_read(rdev->regmap, info->modeset_reg, &regval);
 	if (ret != 0) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"Failed to get mt6359 buck mode: %d\n", ret);
 		return ret;
 	}
@@ -680,7 +680,7 @@ static unsigned int mt6359_regulator_get_mode(struct regulator_dev *rdev)
 
 	ret = regmap_read(rdev->regmap, info->lp_mode_reg, &regval);
 	if (ret != 0) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"Failed to get mt6359 buck lp mode: %d\n", ret);
 		return ret;
 	}
@@ -699,7 +699,7 @@ static int mt6359_regulator_set_mode(struct regulator_dev *rdev,
 	int curr_mode;
 
 	if (info == NULL) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"regulator info null pointer\n");
 		return -EINVAL;
 	}
@@ -708,7 +708,7 @@ static int mt6359_regulator_set_mode(struct regulator_dev *rdev,
 	case REGULATOR_MODE_FAST:
 		if (curr_mode == REGULATOR_MODE_IDLE) {
 			WARN_ON(1);
-			dev_notice(&rdev->dev,
+			dev_dbg(&rdev->dev,
 				   "BUCK %s is LP mode, can't FPWM\n",
 				   rdev->desc->name);
 			return -EIO;
@@ -741,7 +741,7 @@ static int mt6359_regulator_set_mode(struct regulator_dev *rdev,
 	case REGULATOR_MODE_IDLE:
 		if (curr_mode == REGULATOR_MODE_FAST) {
 			WARN_ON(1);
-			dev_notice(&rdev->dev,
+			dev_dbg(&rdev->dev,
 				   "BUCK %s is FPWM mode, can't enter LP\n",
 				   rdev->desc->name);
 			return -EIO;
@@ -760,7 +760,7 @@ static int mt6359_regulator_set_mode(struct regulator_dev *rdev,
 
 err_mode:
 	if (ret != 0) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"Failed to set mt6359 buck mode: %d\n", ret);
 		return ret;
 	}
@@ -775,13 +775,13 @@ static int mt6359_get_status(struct regulator_dev *rdev)
 	struct mt6359_regulator_info *info = rdev_get_drvdata(rdev);
 
 	if (info == NULL) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"regulator info null pointer\n");
 		return -EINVAL;
 	}
 	ret = regmap_read(rdev->regmap, info->da_reg, &regval);
 	if (ret != 0) {
-		dev_notice(&rdev->dev, "Failed to get enable reg: %d\n", ret);
+		dev_dbg(&rdev->dev, "Failed to get enable reg: %d\n", ret);
 		return ret;
 	}
 
@@ -1355,10 +1355,10 @@ static int mt6359_regulator_probe(struct platform_device *pdev)
 	/* Read PMIC chip revision to update constraints and voltage table */
 	if (regmap_read(mt6358->regmap,
 			regulator_init_data->id, &reg_value) < 0) {
-		dev_notice(&pdev->dev, "Failed to read Chip ID\n");
+		dev_dbg(&pdev->dev, "Failed to read Chip ID\n");
 		return -EIO;
 	}
-	dev_info(&pdev->dev, "Chip ID = 0x%x\n", reg_value);
+	dev_dbg(&pdev->dev, "Chip ID = 0x%x\n", reg_value);
 
 	for (i = 0; i < regulator_init_data->size; i++, mt_regulators++) {
 		mt_regulators->desc.of_parse_cb = mt6359_of_parse_cb;
@@ -1368,7 +1368,7 @@ static int mt6359_regulator_probe(struct platform_device *pdev)
 		rdev = devm_regulator_register(&pdev->dev,
 					       &mt_regulators->desc, &config);
 		if (IS_ERR(rdev)) {
-			dev_notice(&pdev->dev, "failed to register %s\n",
+			dev_dbg(&pdev->dev, "failed to register %s\n",
 				   mt_regulators->desc.name);
 			return PTR_ERR(rdev);
 		}
@@ -1390,7 +1390,7 @@ static int mt6359_regulator_probe(struct platform_device *pdev)
 						mt_regulators->desc.name,
 						rdev);
 		if (ret) {
-			dev_notice(&pdev->dev, "Failed to request IRQ:%s,%d",
+			dev_dbg(&pdev->dev, "Failed to request IRQ:%s,%d",
 				   mt_regulators->desc.name, ret);
 			continue;
 		}

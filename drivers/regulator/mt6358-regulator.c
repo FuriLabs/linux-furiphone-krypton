@@ -527,7 +527,7 @@ static int mt6358_regulator_disable(struct regulator_dev *rdev)
 	int ret = 0;
 
 	if (rdev->use_count == 0) {
-		dev_notice(&rdev->dev, "%s:%s should not be disable.(use_count=0)\n"
+		dev_dbg(&rdev->dev, "%s:%s should not be disable.(use_count=0)\n"
 			, __func__
 			, rdev->desc->name);
 		ret = -1;
@@ -545,7 +545,7 @@ static int mt6358_regulator_get_voltage_sel(struct regulator_dev *rdev)
 
 	ret = regmap_read(rdev->regmap, info->da_vsel_reg, &regval);
 	if (ret != 0) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"Failed to get mt6358 regulator voltage: %d\n", ret);
 		return ret;
 	}
@@ -573,7 +573,7 @@ static int mt6358_regulator_set_mode(struct regulator_dev *rdev,
 		goto err_mode;
 	}
 
-	dev_notice(&rdev->dev, "mt6358 buck set_mode %#x, %#x, %#x, %#x\n",
+	dev_dbg(&rdev->dev, "mt6358 buck set_mode %#x, %#x, %#x, %#x\n",
 		info->modeset_reg, info->modeset_mask,
 		info->modeset_shift, val);
 
@@ -582,7 +582,7 @@ static int mt6358_regulator_set_mode(struct regulator_dev *rdev,
 				 info->modeset_mask, val);
 err_mode:
 	if (ret != 0) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"Failed to set mt6358 buck mode: %d\n", ret);
 		return ret;
 	}
@@ -597,7 +597,7 @@ static unsigned int mt6358_regulator_get_mode(struct regulator_dev *rdev)
 
 	ret = regmap_read(rdev->regmap, info->modeset_reg, &regval);
 	if (ret != 0) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"Failed to get mt6358 buck mode: %d\n", ret);
 		return ret;
 	}
@@ -620,7 +620,7 @@ static int mt6358_get_status(struct regulator_dev *rdev)
 
 	ret = regmap_read(rdev->regmap, info->da_reg, &regval);
 	if (ret != 0) {
-		dev_notice(&rdev->dev, "Failed to get enable reg: %d\n", ret);
+		dev_dbg(&rdev->dev, "Failed to get enable reg: %d\n", ret);
 		return ret;
 	}
 
@@ -637,7 +637,7 @@ static int pmic_regulator_ext2_enable(struct regulator_dev *rdev)
 				    PMIC_RG_STRUP_EXT_PMIC_SEL_SHIFT;
 	int ret = 0;
 
-	dev_info(&rdev->dev, "regulator ext_pmic2 enable\n");
+	dev_dbg(&rdev->dev, "regulator ext_pmic2 enable\n");
 	ret = regmap_read(rdev->regmap,
 			  PMIC_RG_STRUP_EXT_PMIC_EN_ADDR, &ext_en);
 	if ((ext_en & 0x2) != 0x2) {
@@ -667,9 +667,9 @@ static int pmic_regulator_ext2_disable(struct regulator_dev *rdev)
 				    PMIC_RG_STRUP_EXT_PMIC_SEL_SHIFT;
 	int ret = 0;
 
-	dev_info(&rdev->dev, "regulator ext_pmic2 disable\n");
+	dev_dbg(&rdev->dev, "regulator ext_pmic2 disable\n");
 	if (rdev->use_count == 0) {
-		dev_notice(&rdev->dev, "%s:%s should not be disable.(use_count=0)\n"
+		dev_dbg(&rdev->dev, "%s:%s should not be disable.(use_count=0)\n"
 			, __func__
 			, rdev->desc->name);
 		return -1;
@@ -1203,10 +1203,10 @@ static int mt6358_regulator_probe(struct platform_device *pdev)
 
 	/* Read PMIC chip revision to update constraints and voltage table */
 	if (regmap_read(mt6358->regmap, MT6358_SWCID, &reg_value) < 0) {
-		dev_notice(&pdev->dev, "Failed to read Chip ID\n");
+		dev_dbg(&pdev->dev, "Failed to read Chip ID\n");
 		return -EIO;
 	}
-	dev_info(&pdev->dev, "Chip ID = 0x%x\n", reg_value);
+	dev_dbg(&pdev->dev, "Chip ID = 0x%x\n", reg_value);
 
 	for (i = 0; i < regulator_init_data->size; i++, mt_regulators++) {
 		mt_regulators->desc.of_parse_cb = mt6358_of_parse_cb;
@@ -1216,7 +1216,7 @@ static int mt6358_regulator_probe(struct platform_device *pdev)
 		rdev = devm_regulator_register(&pdev->dev,
 					       &mt_regulators->desc, &config);
 		if (IS_ERR(rdev)) {
-			dev_notice(&pdev->dev, "failed to register %s\n",
+			dev_dbg(&pdev->dev, "failed to register %s\n",
 				   mt_regulators->desc.name);
 			return PTR_ERR(rdev);
 		}
@@ -1238,7 +1238,7 @@ static int mt6358_regulator_probe(struct platform_device *pdev)
 						mt_regulators->desc.name,
 						rdev);
 		if (ret) {
-			dev_notice(&pdev->dev, "Failed to request IRQ:%s,%d",
+			dev_dbg(&pdev->dev, "Failed to request IRQ:%s,%d",
 				   mt_regulators->desc.name, ret);
 			continue;
 		}

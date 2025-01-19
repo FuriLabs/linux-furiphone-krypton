@@ -95,7 +95,7 @@ static int mt6362_enable_poweroff_sequence(struct mt6362_regulator_data *data)
 				   MT6362_REG_BUCK1_SEQOFFDLY + i,
 				   data->pwr_off_seq[i]);
 		if (ret < 0) {
-			dev_notice(data->dev, "%s: set buck(%d) fail\n",
+			dev_dbg(data->dev, "%s: set buck(%d) fail\n",
 				   __func__, i);
 			return ret;
 		}
@@ -405,7 +405,7 @@ static int mt6362_parse_dt_data(struct device *dev,
 	ret = of_property_read_u8_array(np, "pwr_off_seq", data->pwr_off_seq,
 					MT6362_POFF_SEQ_MAX);
 	if (ret)
-		dev_notice(dev, "%s: undefine pwr_off_seq\n", __func__);
+		dev_dbg(dev, "%s: undefine pwr_off_seq\n", __func__);
 	return ret;
 }
 
@@ -477,7 +477,7 @@ static void mt6362_shutdown(struct platform_device *pdev)
 		return;
 	ret = mt6362_enable_poweroff_sequence(data);
 	if (ret < 0)
-		dev_notice(data->dev,
+		dev_dbg(data->dev,
 			   "%s: enable power off sequence fail\n", __func__);
 }
 

@@ -170,7 +170,7 @@ static irqreturn_t mt6315_irq_handler(int irq, void *data)
 			  irq_data->sta_reg,
 			  &int_status);
 	if (ret) {
-		dev_notice(chip->dev, "Can't read INT_STATUS ret=%d\n", ret);
+		dev_dbg(chip->dev, "Can't read INT_STATUS ret=%d\n", ret);
 		return IRQ_NONE;
 	}
 
@@ -178,7 +178,7 @@ static irqreturn_t mt6315_irq_handler(int irq, void *data)
 		if ((int_status & BIT(hwirq)) == 0)
 			continue;
 		virq = irq_find_mapping(chip->irq_domain, hwirq);
-		dev_info(chip->dev,
+		dev_dbg(chip->dev,
 			"Reg[0x%x]=0x%x,hwirq=%d,type=%d\n",
 			irq_data->sta_reg, int_status, hwirq,
 			irq_get_trigger_type(virq));
@@ -215,7 +215,7 @@ static int mt6315_irq_init(struct mt6315_chip *chip)
 	struct pmic_irq_data *irq_data;
 
 	if (chip->irq <= 0) {
-		dev_notice(chip->dev, "bypass %s", __func__);
+		dev_dbg(chip->dev, "bypass %s", __func__);
 		return 0;
 	}
 
@@ -255,7 +255,7 @@ static int mt6315_irq_init(struct mt6315_chip *chip)
 						 irq_data->num_pmic_irqs,
 						 &mt6315_irq_domain_ops, chip);
 	if (!chip->irq_domain) {
-		dev_notice(chip->dev, "could not create irq domain\n");
+		dev_dbg(chip->dev, "could not create irq domain\n");
 		return -ENODEV;
 	}
 
@@ -263,7 +263,7 @@ static int mt6315_irq_init(struct mt6315_chip *chip)
 					mt6315_irq_handler, IRQF_ONESHOT,
 					dev_name(chip->dev), chip);
 	if (ret) {
-		dev_notice(chip->dev, "failed to register irq=%d; err: %d\n",
+		dev_dbg(chip->dev, "failed to register irq=%d; err: %d\n",
 			chip->irq, ret);
 		return ret;
 	}
@@ -331,7 +331,7 @@ static int mt6315_regulator_disable(struct regulator_dev *rdev)
 	int ret = 0;
 
 	if (rdev->use_count == 0) {
-		dev_notice(&rdev->dev, "%s:%s should not be disable.(use_count=0)\n"
+		dev_dbg(&rdev->dev, "%s:%s should not be disable.(use_count=0)\n"
 			, __func__
 			, rdev->desc->name);
 		ret = -1;
@@ -349,7 +349,7 @@ static int mt6315_regulator_get_voltage_sel(struct regulator_dev *rdev)
 
 	ret = regmap_read(rdev->regmap, info->da_vsel_reg, &regval);
 	if (ret != 0) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"Failed to get mt6315 regulator voltage: %d\n", ret);
 		return ret;
 	}
@@ -366,7 +366,7 @@ static unsigned int mt6315_regulator_get_mode(struct regulator_dev *rdev)
 
 	ret = regmap_read(rdev->regmap, info->modeset_reg, &regval);
 	if (ret != 0) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"Failed to get mt6315 buck mode: %d\n", ret);
 		return ret;
 	}
@@ -376,7 +376,7 @@ static unsigned int mt6315_regulator_get_mode(struct regulator_dev *rdev)
 
 	ret = regmap_read(rdev->regmap, info->lp_mode_reg, &regval);
 	if (ret != 0) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"Failed to get mt6315 buck lp mode: %d\n", ret);
 		return ret;
 	}
@@ -399,7 +399,7 @@ static int mt6315_regulator_set_mode(struct regulator_dev *rdev,
 	case REGULATOR_MODE_FAST:
 		if (curr_mode == REGULATOR_MODE_IDLE) {
 			WARN_ON(1);
-			dev_notice(&rdev->dev,
+			dev_dbg(&rdev->dev,
 				   "BUCK %s is LP mode, can't FPWM\n",
 				   rdev->desc->name);
 			return -EIO;
@@ -428,7 +428,7 @@ static int mt6315_regulator_set_mode(struct regulator_dev *rdev,
 	case REGULATOR_MODE_IDLE:
 		if (curr_mode == REGULATOR_MODE_FAST) {
 			WARN_ON(1);
-			dev_notice(&rdev->dev,
+			dev_dbg(&rdev->dev,
 				   "BUCK %s is FPWM mode, can't enter LP\n",
 				   rdev->desc->name);
 			return -EIO;
@@ -447,7 +447,7 @@ static int mt6315_regulator_set_mode(struct regulator_dev *rdev,
 
 err_mode:
 	if (ret != 0) {
-		dev_notice(&rdev->dev,
+		dev_dbg(&rdev->dev,
 			"Failed to set mt6315 buck mode: %d\n", ret);
 		return ret;
 	}
@@ -463,7 +463,7 @@ static int mt6315_get_status(struct regulator_dev *rdev)
 
 	ret = regmap_read(rdev->regmap, info->da_reg, &regval);
 	if (ret != 0) {
-		dev_notice(&rdev->dev, "Failed to get enable reg: %d\n", ret);
+		dev_dbg(&rdev->dev, "Failed to get enable reg: %d\n", ret);
 		return ret;
 	}
 
@@ -696,7 +696,7 @@ static int mt6315_regulator_probe(struct platform_device *pdev)
 	chip->regmap = regmap;
 	chip->irq = platform_get_irq(pdev, 0);
 	if (chip->irq <= 0) {
-		dev_notice(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"failed to get platform irq, ret=%d", chip->irq);
 	}
 	mutex_init(&chip->lock);
@@ -705,10 +705,10 @@ static int mt6315_regulator_probe(struct platform_device *pdev)
 	/* Read chip revision to update constraints */
 	regmap_read(regmap, MT6315_SWCID_H, &reg_value);
 	if (reg_value == 0) {
-		dev_notice(&pdev->dev, "Failed to read Chip ID\n");
+		dev_dbg(&pdev->dev, "Failed to read Chip ID\n");
 		return -EIO;
 	}
-	dev_info(&pdev->dev, "Chip ID = 0x%x\n", reg_value);
+	dev_dbg(&pdev->dev, "Chip ID = 0x%x\n", reg_value);
 
 	for (i = 0; i < regulator_init_data->size; i++) {
 		config.dev = &pdev->dev;
@@ -717,7 +717,7 @@ static int mt6315_regulator_probe(struct platform_device *pdev)
 		rdev = devm_regulator_register(&pdev->dev,
 				&(mt_regulators + i)->desc, &config);
 		if (IS_ERR(rdev)) {
-			dev_notice(&pdev->dev, "failed to register %s\n",
+			dev_dbg(&pdev->dev, "failed to register %s\n",
 				(mt_regulators + i)->desc.name);
 			continue;
 		}
@@ -736,10 +736,10 @@ static int mt6315_regulator_probe(struct platform_device *pdev)
 	/* Create sysfs entry */
 	ret = device_create_file(&pdev->dev, &dev_attr_extbuck_access);
 	if (ret)
-		dev_notice(&pdev->dev, "failed to create regs access file\n");
+		dev_dbg(&pdev->dev, "failed to create regs access file\n");
 	ret = device_create_file(&pdev->dev, &dev_attr_dump_rec_pmic);
 	if (ret)
-		dev_notice(&pdev->dev, "failed to create regs record file\n");
+		dev_dbg(&pdev->dev, "failed to create regs record file\n");
 
 	return 0;
 }
@@ -750,10 +750,10 @@ static void mt6315_regulator_shutdown(struct platform_device *pdev)
 	struct regmap *regmap;
 	int ret = 0;
 
-	dev_info(&pdev->dev, "%s\n", __func__);
+	dev_dbg(&pdev->dev, "%s\n", __func__);
 	regmap = dev_get_regmap(dev->parent, NULL);
 	if (!regmap) {
-		dev_notice(&pdev->dev, "%s: invalid regmap.\n", __func__);
+		dev_dbg(&pdev->dev, "%s: invalid regmap.\n", __func__);
 		return;
 	}
 
@@ -765,7 +765,7 @@ static void mt6315_regulator_shutdown(struct platform_device *pdev)
 	ret |= regmap_write(regmap, MT6315_PMIC_TMA_KEY_ADDR, 0);
 	ret |= regmap_write(regmap, MT6315_PMIC_TMA_KEY_H_ADDR, 0);
 	if (ret < 0) {
-		dev_notice(&pdev->dev, "%s: enable power off sequence failed.\n"
+		dev_dbg(&pdev->dev, "%s: enable power off sequence failed.\n"
 			   , __func__);
 		return;
 	}

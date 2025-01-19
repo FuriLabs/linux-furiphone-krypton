@@ -356,7 +356,7 @@ static int mt6357_regulator_disable(struct regulator_dev *rdev)
 	int ret = 0;
 
 	if (rdev->use_count == 0) {
-		dev_notice(&rdev->dev, "%s:%s should not be disable.(use_count=0)\n"
+		dev_dbg(&rdev->dev, "%s:%s should not be disable.(use_count=0)\n"
 			   , __func__, rdev->desc->name);
 		ret = -EIO;
 	} else {
@@ -872,7 +872,7 @@ static int mt6357_regulator_probe(struct platform_device *pdev)
 						mt6357_regulators[i].desc.name,
 						rdev);
 		if (ret) {
-			dev_notice(&pdev->dev, "Failed to request IRQ:%s,%d",
+			dev_dbg(&pdev->dev, "Failed to request IRQ:%s,%d",
 				   mt6357_regulators[i].desc.name, ret);
 			continue;
 		}

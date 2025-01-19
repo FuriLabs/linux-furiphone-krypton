@@ -552,7 +552,7 @@ static int mt6360_regulator_probe(struct platform_device *pdev)
 		dev_err(&pdev->dev, "Fail to register irqs\n");
 		return ret;
 	}
-	dev_info(&pdev->dev, "Successfully probed\n");
+	dev_dbg(&pdev->dev, "Successfully probed\n");
 	return 0;
 }
 
