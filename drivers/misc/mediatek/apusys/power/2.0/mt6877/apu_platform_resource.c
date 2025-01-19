@@ -180,7 +180,7 @@ struct hal_param_init_power *init_power_data)
 							apusys_conn1_node, 0);
 
 		if (IS_ERR((void *)init_power_data->conn1_base_addr)) {
-			pr_info("Unable to iomap conn1_base_addr\n");
+			pr_debug("Unable to iomap conn1_base_addr\n");
 			goto err_exit;
 		}
 	} else {
@@ -196,7 +196,7 @@ struct hal_param_init_power *init_power_data)
 		init_power_data->pll_base_addr = of_iomap(apusys_pll_node, 0);
 
 		if (IS_ERR((void *)init_power_data->pll_base_addr)) {
-			pr_info("Unable to iomap pll_base_addr\n");
+			pr_debug("Unable to iomap pll_base_addr\n");
 			goto err_exit;
 		}
 	} else {
@@ -212,7 +212,7 @@ struct hal_param_init_power *init_power_data)
 		init_power_data->acc_base_addr = of_iomap(apusys_acc_node, 0);
 
 		if (IS_ERR((void *)init_power_data->acc_base_addr)) {
-			pr_info("Unable to iomap acc_base_addr\n");
+			pr_debug("Unable to iomap acc_base_addr\n");
 			goto err_exit;
 		}
 	} else {

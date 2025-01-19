@@ -151,12 +151,12 @@ static int mdw_dispr_get_dev(struct mdw_disp_item *di)
 
 static int mdw_dispr_pwron_dev(struct mdw_rsc_req *r, struct mdw_apu_sc *sc)
 {
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 	int ret = 0;
 
 	list_for_each_safe(list_ptr, tmp, &r->d_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, r_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, r_item);
 		ret = d->pwr_on(d, sc->boost, MDW_RSC_SET_PWR_TIMEOUT);
 		if (ret) {
 			mdw_drv_err("pwn on(%s-#d) fail\n", d->name, d->idx);
@@ -169,14 +169,14 @@ static int mdw_dispr_pwron_dev(struct mdw_rsc_req *r, struct mdw_apu_sc *sc)
 	return ret;
 }
 
-static struct mdw_dev_info *mdw_dispr_pop_dev(int type,
+static struct mdw_dev_dbg *mdw_dispr_pop_dev(int type,
 	struct mdw_rsc_req *r)
 {
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 
 	list_for_each_safe(list_ptr, tmp, &r->d_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, r_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, r_item);
 		if (d->type == type) {
 			list_del(&d->r_item);
 			break;
@@ -190,7 +190,7 @@ static struct mdw_dev_info *mdw_dispr_pop_dev(int type,
 static int mdw_dispr_exec_pack(struct mdw_disp_item *di)
 {
 	struct mdw_apu_sc *sc = NULL;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 	int ret = 0;
 
@@ -217,7 +217,7 @@ static int mdw_dispr_exec_pack(struct mdw_disp_item *di)
 static int mdw_dispr_exec_multi(struct mdw_disp_item *di)
 {
 	struct mdw_apu_sc *sc = NULL;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 	int ret = 0;
 
@@ -235,7 +235,7 @@ static int mdw_dispr_exec_multi(struct mdw_disp_item *di)
 	mutex_unlock(&sc->mtx);
 
 	list_for_each_safe(list_ptr, tmp, &di->req.d_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, r_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, r_item);
 		if (d->type == sc->type) {
 			list_del(&d->r_item);
 			ret = d->exec(d, sc);
@@ -275,7 +275,7 @@ void mdw_dispr_check(void)
 int mdw_dispr_norm(struct mdw_apu_sc *sc)
 {
 	struct mdw_rsc_req r;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 	int ret = 0;
 
@@ -309,7 +309,7 @@ int mdw_dispr_norm(struct mdw_apu_sc *sc)
 
 	/* dispatch cmd */
 	list_for_each_safe(list_ptr, tmp, &r.d_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, r_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, r_item);
 		ret = d->exec(d, sc);
 		if (ret)
 			goto fail_exec_sc;
@@ -320,7 +320,7 @@ int mdw_dispr_norm(struct mdw_apu_sc *sc)
 
 fail_exec_sc:
 	list_for_each_safe(list_ptr, tmp, &r.d_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, r_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, r_item);
 		list_del(&d->r_item);
 		mdw_rsc_put_dev(d);
 	}

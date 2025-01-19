@@ -9,7 +9,7 @@
 #define DEBUG_PREFIX "[apusys_dbg]"
 
 #define DBG_LOG_ERR(x, args...) \
-	pr_info(DEBUG_PREFIX "[error] %s " x, __func__, ##args)
+	pr_debug(DEBUG_PREFIX "[error] %s " x, __func__, ##args)
 
 static inline void apu_dbg_print(const char *fmt, ...)
 {

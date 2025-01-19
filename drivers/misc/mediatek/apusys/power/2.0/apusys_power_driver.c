@@ -118,7 +118,7 @@ static void apu_pwr_wake_init(void)
 #ifdef CONFIG_PM_SLEEP
 	pwr_wake_lock = wakeup_source_register(NULL, "apupwr_wakelock");
 	if (IS_ERR_OR_NULL(pwr_wake_lock))
-		pr_info("%s: wakeup_source_register fail\n", __func__);
+		pr_debug("%s: wakeup_source_register fail\n", __func__);
 #endif
 }
 
@@ -739,7 +739,7 @@ void apu_profiling(struct profiling_timestamp *profile, const char *tag)
 
 	time = abs(profile->end - profile->begin),
 	nanosec = do_div(time, 1000000000);
-	pr_info("%s: %s take %lu (us)\n", __func__, tag,
+	pr_debug("%s: %s take %lu (us)\n", __func__, tag,
 		((unsigned long)nanosec / 1000));
 }
 EXPORT_SYMBOL(apu_profiling);

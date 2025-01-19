@@ -308,18 +308,18 @@ static int mdla_plat_get_base_addr(struct platform_device *pdev,
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, num);
 	if (!res) {
-		dev_info(&pdev->dev, "invalid address (num = %d)\n", num);
+		dev_dbg(&pdev->dev, "invalid address (num = %d)\n", num);
 		return -ENODEV;
 	}
 
 	*reg = ioremap_nocache(res->start, res->end - res->start + 1);
 	if (*reg == 0) {
-		dev_info(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"could not allocate iomem (num = %d)\n", num);
 		return -EIO;
 	}
 
-	dev_info(&pdev->dev,
+	dev_dbg(&pdev->dev,
 		"MDLA IORESOURCE_MEM (num = %d) at 0x%08lx mapped to 0x%08lx\n",
 		num,
 		(unsigned long __force)res->start,
@@ -334,7 +334,7 @@ static int mdla_dts_map(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	u32 nr_core_ids = mdla_util_get_core_num();
 
-	dev_info(dev, "Device Tree Probing\n");
+	dev_dbg(dev, "Device Tree Probing\n");
 
 	mdla_reg_control = kcalloc(nr_core_ids, sizeof(struct mdla_reg_ctl),
 					GFP_KERNEL);
@@ -375,7 +375,7 @@ static int mdla_dts_map(struct platform_device *pdev)
 		apu_mdla_gsm_base = (void *)platform_get_resource(pdev,
 					IORESOURCE_MEM, gsm_idx)->start;
 
-	dev_info(dev, "apu_mdla_gsm_top: %p, apu_mdla_gsm_base: %p\n",
+	dev_dbg(dev, "apu_mdla_gsm_top: %p, apu_mdla_gsm_base: %p\n",
 			apu_mdla_gsm_top, apu_mdla_gsm_base);
 
 	if (mdla_plat_get_base_addr(pdev, &apu_conn_top, apu_conn_idx))
@@ -542,7 +542,7 @@ int mdla_v1_0_init(struct platform_device *pdev)
 	struct mdla_cmd_cb_func *cmd_cb = mdla_cmd_plat_cb();
 	struct mdla_dbg_cb_func *dbg_cb = mdla_dbg_plat_cb();
 
-	dev_info(&pdev->dev, "%s()\n", __func__);
+	dev_dbg(&pdev->dev, "%s()\n", __func__);
 
 	if (mdla_sw_multi_devices_init(&pdev->dev))
 		return -1;
@@ -585,7 +585,7 @@ int mdla_v1_0_init(struct platform_device *pdev)
 	return 0;
 
 err_pwr:
-	dev_info(&pdev->dev, "register mdla power fail\n");
+	dev_dbg(&pdev->dev, "register mdla power fail\n");
 	mdla_dts_unmap(pdev);
 err:
 	mdla_sw_multi_devices_deinit();
@@ -596,14 +596,14 @@ void mdla_v1_0_deinit(struct platform_device *pdev)
 {
 	int i;
 
-	dev_info(&pdev->dev, "%s()\n", __func__);
+	dev_dbg(&pdev->dev, "%s()\n", __func__);
 
 	for_each_mdla_core(i)
 		mdla_pwr_ops_get()->off(i, 0, true);
 
 	if (mdla_plat_pwr_drv_ready()
 			&& mdla_pwr_device_unregister(pdev))
-		dev_info(&pdev->dev, "unregister mdla power fail\n");
+		dev_dbg(&pdev->dev, "unregister mdla power fail\n");
 
 	mdla_dts_unmap(pdev);
 	mdla_sw_multi_devices_deinit();

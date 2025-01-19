@@ -580,7 +580,7 @@ static void get_bin_raise_voltage(enum DVFS_BUCK buck, int bin_highv_efuse, int 
 		LOG_ERR("%s invalid buck : %d\n", __func__, buck);
 	}
 
-	pr_info("%s hv_bin_mv:%d, mv_bin_mv:%d, raise_mv:%d\n", __func__,
+	pr_debug("%s hv_bin_mv:%d, mv_bin_mv:%d, raise_mv:%d\n", __func__,
 		*bin_highv_mv, *bin_midv_mv, *raise_mv);
 }
 

@@ -14,7 +14,7 @@ static int debug_probe(struct platform_device *pdev)
 {
 	int ret = 0;
 
-	pr_notice("%s in", __func__);
+	pr_debug("%s in", __func__);
 
 	ret = apusys_dump_init(&pdev->dev);
 	if (ret) {
@@ -25,7 +25,7 @@ static int debug_probe(struct platform_device *pdev)
 	return 0;
 
 out:
-	pr_notice("debug probe error!!\n");
+	pr_debug("debug probe error!!\n");
 
 	return ret;
 }
@@ -54,11 +54,11 @@ static int __init debug_INIT(void)
 {
 	int ret = 0;
 
-	pr_notice("%s debug driver init", __func__);
+	pr_debug("%s debug driver init", __func__);
 
 	ret = platform_driver_register(&debug_driver);
 	if (ret != 0)
-		pr_notice("failed to register debug driver");
+		pr_debug("failed to register debug driver");
 
 	if (platform_device_register(&debug_device)) {
 		DBG_LOG_ERR("failed to register debug_driver device");

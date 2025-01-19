@@ -62,7 +62,7 @@ static int reviser_dbg_show_rw(struct seq_file *s, void *unused)
 {
 /* Debug only*/
 #if 0
-	struct reviser_dev_info *reviser_device = s->private;
+	struct reviser_dev_dbg *reviser_device = s->private;
 
 	if (!reviser_is_power(reviser_device)) {
 		LOG_ERR("Can Not Read when power disable\n");
@@ -93,7 +93,7 @@ static const struct file_operations reviser_dbg_fops_rw = {
 // user table dump
 static int reviser_dbg_show_remap_table(struct seq_file *s, void *unused)
 {
-	struct reviser_dev_info *reviser_device = s->private;
+	struct reviser_dev_dbg *reviser_device = s->private;
 
 	if (!reviser_is_power(reviser_device)) {
 		LOG_ERR("Can Not Read when power disable\n");
@@ -123,7 +123,7 @@ static const struct file_operations reviser_dbg_fops_remap_table = {
 // context ID table
 static int reviser_dbg_show_context_ID(struct seq_file *s, void *unused)
 {
-	struct reviser_dev_info *reviser_device = s->private;
+	struct reviser_dev_dbg *reviser_device = s->private;
 
 	if (!reviser_is_power(reviser_device)) {
 		LOG_ERR("Can Not Read when power disable\n");
@@ -153,7 +153,7 @@ static const struct file_operations reviser_dbg_fops_context_ID = {
 // context boundary table
 static int reviser_dbg_show_boundary(struct seq_file *s, void *unused)
 {
-	struct reviser_dev_info *reviser_device = s->private;
+	struct reviser_dev_dbg *reviser_device = s->private;
 
 	if (!reviser_is_power(reviser_device)) {
 		LOG_ERR("Can Not Read when power disable\n");
@@ -180,7 +180,7 @@ static const struct file_operations reviser_dbg_fops_boundary = {
 // context iova
 static int reviser_dbg_show_iova(struct seq_file *s, void *unused)
 {
-	struct reviser_dev_info *reviser_device = s->private;
+	struct reviser_dev_dbg *reviser_device = s->private;
 
 	if (!reviser_is_power(reviser_device)) {
 		LOG_ERR("Can Not Read when power disable\n");
@@ -209,7 +209,7 @@ static const struct file_operations reviser_dbg_fops_iova = {
 // vlm table
 static int reviser_dbg_show_table_vlm(struct seq_file *s, void *unused)
 {
-	struct reviser_dev_info *reviser_device = s->private;
+	struct reviser_dev_dbg *reviser_device = s->private;
 
 	reviser_table_print_vlm(reviser_device, g_reviser_vlm_ctxid, s);
 	return 0;
@@ -233,7 +233,7 @@ static const struct file_operations reviser_dbg_fops_table_vlm = {
 // contex id table
 static int reviser_dbg_show_table_ctxid(struct seq_file *s, void *unused)
 {
-	struct reviser_dev_info *reviser_device = s->private;
+	struct reviser_dev_dbg *reviser_device = s->private;
 
 	reviser_table_print_ctxID(reviser_device, s);
 
@@ -258,7 +258,7 @@ static const struct file_operations reviser_dbg_fops_table_ctxid = {
 // tcm table
 static int reviser_dbg_show_table_tcm(struct seq_file *s, void *unused)
 {
-	struct reviser_dev_info *reviser_device = s->private;
+	struct reviser_dev_dbg *reviser_device = s->private;
 
 	reviser_table_print_tcm(reviser_device, s);
 
@@ -283,7 +283,7 @@ static const struct file_operations reviser_dbg_fops_table_tcm = {
 static ssize_t reviser_dbg_read_mem_tcm(struct file *filp, char *buffer,
 	size_t length, loff_t *offset)
 {
-	struct reviser_dev_info *reviser_device = filp->private_data;
+	struct reviser_dev_dbg *reviser_device = filp->private_data;
 	int res = 0;
 	unsigned char *vbuffer;
 
@@ -343,7 +343,7 @@ static const struct file_operations reviser_dbg_fops_mem_tcm = {
 static ssize_t reviser_dbg_read_mem_dram(struct file *filp, char *buffer,
 	size_t length, loff_t *offset)
 {
-	struct reviser_dev_info *reviser_device = filp->private_data;
+	struct reviser_dev_dbg *reviser_device = filp->private_data;
 	int res = 0;
 	uint64_t dram_offset;
 
@@ -384,7 +384,7 @@ static const struct file_operations reviser_dbg_fops_mem_dram = {
 static ssize_t reviser_dbg_read_mem_swap(struct file *filp, char *buffer,
 	size_t length, loff_t *offset)
 {
-	struct reviser_dev_info *reviser_device = filp->private_data;
+	struct reviser_dev_dbg *reviser_device = filp->private_data;
 	int res = 0;
 	uint64_t dram_offset;
 	uint64_t addr = 0;
@@ -433,7 +433,7 @@ static const struct file_operations reviser_dbg_fops_mem_swap = {
 // context error info
 static int reviser_dbg_show_err_info(struct seq_file *s, void *unused)
 {
-	struct reviser_dev_info *reviser_device = s->private;
+	struct reviser_dev_dbg *reviser_device = s->private;
 
 	reviser_print_error(reviser_device, s);
 	return 0;
@@ -457,7 +457,7 @@ static const struct file_operations reviser_dbg_fops_err_info = {
 // show vlm
 static int reviser_dbg_show_mem_vlm(struct seq_file *s, void *unused)
 {
-	struct reviser_dev_info *reviser_device = s->private;
+	struct reviser_dev_dbg *reviser_device = s->private;
 
 	reviser_print_dram(reviser_device, s);
 
@@ -485,7 +485,7 @@ static const struct file_operations reviser_dbg_fops_mem_vlm = {
 // show exception reg
 static int reviser_dbg_show_err_reg(struct seq_file *s, void *unused)
 {
-	struct reviser_dev_info *reviser_device = s->private;
+	struct reviser_dev_dbg *reviser_device = s->private;
 
 	if (!reviser_is_power(reviser_device)) {
 		LOG_ERR("Can Not Read when power disable\n");
@@ -509,7 +509,7 @@ static const struct file_operations reviser_dbg_fops_err_reg = {
 	//.write = seq_write,
 };
 //----------------------------------------------
-int reviser_dbg_init(struct reviser_dev_info *reviser_device)
+int reviser_dbg_init(struct reviser_dev_dbg *reviser_device)
 {
 	int ret = 0;
 
@@ -723,7 +723,7 @@ out:
 	return ret;
 }
 
-int reviser_dbg_destroy(struct reviser_dev_info *reviser_device)
+int reviser_dbg_destroy(struct reviser_dev_dbg *reviser_device)
 {
 	debugfs_remove_recursive(reviser_dbg_root);
 

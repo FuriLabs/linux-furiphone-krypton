@@ -242,13 +242,13 @@ static void mdla_plat_verbose_log(u32 core_id, const struct mdla_util_io_ops *io
 
 	io = mdla_util_io_ops_get();
 
-	pr_info("%d: CG_CON=0x%x\n", core_id, io->cfg.read(core_id, MDLA_CG_CON));
-	pr_info("%d: AXI_CTRL=0x%x\n", core_id, io->cfg.read(core_id, MDLA_AXI_CTRL));
-	pr_info("%d: AXI1_CTRL=0x%x\n", core_id, io->cfg.read(core_id, MDLA_AXI1_CTRL));
-	pr_info("%d: TOP_G_INTP0=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP0));
-	pr_info("%d: TOP_G_INTP1=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP1));
-	pr_info("%d: TOP_G_INTP2=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP2));
-	pr_info("%d: TOP_G_IDLE=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_IDLE));
+	pr_debug("%d: CG_CON=0x%x\n", core_id, io->cfg.read(core_id, MDLA_CG_CON));
+	pr_debug("%d: AXI_CTRL=0x%x\n", core_id, io->cfg.read(core_id, MDLA_AXI_CTRL));
+	pr_debug("%d: AXI1_CTRL=0x%x\n", core_id, io->cfg.read(core_id, MDLA_AXI1_CTRL));
+	pr_debug("%d: TOP_G_INTP0=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP0));
+	pr_debug("%d: TOP_G_INTP1=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP1));
+	pr_debug("%d: TOP_G_INTP2=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_INTP2));
+	pr_debug("%d: TOP_G_IDLE=0x%x\n", core_id, io->cmde.read(core_id, MREG_TOP_G_IDLE));
 }
 
 /* NOTE: hw_lock should be acquired by caller */
@@ -516,18 +516,18 @@ static int mdla_plat_get_base_addr(struct platform_device *pdev, void **reg, int
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, num);
 	if (!res) {
-		dev_info(&pdev->dev, "invalid address (num = %d)\n", num);
+		dev_dbg(&pdev->dev, "invalid address (num = %d)\n", num);
 		return -ENODEV;
 	}
 
 	*reg = ioremap_nocache(res->start, res->end - res->start + 1);
 	if (*reg == 0) {
-		dev_info(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"could not allocate iomem (num = %d)\n", num);
 		return -EIO;
 	}
 
-	dev_info(&pdev->dev,
+	dev_dbg(&pdev->dev,
 		"IORESOURCE_MEM (num = %d) at 0x%08lx mapped to 0x%08lx\n",
 		num,
 		(unsigned long __force)res->start,
@@ -542,7 +542,7 @@ static int mdla_dts_map(struct platform_device *pdev)
 	struct device *dev = &pdev->dev;
 	u32 nr_core_ids = mdla_util_get_core_num();
 
-	dev_info(dev, "Device Tree Probing\n");
+	dev_dbg(dev, "Device Tree Probing\n");
 
 	mdla_reg_control = kcalloc(nr_core_ids, sizeof(struct mdla_reg_ctl), GFP_KERNEL);
 
@@ -705,7 +705,7 @@ int mdla_v2_0_init(struct platform_device *pdev)
 	struct mdla_cmd_cb_func *cmd_cb = mdla_cmd_plat_cb();
 	struct mdla_dbg_cb_func *dbg_cb = mdla_dbg_plat_cb();
 
-	dev_info(&pdev->dev, "%s()\n", __func__);
+	dev_dbg(&pdev->dev, "%s()\n", __func__);
 
 	if (mdla_sw_multi_devices_init(&pdev->dev))
 		return -1;
@@ -773,7 +773,7 @@ err_sched:
 	if (mdla_plat_pwr_drv_ready())
 		mdla_pwr_device_unregister(pdev);
 err_pwr:
-	dev_info(&pdev->dev, "register mdla power fail\n");
+	dev_dbg(&pdev->dev, "register mdla power fail\n");
 	mdla_dts_unmap(pdev);
 err:
 	mdla_sw_multi_devices_deinit();
@@ -784,7 +784,7 @@ void mdla_v2_0_deinit(struct platform_device *pdev)
 {
 	int i;
 
-	dev_info(&pdev->dev, "%s()\n", __func__);
+	dev_dbg(&pdev->dev, "%s()\n", __func__);
 
 	mdla_v2_0_sched_deinit();
 
@@ -795,7 +795,7 @@ void mdla_v2_0_deinit(struct platform_device *pdev)
 
 	if (mdla_plat_pwr_drv_ready()
 			&& mdla_pwr_device_unregister(pdev))
-		dev_info(&pdev->dev, "unregister mdla power fail\n");
+		dev_dbg(&pdev->dev, "unregister mdla power fail\n");
 
 	mdla_dts_unmap(pdev);
 	mdla_sw_multi_devices_deinit();

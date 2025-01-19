@@ -142,14 +142,14 @@ static int mdla_drv_register_char_dev(struct device *dev)
 	/* Register a range of char device numbers */
 	ret = alloc_chrdev_region(&mdlactl_dev_num, 0, 1, MDLA_DEVICE_NAME);
 	if (ret < 0) {
-		dev_info(dev, "alloc_chrdev_region failed, %d\n", ret);
+		dev_dbg(dev, "alloc_chrdev_region failed, %d\n", ret);
 		goto out;
 	}
 
 	/* Allocate a char device structure */
 	mdlactl_cdev = cdev_alloc();
 	if (!mdlactl_cdev) {
-		dev_info(dev, "cdev_alloc failed\n");
+		dev_dbg(dev, "cdev_alloc failed\n");
 		ret = -ENOMEM;
 		goto err_cdev;
 	}
@@ -161,11 +161,11 @@ static int mdla_drv_register_char_dev(struct device *dev)
 	/* Add a char device to the system */
 	ret = cdev_add(mdlactl_cdev, mdlactl_dev_num, 1);
 	if (ret < 0) {
-		dev_info(dev, "Attatch file operation failed, %d\n", ret);
+		dev_dbg(dev, "Attatch file operation failed, %d\n", ret);
 		goto err_cdev_add;
 	}
 
-	dev_info(dev, "Registered cdev with major/minor number %d\n",
+	dev_dbg(dev, "Registered cdev with major/minor number %d\n",
 			mdlactl_dev_num);
 
 	return 0;
@@ -184,7 +184,7 @@ int mdla_drv_create_device_node(struct device *dev)
 
 	if (mdlactl_cdev) {
 		ret = -1;
-		dev_info(dev, "%s() Has registered character device!\n",
+		dev_dbg(dev, "%s() Has registered character device!\n",
 					__func__);
 		goto out;
 	}
@@ -197,7 +197,7 @@ int mdla_drv_create_device_node(struct device *dev)
 	/* 2. Create a class structure. It's used in calls to device_create() */
 	mdlactl_class = class_create(THIS_MODULE, MDLA_CLASS_NAME);
 	if (IS_ERR(mdlactl_class)) {
-		dev_info(dev, "Failed to register device class\n");
+		dev_dbg(dev, "Failed to register device class\n");
 		ret = PTR_ERR(mdlactl_class);
 		goto err_class;
 	}
@@ -206,7 +206,7 @@ int mdla_drv_create_device_node(struct device *dev)
 	mdlactl_device = device_create(mdlactl_class, NULL,
 				mdlactl_dev_num, NULL, MDLA_DEVICE_NAME);
 	if (IS_ERR(mdlactl_device)) {
-		dev_info(dev, "Failed to create the device\n");
+		dev_dbg(dev, "Failed to create the device\n");
 		ret = PTR_ERR(mdlactl_device);
 		goto err_devive;
 	}
@@ -220,7 +220,7 @@ int mdla_drv_create_device_node(struct device *dev)
 		ret = dma_set_mask_and_coherent(mdlactl_device,
 					DMA_BIT_MASK(32));
 		if (ret)
-			dev_info(dev, "MDLA: set DMA mask failed: %d\n", ret);
+			dev_dbg(dev, "MDLA: set DMA mask failed: %d\n", ret);
 	}
 
 	return 0;
@@ -266,10 +266,10 @@ static int mdla_probe(struct platform_device *pdev)
 	ret = mdla_util_plat_init(pdev);
 
 	if (ret < 0) {
-		dev_info(dev, "platform init failed\n");
+		dev_dbg(dev, "platform init failed\n");
 		return -EINVAL;
 	} else if (ret == 1) {
-		dev_info(dev, "%s: uP version done\n", __func__);
+		dev_dbg(dev, "%s: uP version done\n", __func__);
 		return 0;
 	}
 
@@ -301,7 +301,7 @@ static int mdla_probe(struct platform_device *pdev)
 
 		ret = apusys_register_device(adev_mdla);
 		if (ret) {
-			dev_info(dev, "register apusys mdla %d fail\n", i);
+			dev_dbg(dev, "register apusys mdla %d fail\n", i);
 			goto err_apusys;
 		}
 
@@ -316,13 +316,13 @@ static int mdla_probe(struct platform_device *pdev)
 		ret = apusys_register_device(adev_mdla_rt);
 
 		if (ret) {
-			dev_info(dev, "register apusys mdla RT %d fail\n", i);
+			dev_dbg(dev, "register apusys mdla RT %d fail\n", i);
 			apusys_unregister_device(adev_mdla);
 			goto err_apusys;
 		}
 	}
 
-	dev_info(dev, "%s: done\n", __func__);
+	dev_dbg(dev, "%s: done\n", __func__);
 
 	return 0;
 
@@ -348,7 +348,7 @@ static int mdla_remove(struct platform_device *pdev)
 	if (mdla_pwr_apusys_disabled())
 		return 0;
 
-	dev_info(&pdev->dev, "%s start -\n", __func__);
+	dev_dbg(&pdev->dev, "%s start -\n", __func__);
 
 	for_each_mdla_core(i) {
 		apusys_unregister_device(&apusys_dev_mdla[i]);
@@ -363,14 +363,14 @@ static int mdla_remove(struct platform_device *pdev)
 
 	platform_set_drvdata(pdev, NULL);
 
-	dev_info(&pdev->dev, "%s done -\n", __func__);
+	dev_dbg(&pdev->dev, "%s done -\n", __func__);
 
 	return 0;
 }
 
 static int mdla_resume(struct platform_device *pdev)
 {
-	dev_info(&pdev->dev, "%s()\n", __func__);
+	dev_dbg(&pdev->dev, "%s()\n", __func__);
 	return 0;
 }
 
@@ -381,7 +381,7 @@ static int mdla_suspend(struct platform_device *pdev, pm_message_t mesg)
 	for_each_mdla_core(i)
 		mdla_pwr_ops_get()->off(i, 1, true);
 
-	dev_info(&pdev->dev, "%s()\n", __func__);
+	dev_dbg(&pdev->dev, "%s()\n", __func__);
 	return 0;
 }
 

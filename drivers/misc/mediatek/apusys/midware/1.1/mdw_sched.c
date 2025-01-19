@@ -43,7 +43,7 @@ static struct mdw_sched_mgr ms_mgr;
 	" dev(%d/%s-#%d) mp(0x%x/%u/%u/0x%llx) sched(%d/%u/%u/%u/%u/%d)"\
 	" mem(%lu/%d/0x%x/0x%x) boost(%u) time(%u/%u)"
 
-static void mdw_sched_met_start(struct mdw_apu_sc *sc, struct mdw_dev_info *d)
+static void mdw_sched_met_start(struct mdw_apu_sc *sc, struct mdw_dev_dbg *d)
 {
 	mdw_trace_begin("apusys_scheduler|dev: %d_%d, cmd_id: 0x%08llx",
 		d->type,
@@ -51,7 +51,7 @@ static void mdw_sched_met_start(struct mdw_apu_sc *sc, struct mdw_dev_info *d)
 		sc->parent->kid);
 }
 
-static void mdw_sched_met_end(struct mdw_apu_sc *sc, struct mdw_dev_info *d,
+static void mdw_sched_met_end(struct mdw_apu_sc *sc, struct mdw_dev_dbg *d,
 	int ret)
 {
 	mdw_trace_end("apusys_scheduler|dev: %d_%d, cmd_id: 0x%08llx, ret:%d",
@@ -61,7 +61,7 @@ static void mdw_sched_met_end(struct mdw_apu_sc *sc, struct mdw_dev_info *d,
 }
 
 static void mdw_sched_trace(struct mdw_apu_sc *sc,
-	struct mdw_dev_info *d, struct apusys_cmd_hnd *h, int ret, int done)
+	struct mdw_dev_dbg *d, struct apusys_cmd_hnd *h, int ret, int done)
 {
 	struct mdw_tag_pack {
 		union {
@@ -278,7 +278,7 @@ static void mdw_sched_enque_done_sc(struct kref *ref)
 int mdw_sched_dev_routine(void *arg)
 {
 	int ret = 0;
-	struct mdw_dev_info *d = (struct mdw_dev_info *)arg;
+	struct mdw_dev_dbg *d = (struct mdw_dev_dbg *)arg;
 	struct apusys_cmd_hnd h;
 	struct mdw_apu_sc *sc = NULL;
 
@@ -505,7 +505,7 @@ int mdw_sched(struct mdw_apu_sc *sc)
 
 int mdw_sched_pause(void)
 {
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	int type = 0, idx = 0, ret = 0, i = 0;
 
 	if (ms_mgr.pause == true) {
@@ -563,7 +563,7 @@ out:
 
 void mdw_sched_restart(void)
 {
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	int type = 0, idx = 0, ret = 0;
 
 	if (ms_mgr.pause == false)

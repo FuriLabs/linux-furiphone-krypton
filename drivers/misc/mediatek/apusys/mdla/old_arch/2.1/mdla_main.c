@@ -217,7 +217,7 @@ static int mdla_mmap(struct file *filp, struct vm_area_struct *vma)
 	vma->vm_page_prot = pgprot_writecombine(vma->vm_page_prot);
 	if (remap_pfn_range(vma, vma->vm_start, offset, size,
 			vma->vm_page_prot)) {
-		pr_info("%s: remap_pfn_range error: %p\n",
+		pr_debug("%s: remap_pfn_range error: %p\n",
 			__func__, vma);
 		return -EAGAIN;
 	}
@@ -325,12 +325,12 @@ static int mdla_probe(struct platform_device *pdev)
 		return 0;
 
 	if (mdla_dts_map(pdev)) {
-		dev_info(dev, "%s: failed due to DTS failed\n", __func__);
+		dev_dbg(dev, "%s: failed due to DTS failed\n", __func__);
 		return -EINVAL;
 	}
 
 	if (mdla_register_power(pdev)) {
-		dev_info(dev, "register mdla power fail\n");
+		dev_dbg(dev, "register mdla power fail\n");
 		return -EINVAL;
 	}
 
@@ -356,7 +356,7 @@ static int mdla_probe(struct platform_device *pdev)
 		apusys_mdla_dev[j].private = &mdla_devices[i];
 		apusys_mdla_dev[j].send_cmd = apusys_mdla_handler;
 		if (apusys_register_device(&(apusys_mdla_dev[j]))) {
-			dev_info(dev, "register apusys mdla %d info\n", i);
+			dev_dbg(dev, "register apusys mdla %d info\n", i);
 			return -EINVAL;
 		}
 		if (preempt_level_support > 1) {
@@ -367,7 +367,7 @@ static int mdla_probe(struct platform_device *pdev)
 			if (apusys_register_device(
 					&(apusys_mdla_dev[j + 1]))
 			) {
-				dev_info(
+				dev_dbg(
 					dev,
 					"register apusys mdla RT %d info\n",
 					i);
@@ -380,7 +380,7 @@ static int mdla_probe(struct platform_device *pdev)
 	if (mdla_scheduler_init(&pdev->dev) < 0)
 		return -ENOMEM;
 	mdla_smp_deadline_init();
-	dev_info(dev, "%s: done\n", __func__);
+	dev_dbg(dev, "%s: done\n", __func__);
 
 	return 0;
 
@@ -401,7 +401,7 @@ static int mdla_remove(struct platform_device *pdev)
 		mdla_start_power_off(i, 0, true);
 
 	if (mdla_unregister_power(pdev)) {
-		dev_info(dev, "unregister mdla power fail\n");
+		dev_dbg(dev, "unregister mdla power fail\n");
 		return -EINVAL;
 	}
 

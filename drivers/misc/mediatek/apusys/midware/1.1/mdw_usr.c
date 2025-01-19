@@ -217,12 +217,12 @@ void mdw_usr_sys_aee_mem(char *buf, int *n)
 static void mdw_usr_dump_sdev(struct seq_file *s, struct mdw_usr *u)
 {
 	int cnt = 0;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 
 	/* device */
 	list_for_each_safe(list_ptr, tmp, &u->sdev_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, u_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, u_item);
 
 		mdw_con_info(s, "| %-9d| %-5d| %-5d| %-19s| %-66d|\n",
 			cnt,
@@ -573,7 +573,7 @@ int mdw_usr_mem_map(struct apusys_mem *um, struct mdw_usr *u)
 int mdw_usr_dev_sec_alloc(int type, struct mdw_usr *u)
 {
 	struct mdw_rsc_req req;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 	int ret = 0;
 
@@ -607,7 +607,7 @@ int mdw_usr_dev_sec_alloc(int type, struct mdw_usr *u)
 	/* power off & on device */
 	mutex_lock(&req.mtx);
 	list_for_each_safe(list_ptr, tmp, &req.d_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, r_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, r_item);
 		mdw_flw_debug("pwn on dev(%s%d)\n", d->name, d->idx);
 		/* don't control power of rt device  */
 		if (d->type >= APUSYS_DEVICE_RT)
@@ -652,7 +652,7 @@ fail_sec_on:
 fail_pwr_on:
 fail_pwr_down:
 	list_for_each_safe(list_ptr, tmp, &req.d_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, r_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, r_item);
 		if (d->type < APUSYS_DEVICE_RT)
 			d->pwr_off(d);
 
@@ -661,7 +661,7 @@ fail_pwr_down:
 	}
 
 	list_for_each_safe(list_ptr, tmp, &u->sdev_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, u_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, u_item);
 
 		if (d->type != type && d->type != type + APUSYS_DEVICE_RT)
 			continue;
@@ -680,7 +680,7 @@ out:
 
 int mdw_usr_dev_sec_free(int type, struct mdw_usr *u)
 {
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 	int ret = 0;
 
@@ -697,7 +697,7 @@ int mdw_usr_dev_sec_free(int type, struct mdw_usr *u)
 		goto out;
 	}
 	list_for_each_safe(list_ptr, tmp, &u->sdev_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, u_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, u_item);
 
 		if (d->type != type && d->type != type + APUSYS_DEVICE_RT)
 			continue;
@@ -721,7 +721,7 @@ out:
 int mdw_usr_fw(struct apusys_ioctl_fw *f, int op)
 {
 	struct apusys_kmem km;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	int ret = 0;
 
 	memset(&km, 0, sizeof(km));
@@ -761,7 +761,7 @@ out:
 int mdw_usr_ucmd(struct apusys_ioctl_ucmd *uc)
 {
 	struct apusys_kmem km;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	int ret = 0;
 
 	/* check offset to avoid oob */
@@ -805,7 +805,7 @@ out:
 
 int mdw_usr_set_pwr(struct apusys_ioctl_power *pwr)
 {
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 
 	d = mdw_rsc_get_dinfo(pwr->dev_type, pwr->idx);
 	if (!d)
@@ -1050,7 +1050,7 @@ void mdw_usr_destroy(struct kref *kref)
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 	struct mdw_mem *mm = NULL;
 	struct mdw_apu_cmd *c = NULL;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	uint64_t sbmp = 0;
 	int nd_type = 0, id = 0;
 
@@ -1072,7 +1072,7 @@ void mdw_usr_destroy(struct kref *kref)
 	}
 
 	list_for_each_safe(list_ptr, tmp, &u->sdev_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, u_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, u_item);
 		if (d->type >= APUSYS_DEVICE_MAX) {
 			mdw_drv_err("known device type(%d)\n", d->type);
 			continue;

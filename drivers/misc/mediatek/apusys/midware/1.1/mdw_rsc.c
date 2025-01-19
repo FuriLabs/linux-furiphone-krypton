@@ -285,7 +285,7 @@ out:
 static void mdw_rsc_dump_tab(struct seq_file *s, struct mdw_rsc_tab *tab)
 {
 	int j = 0;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct mdw_apu_sc *sc = NULL;
 
 	mutex_lock(&tab->mtx);
@@ -386,7 +386,7 @@ void mdw_rsc_dump(struct seq_file *s)
 #undef LINEBAR
 #undef S_LINEBAR
 
-static int mdw_rsc_dev_exec(struct mdw_dev_info *d, void *sc)
+static int mdw_rsc_dev_exec(struct mdw_dev_dbg *d, void *sc)
 {
 	if (!d)
 		return -ENODEV;
@@ -403,7 +403,7 @@ static int mdw_rsc_dev_exec(struct mdw_dev_info *d, void *sc)
 	return 0;
 }
 
-static int mdw_rsc_pwr_on(struct mdw_dev_info *d, int bst, int to)
+static int mdw_rsc_pwr_on(struct mdw_dev_dbg *d, int bst, int to)
 {
 	struct apusys_power_hnd h;
 
@@ -414,7 +414,7 @@ static int mdw_rsc_pwr_on(struct mdw_dev_info *d, int bst, int to)
 	return d->dev->send_cmd(APUSYS_CMD_POWERON, &h, d->dev);
 }
 
-static int mdw_rsc_pwr_off(struct mdw_dev_info *d)
+static int mdw_rsc_pwr_off(struct mdw_dev_dbg *d)
 {
 	struct apusys_power_hnd h;
 
@@ -422,7 +422,7 @@ static int mdw_rsc_pwr_off(struct mdw_dev_info *d)
 	return d->dev->send_cmd(APUSYS_CMD_POWERDOWN, &h, d->dev);
 }
 
-static int mdw_rsc_fw(struct mdw_dev_info *d, uint32_t magic, const char *name,
+static int mdw_rsc_fw(struct mdw_dev_dbg *d, uint32_t magic, const char *name,
 	uint64_t kva, uint32_t iova, uint32_t size, int op)
 {
 	struct apusys_firmware_hnd h;
@@ -438,7 +438,7 @@ static int mdw_rsc_fw(struct mdw_dev_info *d, uint32_t magic, const char *name,
 	return d->dev->send_cmd(APUSYS_CMD_FIRMWARE, &h, d->dev);
 }
 
-static int mdw_rsc_ucmd(struct mdw_dev_info *d,
+static int mdw_rsc_ucmd(struct mdw_dev_dbg *d,
 	uint64_t kva, uint32_t iova, uint32_t size)
 {
 	struct apusys_usercmd_hnd h;
@@ -451,7 +451,7 @@ static int mdw_rsc_ucmd(struct mdw_dev_info *d,
 	return d->dev->send_cmd(APUSYS_CMD_USER, &h, d->dev);
 }
 
-static int mdw_rsc_sec_on(struct mdw_dev_info *d)
+static int mdw_rsc_sec_on(struct mdw_dev_dbg *d)
 {
 	int ret = 0;
 	int type = d->type % APUSYS_DEVICE_RT;
@@ -476,7 +476,7 @@ static int mdw_rsc_sec_on(struct mdw_dev_info *d)
 	return ret;
 }
 
-static int mdw_rsc_sec_off(struct mdw_dev_info *d)
+static int mdw_rsc_sec_off(struct mdw_dev_dbg *d)
 {
 	int ret = 0;
 	int type = d->type % APUSYS_DEVICE_RT;
@@ -500,7 +500,7 @@ static int mdw_rsc_sec_off(struct mdw_dev_info *d)
 	return ret;
 }
 
-static int mdw_rsc_suspend(struct mdw_dev_info *d)
+static int mdw_rsc_suspend(struct mdw_dev_dbg *d)
 {
 	struct mdw_rsc_tab *t = mdw_rsc_get_tab(d->type);
 	int ret = 0;
@@ -521,12 +521,12 @@ out:
 	return ret;
 }
 
-static int mdw_rsc_resume(struct mdw_dev_info *d)
+static int mdw_rsc_resume(struct mdw_dev_dbg *d)
 {
 	return d->dev->send_cmd(APUSYS_CMD_RESUME, NULL, d->dev);
 }
 
-static int mdw_rsc_lock_dev(struct mdw_dev_info *d)
+static int mdw_rsc_lock_dev(struct mdw_dev_dbg *d)
 {
 	struct mdw_rsc_tab *tab = NULL;
 	int ret = 0;
@@ -551,7 +551,7 @@ out:
 	return ret;
 }
 
-static int mdw_rsc_unlock_dev(struct mdw_dev_info *d)
+static int mdw_rsc_unlock_dev(struct mdw_dev_dbg *d)
 {
 	struct mdw_rsc_tab *tab = NULL;
 	int ret = 0;
@@ -580,7 +580,7 @@ out:
 static int mdw_rsc_add_dev(struct apusys_device *dev)
 {
 	struct mdw_rsc_tab *tab;
-	struct mdw_dev_info *d;
+	struct mdw_dev_dbg *d;
 	char name[32], thd_name[32];
 	int ret = 0;
 
@@ -608,7 +608,7 @@ static int mdw_rsc_add_dev(struct apusys_device *dev)
 	mutex_lock(&tab->mtx);
 
 	/* new dev info */
-	d = vzalloc(sizeof(struct mdw_dev_info));
+	d = vzalloc(sizeof(struct mdw_dev_dbg));
 	if (!d) {
 		ret = -ENOMEM;
 		goto out;
@@ -671,7 +671,7 @@ out:
 	return ret;
 }
 
-static int mdw_rsc_delete_dev(struct mdw_dev_info *d)
+static int mdw_rsc_delete_dev(struct mdw_dev_dbg *d)
 {
 	struct mdw_rsc_tab *tab = NULL;
 
@@ -696,7 +696,7 @@ static int mdw_rsc_delete_dev(struct mdw_dev_info *d)
 	return 0;
 }
 
-static int mdw_rsc_check_dev_state(struct mdw_dev_info *in)
+static int mdw_rsc_check_dev_state(struct mdw_dev_dbg *in)
 {
 	struct mdw_rsc_tab *tab = NULL;
 	int type = 0;
@@ -721,11 +721,11 @@ static int mdw_rsc_check_dev_state(struct mdw_dev_info *in)
 		? 0 : -EBUSY;
 }
 
-static struct mdw_dev_info *mdw_rsc_get_dev_sq(int type)
+static struct mdw_dev_dbg *mdw_rsc_get_dev_sq(int type)
 {
 	int i = 0;
 	struct mdw_rsc_tab *tab = NULL;
-	struct mdw_dev_info *d = NULL, *first_d = NULL;
+	struct mdw_dev_dbg *d = NULL, *first_d = NULL;
 
 	tab = mdw_rsc_get_tab(type);
 	if (!tab)
@@ -759,10 +759,10 @@ static struct mdw_dev_info *mdw_rsc_get_dev_sq(int type)
 	return d;
 }
 
-static int mdw_rsc_get_norm_prio(struct mdw_dev_info *in)
+static int mdw_rsc_get_norm_prio(struct mdw_dev_dbg *in)
 {
 	struct mdw_rsc_tab *tab = NULL;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct mdw_apu_sc *sc = NULL;
 	int type = 0, prio = -ENOENT;
 
@@ -788,11 +788,11 @@ static int mdw_rsc_get_norm_prio(struct mdw_dev_info *in)
 	return prio;
 }
 
-static struct mdw_dev_info *mdw_rsc_get_dev_rr(int type)
+static struct mdw_dev_dbg *mdw_rsc_get_dev_rr(int type)
 {
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 	struct mdw_rsc_tab *tab = NULL;
-	struct mdw_dev_info *d = NULL, *d_tmp = NULL;
+	struct mdw_dev_dbg *d = NULL, *d_tmp = NULL;
 	int prio = 0, tmp_prio = 0;
 
 	tab = mdw_rsc_get_tab(type);
@@ -801,7 +801,7 @@ static struct mdw_dev_info *mdw_rsc_get_dev_rr(int type)
 
 	/* check normal device state to make preempt prefer idle device */
 	list_for_each_safe(list_ptr, tmp, &tab->list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, t_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, t_item);
 		if (!mdw_rsc_check_dev_state(d))
 			break;
 
@@ -825,13 +825,13 @@ static struct mdw_dev_info *mdw_rsc_get_dev_rr(int type)
 			d = d_tmp;
 		else
 			d = list_first_entry_or_null(&tab->list,
-				struct mdw_dev_info, t_item);
+				struct mdw_dev_dbg, t_item);
 		break;
 
 	case MDW_PREEMPT_PLCY_RR_SIMPLE:
 	default:
 		d = list_first_entry_or_null(&tab->list,
-			struct mdw_dev_info, t_item);
+			struct mdw_dev_dbg, t_item);
 		break;
 	}
 
@@ -884,7 +884,7 @@ static void mdw_rsc_req_done(struct kref *ref)
 		req->cb_async(req);
 }
 
-static int mdw_rsc_req_add_dev(struct mdw_dev_info *d, struct mdw_rsc_req *req)
+static int mdw_rsc_req_add_dev(struct mdw_dev_dbg *d, struct mdw_rsc_req *req)
 {
 	if (d->type >= APUSYS_DEVICE_MAX || d->type < 0)
 		return -EINVAL;
@@ -914,9 +914,9 @@ static int mdw_rsc_req_add_dev(struct mdw_dev_info *d, struct mdw_rsc_req *req)
 
 int mdw_rsc_get_dev(struct mdw_rsc_req *req)
 {
-	struct mdw_dev_info *(*func)(int) = NULL;
+	struct mdw_dev_dbg *(*func)(int) = NULL;
 	struct mdw_rsc_tab *tab = NULL;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 	int ret = 0, n = 0, i = 0, type = -1, get_total = 0;
 
@@ -1020,7 +1020,7 @@ fail_check_num:
 fail_get_tab:
 	mutex_unlock(&rsc_mgr.mtx);
 	list_for_each_safe(list_ptr, tmp, &req->d_list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, r_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, r_item);
 		list_del(&d->r_item);
 		mdw_rsc_put_dev(d);
 	}
@@ -1029,7 +1029,7 @@ out:
 	return ret;
 }
 
-static int mdw_rsc_put_dev_req(struct mdw_dev_info *d)
+static int mdw_rsc_put_dev_req(struct mdw_dev_dbg *d)
 {
 	struct list_head *tmp = NULL, *list_ptr = NULL;
 	struct mdw_rsc_req *req = NULL;
@@ -1046,7 +1046,7 @@ static int mdw_rsc_put_dev_req(struct mdw_dev_info *d)
 	return ret;
 }
 
-int mdw_rsc_put_dev(struct mdw_dev_info *d)
+int mdw_rsc_put_dev(struct mdw_dev_dbg *d)
 {
 	struct mdw_rsc_tab *tab = NULL;
 	int ret = 0;
@@ -1083,7 +1083,7 @@ out:
 	return ret;
 }
 
-struct mdw_dev_info *mdw_rsc_get_dinfo(int type, int idx)
+struct mdw_dev_dbg *mdw_rsc_get_dinfo(int type, int idx)
 {
 	struct mdw_rsc_tab *tab = NULL;
 
@@ -1122,7 +1122,7 @@ void mdw_rsc_set_thd_group(void)
 	struct file *fd;
 	char buf[16];
 	mm_segment_t oldfs;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	int type = 0, idx = 0;
 
 	if (atomic_read(&sthd_group))
@@ -1198,7 +1198,7 @@ int mdw_rsc_init(void)
 void mdw_rsc_exit(void)
 {
 	int type = 0, idx = 0;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 	struct mdw_rsc_tab *tab = NULL;
 
 	mdw_sched_exit();
@@ -1240,7 +1240,7 @@ int apusys_unregister_device(struct apusys_device *dev)
 {
 	struct mdw_rsc_tab *tab = NULL;
 	struct list_head *tmp = NULL, *list_ptr = NULL;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 
 	mdw_flw_debug("\n");
 
@@ -1251,7 +1251,7 @@ int apusys_unregister_device(struct apusys_device *dev)
 	mutex_lock(&tab->mtx);
 
 	list_for_each_safe(list_ptr, tmp, &tab->list) {
-		d = list_entry(list_ptr, struct mdw_dev_info, t_item);
+		d = list_entry(list_ptr, struct mdw_dev_dbg, t_item);
 		if (d->dev == dev)
 			break;
 		d = NULL;

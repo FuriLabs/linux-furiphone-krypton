@@ -37,7 +37,7 @@ static void vpu_dump_sg(struct scatterlist *s)
 		if (!p)
 			break;
 		phys = page_to_phys(p);
-		pr_info("%s: s[%d]: pfn: %lx, pa: %lx, len: %lx, dma_addr: %lx\n",
+		pr_debug("%s: s[%d]: pfn: %lx, pa: %lx, len: %lx, dma_addr: %lx\n",
 			__func__, i,
 			(unsigned long) page_to_pfn(p),
 			(unsigned long) phys,
@@ -76,7 +76,7 @@ vpu_mem_alloc(struct platform_device *pdev,
 	kva = kvmalloc(i->size, GFP_KERNEL);
 
 	if (!kva) {
-		dev_info(&pdev->dev, "%s: kvmalloc: failed\n",
+		dev_dbg(&pdev->dev, "%s: kvmalloc: failed\n",
 			__func__);
 		ret = -ENOMEM;
 		goto error;
@@ -138,7 +138,7 @@ vpu_map_kva_to_sgt(const char *buf, size_t len, struct sg_table *sgt)
 		else
 			pages[index] = kmap_to_page((void *)p);
 		if (!pages[index]) {
-			pr_info("%s: map failed\n", __func__);
+			pr_debug("%s: map failed\n", __func__);
 			ret = -EFAULT;
 			goto out;
 		}
@@ -151,7 +151,7 @@ vpu_map_kva_to_sgt(const char *buf, size_t len, struct sg_table *sgt)
 		offset_in_page(buf), len, GFP_KERNEL);
 
 	if (ret) {
-		pr_info("%s: sg_alloc_table_from_pages: %d\n",
+		pr_debug("%s: sg_alloc_table_from_pages: %d\n",
 			__func__, ret);
 		goto out;
 	}
@@ -200,14 +200,14 @@ vpu_map_sg_to_iova(
 	if (dev->dma_parms) {
 		ret = dma_set_max_seg_size(dev, (unsigned int)DMA_BIT_MASK(34));
 		if (ret)
-			dev_info(dev, "Failed to set DMA segment size\n");
+			dev_dbg(dev, "Failed to set DMA segment size\n");
 	}
 
 	ret = dma_map_sg_attrs(dev, sg, nents,
 		DMA_BIDIRECTIONAL, DMA_ATTR_SKIP_CPU_SYNC);
 
 	if (ret <= 0) {
-		dev_info(dev,
+		dev_dbg(dev,
 			"%s: dma_map_sg_attrs: failed with %d\n",
 			__func__, ret);
 		return 0;
@@ -218,7 +218,7 @@ vpu_map_sg_to_iova(
 	if (given_iova == iova)
 		match = true;
 
-	dev_info(dev,
+	dev_dbg(dev,
 		"%s: sg_dma_address: size: %lx, mapped iova: 0x%llx %s\n",
 		__func__, len, (u64)iova,
 		dyn_alloc ? "(dynamic alloc)" :
@@ -279,7 +279,7 @@ dma_addr_t vpu_iova_alloc(struct platform_device *pdev,
 			(void *)(base + i->bin), i->size, iova,
 			&i->sgt);
 	} else {
-		dev_info(&pdev->dev,
+		dev_dbg(&pdev->dev,
 			"%s: unknown setting (%x, %x, %x)\n",
 			__func__, i->addr, i->bin, i->size);
 		iova = 0;
@@ -319,12 +319,12 @@ int vpu_iova_dts(struct platform_device *pdev,
 {
 	if (of_property_read_u32_array(pdev->dev.of_node,
 			name, &i->addr, 3)) {
-		dev_info(&pdev->dev, "%s: vpu: unable to get %s\n",
+		dev_dbg(&pdev->dev, "%s: vpu: unable to get %s\n",
 			__func__, name);
 		return -ENODEV;
 	}
 
-	dev_info(&pdev->dev, "%s: %s: addr: %08xh, size: %08xh, bin: %08xh\n",
+	dev_dbg(&pdev->dev, "%s: %s: addr: %08xh, size: %08xh, bin: %08xh\n",
 		__func__, name, i->addr, i->size, i->bin);
 
 	return 0;
@@ -341,7 +341,7 @@ void *vpu_vmap(phys_addr_t start, size_t size,
 	void *vaddr = NULL;
 
 	if (!size) {
-		pr_info("%s: input size should not be zero\n", __func__);
+		pr_debug("%s: input size should not be zero\n", __func__);
 		return NULL;
 	}
 
@@ -366,7 +366,7 @@ void *vpu_vmap(phys_addr_t start, size_t size,
 	vaddr = vmap(pages, page_count, VM_MAP, prot);
 	kfree(pages);
 	if (!vaddr) {
-		pr_info("%s: failed to get vaddr from vmap\n", __func__);
+		pr_debug("%s: failed to get vaddr from vmap\n", __func__);
 		return NULL;
 	}
 	/*

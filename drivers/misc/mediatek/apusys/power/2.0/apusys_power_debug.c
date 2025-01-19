@@ -637,9 +637,9 @@ static ssize_t mt_apupwr_minOPP_proc_write
 			fixed_opp = APUSYS_MAX_NUM_OPPS - 1;
 			fix_dvfs_debug();
 		} else
-			pr_notice("should be [0:disable,1:enable]\n");
+			pr_debug("should be [0:disable,1:enable]\n");
 	} else
-		pr_notice("should be [0:disable,1:enable]\n");
+		pr_debug("should be [0:disable,1:enable]\n");
 
 	return count;
 }
@@ -692,14 +692,14 @@ int apusys_power_create_procfs(void)
 	dir = proc_mkdir("apupwr", NULL);
 
 	if (!dir) {
-		pr_notice("fail to create /proc/apupwr @ %s()\n", __func__);
+		pr_debug("fail to create /proc/apupwr @ %s()\n", __func__);
 		return -ENOMEM;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(entries); i++) {
 		if (!proc_create
 		    (entries[i].name, 0664, dir, entries[i].fops))
-			pr_notice("@%s: create /proc/apupwr/%s failed\n", __func__,
+			pr_debug("@%s: create /proc/apupwr/%s failed\n", __func__,
 				    entries[i].name);
 	}
 

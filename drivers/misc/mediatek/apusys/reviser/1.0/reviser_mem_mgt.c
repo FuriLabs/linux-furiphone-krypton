@@ -86,7 +86,7 @@ out:
 }
 int reviser_table_init_ctxID(void *drvinfo)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 
 	DEBUG_TAG;
 
@@ -94,7 +94,7 @@ int reviser_table_init_ctxID(void *drvinfo)
 		LOG_ERR("invalid argument\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	mutex_lock(&reviser_device->mutex_ctxid);
 
@@ -107,7 +107,7 @@ int reviser_table_init_ctxID(void *drvinfo)
 }
 int reviser_table_get_ctxID_sync(void *drvinfo, unsigned long *ctxID)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 
 	DEBUG_TAG;
 
@@ -115,7 +115,7 @@ int reviser_table_get_ctxID_sync(void *drvinfo, unsigned long *ctxID)
 		LOG_ERR("invalid argument\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	while (1) {
 		if (reviser_table_get_ctxID(drvinfo, ctxID)) {
@@ -134,7 +134,7 @@ int reviser_table_get_ctxID_sync(void *drvinfo, unsigned long *ctxID)
 int reviser_table_get_ctxID(void *drvinfo, unsigned long *ctxID)
 {
 	unsigned long fist_zero = 0;
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 
 	DEBUG_TAG;
 
@@ -142,7 +142,7 @@ int reviser_table_get_ctxID(void *drvinfo, unsigned long *ctxID)
 		LOG_ERR("invalid argument\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 
 	mutex_lock(&reviser_device->mutex_ctxid);
@@ -172,7 +172,7 @@ free_mutex:
 
 int reviser_table_free_ctxID(void *drvinfo, unsigned long ctxID)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 
 	DEBUG_TAG;
 
@@ -185,7 +185,7 @@ int reviser_table_free_ctxID(void *drvinfo, unsigned long ctxID)
 		return -1;
 	}
 
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 
 	mutex_lock(&reviser_device->mutex_ctxid);
@@ -206,7 +206,7 @@ int reviser_table_free_ctxID(void *drvinfo, unsigned long ctxID)
 }
 void reviser_table_print_ctxID(void *drvinfo, void *s_file)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 	uint32_t i;
 	struct seq_file *s = (struct seq_file *)s_file;
 
@@ -217,7 +217,7 @@ void reviser_table_print_ctxID(void *drvinfo, void *s_file)
 	}
 
 
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 	mutex_lock(&reviser_device->mutex_ctxid);
 
 	LOG_CON(s, "=============================\n");
@@ -235,7 +235,7 @@ void reviser_table_print_ctxID(void *drvinfo, void *s_file)
 
 int reviser_table_init_tcm(void *drvinfo)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 
 	DEBUG_TAG;
 
@@ -243,7 +243,7 @@ int reviser_table_init_tcm(void *drvinfo)
 		LOG_ERR("invalid argument\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	mutex_lock(&reviser_device->mutex_tcm);
 
@@ -260,7 +260,7 @@ int reviser_table_init_tcm(void *drvinfo)
 int reviser_table_get_tcm_sync(void *drvinfo,
 		uint32_t page_num, struct table_tcm *pg_table)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 
 	DEBUG_TAG;
 
@@ -276,7 +276,7 @@ int reviser_table_get_tcm_sync(void *drvinfo,
 		LOG_ERR("invalid pg_table\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	while (1) {
 		if (reviser_table_get_tcm(drvinfo, page_num, pg_table)) {
@@ -296,7 +296,7 @@ int reviser_table_get_tcm(void *drvinfo,
 		uint32_t page_num, struct table_tcm *tcm_pgtable)
 {
 	unsigned long fist_zero = 0;
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 	uint32_t i;
 	unsigned long setbits = 0;
 
@@ -306,7 +306,7 @@ int reviser_table_get_tcm(void *drvinfo,
 		LOG_ERR("invalid argument\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 
 
@@ -377,7 +377,7 @@ free_mutex:
 
 int reviser_table_free_tcm(void *drvinfo, struct table_tcm *pg_table)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 
 
 	DEBUG_TAG;
@@ -396,7 +396,7 @@ int reviser_table_free_tcm(void *drvinfo, struct table_tcm *pg_table)
 				pg_table->page_num, pg_table->table_tcm[0]);
 		return 0;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 
 
@@ -437,7 +437,7 @@ free_mutex:
 
 void reviser_table_print_tcm(void *drvinfo, void *s_file)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 	struct seq_file *s = (struct seq_file *)s_file;
 	uint32_t i;
 
@@ -453,7 +453,7 @@ void reviser_table_print_tcm(void *drvinfo, void *s_file)
 	}
 
 
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 	mutex_lock(&reviser_device->mutex_tcm);
 
 	LOG_CON(s, "=============================\n");
@@ -470,14 +470,14 @@ void reviser_table_print_tcm(void *drvinfo, void *s_file)
 
 int reviser_table_init_vlm(void *drvinfo)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 
 	DEBUG_TAG;
 	if (drvinfo == NULL) {
 		LOG_ERR("invalid argument\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	mutex_lock(&reviser_device->mutex_vlm_pgtable);
 	memset(g_vlm_pgtable, 0,
@@ -490,7 +490,7 @@ int reviser_table_init_vlm(void *drvinfo)
 static int _reviser_set_vlm_pgtable(void *drvinfo,
 		unsigned long ctxID, struct table_vlm *vlm_pgtable)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 	unsigned long index = 0;
 	uint32_t page_num;
 
@@ -508,7 +508,7 @@ static int _reviser_set_vlm_pgtable(void *drvinfo,
 	}
 
 
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	mutex_lock(&reviser_device->mutex_vlm_pgtable);
 
@@ -556,7 +556,7 @@ static int _reviser_set_vlm_pgtable(void *drvinfo,
 static int _reviser_clear_vlm_pgtable(void *drvinfo,
 		unsigned long ctxID, struct table_tcm *tcm_pgtable)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 
 	DEBUG_TAG;
 	if (drvinfo == NULL) {
@@ -574,7 +574,7 @@ static int _reviser_clear_vlm_pgtable(void *drvinfo,
 
 
 
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	mutex_lock(&reviser_device->mutex_vlm_pgtable);
 
@@ -743,14 +743,14 @@ power_off:
 
 int reviser_table_init_remap(void *drvinfo)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 
 	DEBUG_TAG;
 	if (drvinfo == NULL) {
 		LOG_ERR("invalid argument\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	mutex_lock(&reviser_device->mutex_remap);
 	memset(&g_table_remap, 0, sizeof(struct table_remap));
@@ -760,7 +760,7 @@ int reviser_table_init_remap(void *drvinfo)
 }
 int reviser_table_set_remap(void *drvinfo, unsigned long ctxid)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 	uint32_t setbits;
 	unsigned long index = 0;
 	uint32_t i;
@@ -771,7 +771,7 @@ int reviser_table_set_remap(void *drvinfo, unsigned long ctxid)
 		LOG_ERR("invalid argument\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	mutex_lock(&reviser_device->mutex_remap);
 	mutex_lock(&reviser_device->mutex_vlm_pgtable);
@@ -831,7 +831,7 @@ free_mutex:
 }
 int reviser_table_clear_remap(void *drvinfo, unsigned long ctxid)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 	uint32_t setbits;
 	unsigned long index = 0;
 	uint32_t i;
@@ -845,7 +845,7 @@ int reviser_table_clear_remap(void *drvinfo, unsigned long ctxid)
 		LOG_ERR("invalid argument\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	mutex_lock(&reviser_device->mutex_remap);
 	mutex_lock(&reviser_device->mutex_vlm_pgtable);
@@ -888,7 +888,7 @@ free_mutex:
 }
 void reviser_table_print_vlm(void *drvinfo, uint32_t ctxid, void *s_file)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 	uint32_t i;
 	struct seq_file *s = (struct seq_file *)s_file;
 	char strtype[8];
@@ -904,7 +904,7 @@ void reviser_table_print_vlm(void *drvinfo, uint32_t ctxid, void *s_file)
 		return;
 	}
 
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 	mutex_lock(&reviser_device->mutex_vlm_pgtable);
 
 	LOG_CON(s, "=============================\n");
@@ -938,7 +938,7 @@ void reviser_table_print_vlm(void *drvinfo, uint32_t ctxid, void *s_file)
 
 int reviser_table_swapout_vlm(void *drvinfo, unsigned long ctxid)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 	void *buffer;
 	size_t size;
 
@@ -952,7 +952,7 @@ int reviser_table_swapout_vlm(void *drvinfo, unsigned long ctxid)
 		LOG_ERR("invalid argument\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	mutex_lock(&reviser_device->mutex_vlm_pgtable);
 
@@ -987,7 +987,7 @@ free_mutex:
 }
 int reviser_table_swapin_vlm(void *drvinfo, unsigned long ctxid)
 {
-	struct reviser_dev_info *reviser_device = NULL;
+	struct reviser_dev_dbg *reviser_device = NULL;
 	void *buffer;
 	size_t size;
 
@@ -1001,7 +1001,7 @@ int reviser_table_swapin_vlm(void *drvinfo, unsigned long ctxid)
 		LOG_ERR("invalid argument\n");
 		return -1;
 	}
-	reviser_device = (struct reviser_dev_info *)drvinfo;
+	reviser_device = (struct reviser_dev_dbg *)drvinfo;
 
 	mutex_lock(&reviser_device->mutex_vlm_pgtable);
 

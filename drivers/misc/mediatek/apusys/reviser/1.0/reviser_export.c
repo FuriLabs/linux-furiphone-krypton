@@ -12,7 +12,7 @@
 #include "reviser_mem_mgt.h"
 #include "reviser_hw.h"
 
-extern struct reviser_dev_info *g_reviser_device;
+extern struct reviser_dev_dbg *g_reviser_device;
 int reviser_get_vlm(uint32_t request_size, bool force,
 		unsigned long *id, uint32_t *tcm_size)
 {

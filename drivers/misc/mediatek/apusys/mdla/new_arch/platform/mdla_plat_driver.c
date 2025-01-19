@@ -81,12 +81,12 @@ int mdla_plat_init(struct platform_device *pdev)
 
 	of_property_read_u32(dev->of_node, "core_num", &nr_core_ids);
 	if (nr_core_ids > MAX_CORE_NUM) {
-		dev_info(dev, "Invalid core number: %d\n", nr_core_ids);
+		dev_dbg(dev, "Invalid core number: %d\n", nr_core_ids);
 		nr_core_ids = 1;
 	}
 
 	if (of_property_read_u32(pdev->dev.of_node, "version", &mdla_ver) == 0) {
-		dev_info(&pdev->dev, "ver = %x\n", mdla_ver);
+		dev_dbg(&pdev->dev, "ver = %x\n", mdla_ver);
 		mdla_dbg_set_version(mdla_ver);
 	}
 
@@ -121,7 +121,7 @@ int mdla_plat_init(struct platform_device *pdev)
 
 	prof_ver = drv->profile_ver;
 
-	dev_info(dev, "core number = %d, sw_cfg = 0x%x\n",
+	dev_dbg(dev, "core number = %d, sw_cfg = 0x%x\n",
 			nr_core_ids, drv->sw_cfg);
 
 	return drv->init(pdev);

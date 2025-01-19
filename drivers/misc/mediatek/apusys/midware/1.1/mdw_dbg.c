@@ -148,7 +148,7 @@ static void mdw_dbg_test_func(int test, int *arg, int count)
 {
 	unsigned int vlm_start = 0, vlm_size = 0;
 	int type = 0, idx = 0;
-	struct mdw_dev_info *d = NULL;
+	struct mdw_dev_dbg *d = NULL;
 
 	switch (test) {
 	case APUSYS_DBG_TEST_SUSPEND:

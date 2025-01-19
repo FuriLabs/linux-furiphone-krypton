@@ -32,7 +32,7 @@ struct sample_fw {
 };
 
 /* sample driver's private structure */
-struct sample_dev_info {
+struct sample_dev_dbg {
 	struct apusys_device *dev;
 
 	uint32_t idx; // core idx
@@ -53,18 +53,18 @@ struct sample_usercmd {
 	int u_write;
 };
 
-static struct sample_dev_info *sample_private[SAMPLE_DEVICE_NUM];
+static struct sample_dev_dbg *sample_private[SAMPLE_DEVICE_NUM];
 #if 0
 void _print_private(void *private)
 {
-	struct sample_dev_info *info = NULL;
+	struct sample_dev_dbg *info = NULL;
 
 	if (private == NULL) {
 		spl_drv_err("invalid argument\n");
 		return;
 	}
 
-	info = (struct sample_dev_info *)private;
+	info = (struct sample_dev_dbg *)private;
 	spl_drv_info("=============================");
 	spl_drv_info(" sample driver private info\n");
 	spl_drv_info("-----------------------------");
@@ -179,7 +179,7 @@ static uint32_t _get_time_diff_from_system(struct timeval *duration)
 
 //----------------------------------------------
 static int _sample_poweron(struct apusys_power_hnd *hnd,
-	struct sample_dev_info *info)
+	struct sample_dev_dbg *info)
 {
 	if (hnd == NULL || info == NULL)
 		return -EINVAL;
@@ -198,7 +198,7 @@ static int _sample_poweron(struct apusys_power_hnd *hnd,
 	return 0;
 }
 
-static int _sample_powerdown(struct sample_dev_info *info)
+static int _sample_powerdown(struct sample_dev_dbg *info)
 {
 	if (info == NULL)
 		return -EINVAL;
@@ -227,7 +227,7 @@ static int _sample_execute(struct apusys_cmd_hnd *hnd,
 	struct apusys_device *dev)
 {
 	struct sample_request *req = NULL;
-	struct sample_dev_info *info = NULL;
+	struct sample_dev_dbg *info = NULL;
 	struct timeval duration;
 	uint32_t tdiff = 0;
 
@@ -245,7 +245,7 @@ static int _sample_execute(struct apusys_cmd_hnd *hnd,
 	};
 
 	req = (struct sample_request *)hnd->kva;
-	info = (struct sample_dev_info *)dev->private;
+	info = (struct sample_dev_dbg *)dev->private;
 	mutex_lock(&info->mtx);
 	if (info->run != 0) {
 		spl_drv_err("device is occupied\n");
@@ -322,7 +322,7 @@ static int _sample_preempt(struct apusys_preempt_hnd *hnd)
 }
 
 static int _sample_firmware(struct apusys_firmware_hnd *hnd,
-	struct sample_dev_info *info)
+	struct sample_dev_dbg *info)
 {
 	int ret = 0;
 
@@ -357,7 +357,7 @@ static int _sample_firmware(struct apusys_firmware_hnd *hnd,
 }
 
 static int _sample_usercmd(void *hnd,
-	struct sample_dev_info *info)
+	struct sample_dev_dbg *info)
 {
 	struct apusys_usercmd_hnd *u = NULL;
 	struct sample_usercmd *s = NULL;
@@ -415,12 +415,12 @@ int sample_send_cmd(int type, void *hnd, struct apusys_device *dev)
 	case APUSYS_CMD_POWERON:
 		spl_drv_dbg("cmd poweron\n");
 		ret = _sample_poweron(hnd,
-			(struct sample_dev_info *)dev->private);
+			(struct sample_dev_dbg *)dev->private);
 		break;
 
 	case APUSYS_CMD_POWERDOWN:
 		spl_drv_dbg("cmd powerdown\n");
-		ret = _sample_powerdown((struct sample_dev_info *)dev->private);
+		ret = _sample_powerdown((struct sample_dev_dbg *)dev->private);
 		break;
 
 	case APUSYS_CMD_RESUME:
@@ -446,12 +446,12 @@ int sample_send_cmd(int type, void *hnd, struct apusys_device *dev)
 	case APUSYS_CMD_FIRMWARE:
 		spl_drv_dbg("cmd firmware\n");
 		ret = _sample_firmware(hnd,
-			(struct sample_dev_info *)dev->private);
+			(struct sample_dev_dbg *)dev->private);
 		break;
 
 	case APUSYS_CMD_USER:
 		ret = _sample_usercmd(hnd,
-			(struct sample_dev_info *)dev->private);
+			(struct sample_dev_dbg *)dev->private);
 		break;
 
 	default:
@@ -475,7 +475,7 @@ int sample_device_init(void)
 	for (i = 0; i < SAMPLE_DEVICE_NUM; i++) {
 		/* allocate private info */
 		sample_private[i] =
-			kzalloc(sizeof(struct sample_dev_info), GFP_KERNEL);
+			kzalloc(sizeof(struct sample_dev_dbg), GFP_KERNEL);
 		if (sample_private[i] == NULL) {
 			spl_drv_err("can't allocate sample info\n");
 			ret = -ENOMEM;

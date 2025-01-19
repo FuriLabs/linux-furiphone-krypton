@@ -46,7 +46,7 @@ enum MDW_DEV_INFO_STATE {
 	MDW_DEV_INFO_STATE_LOCK,
 };
 
-struct mdw_dev_info {
+struct mdw_dev_dbg {
 	int idx;
 	int type;
 	int state;
@@ -58,19 +58,19 @@ struct mdw_dev_info {
 	struct list_head r_item; //to rsc_req
 	struct list_head u_item; //to mdw_usr
 
-	int (*exec)(struct mdw_dev_info *d, void *s);
-	int (*pwr_on)(struct mdw_dev_info *d, int bst, int to);
-	int (*pwr_off)(struct mdw_dev_info *d);
-	int (*suspend)(struct mdw_dev_info *d);
-	int (*resume)(struct mdw_dev_info *d);
-	int (*fw)(struct mdw_dev_info *d, uint32_t magic, const char *name,
+	int (*exec)(struct mdw_dev_dbg *d, void *s);
+	int (*pwr_on)(struct mdw_dev_dbg *d, int bst, int to);
+	int (*pwr_off)(struct mdw_dev_dbg *d);
+	int (*suspend)(struct mdw_dev_dbg *d);
+	int (*resume)(struct mdw_dev_dbg *d);
+	int (*fw)(struct mdw_dev_dbg *d, uint32_t magic, const char *name,
 		uint64_t kva, uint32_t iova, uint32_t size, int op);
-	int (*ucmd)(struct mdw_dev_info *d,
+	int (*ucmd)(struct mdw_dev_dbg *d,
 		uint64_t kva, uint32_t iova, uint32_t size);
-	int (*sec_on)(struct mdw_dev_info *d);
-	int (*sec_off)(struct mdw_dev_info *d);
-	int (*lock)(struct mdw_dev_info *d);
-	int (*unlock)(struct mdw_dev_info *d);
+	int (*sec_on)(struct mdw_dev_dbg *d);
+	int (*sec_off)(struct mdw_dev_dbg *d);
+	int (*lock)(struct mdw_dev_dbg *d);
+	int (*unlock)(struct mdw_dev_dbg *d);
 
 	void *sc;
 
@@ -90,8 +90,8 @@ struct mdw_rsc_tab {
 
 	uint32_t norm_sc_cnt;
 
-	struct mdw_dev_info *array[MDW_RSC_TAB_DEV_MAX]; //for mdw_dev_info
-	struct list_head list; //for mdw_dev_info
+	struct mdw_dev_dbg *array[MDW_RSC_TAB_DEV_MAX]; //for mdw_dev_dbg
+	struct list_head list; //for mdw_dev_dbg
 	struct mutex mtx;
 	struct mdw_queue q;
 
@@ -124,9 +124,9 @@ uint64_t mdw_rsc_get_avl_bmp(void);
 void mdw_rsc_update_avl_bmp(int type);
 struct mdw_queue *mdw_rsc_get_queue(int type);
 int mdw_rsc_get_dev(struct mdw_rsc_req *req);
-int mdw_rsc_put_dev(struct mdw_dev_info *d);
+int mdw_rsc_put_dev(struct mdw_dev_dbg *d);
 struct mdw_rsc_tab *mdw_rsc_get_tab(int type);
-struct mdw_dev_info *mdw_rsc_get_dinfo(int type, int idx);
+struct mdw_dev_dbg *mdw_rsc_get_dinfo(int type, int idx);
 
 void mdw_rsc_dump(struct seq_file *s);
 int mdw_rsc_set_preempt_plcy(uint32_t preempt_policy);

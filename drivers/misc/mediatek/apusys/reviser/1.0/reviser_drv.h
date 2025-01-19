@@ -21,7 +21,7 @@ struct reviser_resource {
 	unsigned int size;
 };
 /* reviser driver's private structure */
-struct reviser_dev_info {
+struct reviser_dev_dbg {
 	void *pctrl_top;
 	void *vlm_base;
 	void *tcm_base;

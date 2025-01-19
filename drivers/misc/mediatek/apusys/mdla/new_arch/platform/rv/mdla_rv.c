@@ -84,7 +84,7 @@ int mdla_rv_init(struct platform_device *pdev)
 	int i;
 	u32 nr_core_ids = mdla_util_get_core_num();
 
-	dev_info(&pdev->dev, "%s()\n", __func__);
+	dev_dbg(&pdev->dev, "%s()\n", __func__);
 
 	mdla_plat_devices = devm_kzalloc(&pdev->dev,
 				nr_core_ids * sizeof(struct mdla_dev),
@@ -127,12 +127,12 @@ int mdla_rv_init(struct platform_device *pdev)
 
 void mdla_rv_deinit(struct platform_device *pdev)
 {
-	dev_info(&pdev->dev, "%s()\n", __func__);
+	dev_dbg(&pdev->dev, "%s()\n", __func__);
 
 	mdla_ipi_deinit();
 
 	if (mdla_plat_pwr_drv_ready()
 			&& mdla_pwr_device_unregister(pdev))
-		dev_info(&pdev->dev, "unregister mdla power fail\n");
+		dev_dbg(&pdev->dev, "unregister mdla power fail\n");
 }
 

@@ -81,7 +81,7 @@ int mdla_dts_map(struct platform_device *pdev)
 
 	mdlactlPlatformDevice = pdev;
 
-	dev_info(dev, "Device Tree Probing\n");
+	dev_dbg(dev, "Device Tree Probing\n");
 
 	for (i = 0; i < mdla_max_num_core; i++) {
 		/* Get iospace for MDLA Config */
@@ -96,7 +96,7 @@ int mdla_dts_map(struct platform_device *pdev)
 		apu_mdla_command = platform_get_resource(pdev,
 			IORESOURCE_MEM, i+1+(i*2));
 		if (!apu_mdla_command) {
-			dev_info(dev, "invalid address\n");
+			dev_dbg(dev, "invalid address\n");
 			return -ENODEV;
 		}
 
@@ -104,7 +104,7 @@ int mdla_dts_map(struct platform_device *pdev)
 		apu_mdla_biu = platform_get_resource(pdev,
 			IORESOURCE_MEM, i+2+(i*2));
 		if (!apu_mdla_biu) {
-			dev_info(dev, "apu_mdla_biu address\n");
+			dev_dbg(dev, "apu_mdla_biu address\n");
 			return -ENODEV;
 		}
 
@@ -113,7 +113,7 @@ int mdla_dts_map(struct platform_device *pdev)
 				apu_mdla_config->end -
 				apu_mdla_config->start + 1);
 		if (!mdla_reg_control[i].apu_mdla_config_top) {
-			dev_info(dev, "mtk_mdla: Could not allocate iomem\n");
+			dev_dbg(dev, "mtk_mdla: Could not allocate iomem\n");
 			rc = -EIO;
 			return rc;
 		}
@@ -123,7 +123,7 @@ int mdla_dts_map(struct platform_device *pdev)
 				apu_mdla_command->end -
 				apu_mdla_command->start + 1);
 		if (!mdla_reg_control[i].apu_mdla_cmde_mreg_top) {
-			dev_info(dev, "mtk_mdla: Could not allocate iomem\n");
+			dev_dbg(dev, "mtk_mdla: Could not allocate iomem\n");
 			rc = -EIO;
 			return rc;
 		}
@@ -132,20 +132,20 @@ int mdla_dts_map(struct platform_device *pdev)
 				apu_mdla_biu->start,
 				apu_mdla_biu->end - apu_mdla_biu->start + 1);
 		if (!mdla_reg_control[i].apu_mdla_biu_top) {
-			dev_info(dev, "mtk_mdla: Could not allocate iomem\n");
+			dev_dbg(dev, "mtk_mdla: Could not allocate iomem\n");
 			rc = -EIO;
 			return rc;
 		}
 
-		dev_info(dev, "mdla_config_top at 0x%08lx mapped to 0x%08lx\n",
+		dev_dbg(dev, "mdla_config_top at 0x%08lx mapped to 0x%08lx\n",
 				(unsigned long __force)apu_mdla_config->start,
 				(unsigned long __force)apu_mdla_config->end);
 
-		dev_info(dev, "mdla_command at 0x%08lx mapped to 0x%08lx\n",
+		dev_dbg(dev, "mdla_command at 0x%08lx mapped to 0x%08lx\n",
 				(unsigned long __force)apu_mdla_command->start,
 				(unsigned long __force)apu_mdla_command->end);
 
-		dev_info(dev, "mdla_biu_top at 0x%08lx mapped to 0x%08lx\n",
+		dev_dbg(dev, "mdla_biu_top at 0x%08lx mapped to 0x%08lx\n",
 				(unsigned long __force)apu_mdla_biu->start,
 				(unsigned long __force)apu_mdla_biu->end);
 
@@ -157,7 +157,7 @@ int mdla_dts_map(struct platform_device *pdev)
 		IORESOURCE_MEM,
 		3);
 	if (!apu_mdla_gsm) {
-		dev_info(dev, "apu_gsm address\n");
+		dev_dbg(dev, "apu_gsm address\n");
 		return -ENODEV;
 	}
 
@@ -182,12 +182,12 @@ int mdla_dts_map(struct platform_device *pdev)
 	apu_mdla_gsm_top = ioremap_nocache(apu_mdla_gsm->start,
 			apu_mdla_gsm->end - apu_mdla_gsm->start + 1);
 	if (!apu_mdla_gsm_top) {
-		dev_info(dev, "mtk_mdla: Could not allocate iomem\n");
+		dev_dbg(dev, "mtk_mdla: Could not allocate iomem\n");
 		rc = -EIO;
 		return rc;
 	}
 	apu_mdla_gsm_base = (void *) apu_mdla_gsm->start;
-	pr_info("%s: apu_mdla_gsm_top: %p, apu_mdla_gsm_base: %p\n",
+	pr_debug("%s: apu_mdla_gsm_top: %p, apu_mdla_gsm_base: %p\n",
 		__func__, apu_mdla_gsm_top, apu_mdla_gsm_base);
 
 	apu_conn_top = ioremap_nocache(apu_conn->start,
@@ -198,24 +198,24 @@ int mdla_dts_map(struct platform_device *pdev)
 		return rc;
 	}
 
-	dev_info(dev, "apu_mdla_gsm at 0x%08lx mapped to 0x%08lx\n",
+	dev_dbg(dev, "apu_mdla_gsm at 0x%08lx mapped to 0x%08lx\n",
 			(unsigned long __force)apu_mdla_gsm->start,
 			(unsigned long __force)apu_mdla_gsm->end);
 
-	dev_info(dev, "apu_conn_top at 0x%08lx mapped to 0x%08lx\n",
+	dev_dbg(dev, "apu_conn_top at 0x%08lx mapped to 0x%08lx\n",
 			(unsigned long __force)apu_conn->start,
 			(unsigned long __force)apu_conn->end);
 
 	node = pdev->dev.of_node;
 	if (!node) {
-		dev_info(dev, "get mdla device node err\n");
+		dev_dbg(dev, "get mdla device node err\n");
 		return rc;
 	}
 
 	for (i = 0; i < mdla_max_num_core; i++) {
 		mdla_irqdesc[i].irq  = irq_of_parse_and_map(node, i);
 		if (!mdla_irqdesc[i].irq) {
-			dev_info(dev, "get mdla irq: %d failed\n", i);
+			dev_dbg(dev, "get mdla irq: %d failed\n", i);
 			return rc;
 		}
 		rc = request_irq(mdla_irqdesc[i].irq, mdla_irqdesc[i].handler,
@@ -223,7 +223,7 @@ int mdla_dts_map(struct platform_device *pdev)
 
 		if (rc) {
 
-			dev_info(dev, "mtk_mdla[%d]: Could not allocate interrupt %d.\n",
+			dev_dbg(dev, "mtk_mdla[%d]: Could not allocate interrupt %d.\n",
 					i, mdla_irqdesc[i].irq);
 #if 0
 			/*IRQF_TRIGGER_HIGH for Simulator workaroud only*/
@@ -232,13 +232,13 @@ int mdla_dts_map(struct platform_device *pdev)
 			IRQF_TRIGGER_HIGH,
 			DRIVER_NAME, dev);
 			if (rc) {
-				dev_info(dev, "mtk_mdla[%d]: Could not allocate interrupt %d.\n",
+				dev_dbg(dev, "mtk_mdla[%d]: Could not allocate interrupt %d.\n",
 						i, mdla_irqdesc[i].irq);
 				return rc;
 			}
 #endif
 		}
-		dev_info(dev, "request_irq %d done\n", mdla_irqdesc[i].irq);
+		dev_dbg(dev, "request_irq %d done\n", mdla_irqdesc[i].irq);
 	}
 
 	return 0;
@@ -1176,7 +1176,7 @@ void mdla_issue_ce(unsigned int core_id)
 					core_id, MREG_TOP_G_CDMA1);
 			if (cdma1 != addr) {
 				ce->state |= (1 << CE_ISSUE_ERROR1);
-				//pr_info("cdma1 = %x\n", cdma1);
+				//pr_debug("cdma1 = %x\n", cdma1);
 			}
 		}
 
@@ -1189,7 +1189,7 @@ void mdla_issue_ce(unsigned int core_id)
 					core_id, MREG_TOP_G_CDMA2);
 			if (cdma2 != nr_cmd_to_issue) {
 				ce->state |= (1 << CE_ISSUE_ERROR2);
-				//pr_info("cdma2 = %x\n", cdma2);
+				//pr_debug("cdma2 = %x\n", cdma2);
 			}
 		}
 

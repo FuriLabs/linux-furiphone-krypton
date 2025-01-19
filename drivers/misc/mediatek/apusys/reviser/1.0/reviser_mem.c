@@ -92,7 +92,7 @@ static dma_addr_t __reviser_get_iova(struct device *dev,
 	if (dev->dma_parms) {
 		ret = dma_set_max_seg_size(dev, (unsigned int)DMA_BIT_MASK(34));
 		if (ret)
-			dev_info(dev, "Failed to set DMA segment size\n");
+			dev_dbg(dev, "Failed to set DMA segment size\n");
 	}
 
 	ret = dma_map_sg_attrs(dev, sg, nents,
@@ -129,7 +129,7 @@ int reviser_mem_alloc(struct device *dev, struct reviser_mem *mem)
 	kva = kvmalloc(mem->size, GFP_KERNEL);
 
 	if (!kva) {
-		dev_info(dev, "%s: kvmalloc: failed\n",
+		dev_dbg(dev, "%s: kvmalloc: failed\n",
 			__func__);
 		ret = -ENOMEM;
 		goto error;
@@ -137,7 +137,7 @@ int reviser_mem_alloc(struct device *dev, struct reviser_mem *mem)
 	memset((void *)kva, 0, mem->size);
 
 	if (__reviser_get_sgt(kva, mem->size, &mem->sgt)) {
-		dev_info(dev, "%s: __reviser_get_sgt: failed\n",
+		dev_dbg(dev, "%s: __reviser_get_sgt: failed\n",
 					__func__);
 		ret = -ENOMEM;
 		goto error;

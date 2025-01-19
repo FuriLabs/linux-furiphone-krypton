@@ -673,7 +673,7 @@ int config_apupll_freq(enum DVFS_FREQ freq, enum DVFS_VOLTAGE_DOMAIN domain)
 		ret = set_apu_clock_source(DVFS_FREQ_ACC_PARKING, V_TOP_IOMMU);
 		break;
 	default:
-		pr_info("[%s][%d] invalid input domain (%d)\n",
+		pr_debug("[%s][%d] invalid input domain (%d)\n",
 			__func__, __LINE__, domain);
 		return -1;
 	}
@@ -712,7 +712,7 @@ int config_apupll_freq(enum DVFS_FREQ freq, enum DVFS_VOLTAGE_DOMAIN domain)
 			ret = set_apu_clock_source(DVFS_FREQ_ACC_APUPLL, domain);
 		break;
 	default:
-		pr_info("[%s][%d] invalid input domain (%d)\n",
+		pr_debug("[%s][%d] invalid input domain (%d)\n",
 			__func__, __LINE__, domain);
 		return -1;
 	}

@@ -36,7 +36,7 @@
 
 /* global variable */
 static struct class *reviser_class;
-struct reviser_dev_info *g_reviser_device;
+struct reviser_dev_dbg *g_reviser_device;
 static struct task_struct *mem_task;
 static int g_ioctl_enable;
 
@@ -55,7 +55,7 @@ static void reviser_power_off_cb(void *para);
 irqreturn_t reviser_interrupt(int irq, void *private_data)
 {
 
-	struct reviser_dev_info *reviser_device;
+	struct reviser_dev_dbg *reviser_device;
 	unsigned long flags;
 	irqreturn_t ret = IRQ_NONE;
 
@@ -63,7 +63,7 @@ irqreturn_t reviser_interrupt(int irq, void *private_data)
 	DEBUG_TAG;
 
 
-	reviser_device = (struct reviser_dev_info *)private_data;
+	reviser_device = (struct reviser_dev_dbg *)private_data;
 
 	if (!reviser_is_power(reviser_device)) {
 		//LOG_ERR("Can Not Read when power disable\n");
@@ -94,9 +94,9 @@ irqreturn_t reviser_interrupt(int irq, void *private_data)
 
 static int reviser_memory_func(void *arg)
 {
-	struct reviser_dev_info *reviser_device;
+	struct reviser_dev_dbg *reviser_device;
 
-	reviser_device = (struct reviser_dev_info *) arg;
+	reviser_device = (struct reviser_dev_dbg *) arg;
 
 	if (reviser_dram_remap_init(reviser_device)) {
 		LOG_ERR("Could not set memory for reviser\n");
@@ -163,11 +163,11 @@ static void reviser_power_off_cb(void *para)
 
 static int reviser_open(struct inode *inode, struct file *filp)
 {
-	struct reviser_dev_info *reviser_device;
+	struct reviser_dev_dbg *reviser_device;
 
 	DEBUG_TAG;
 	reviser_device = container_of(inode->i_cdev,
-			struct reviser_dev_info, reviser_cdev);
+			struct reviser_dev_dbg, reviser_cdev);
 
 	filp->private_data = reviser_device;
 	LOG_DEBUG("reviser_device  %p\n", reviser_device);
@@ -192,7 +192,7 @@ static int reviser_probe(struct platform_device *pdev)
 	struct resource *apusys_reviser_vlm; /* IO mem resources */
 	struct resource *apusys_reviser_int; /* IO mem resources */
 	struct device *dev = &pdev->dev;
-	struct reviser_dev_info *reviser_device;
+	struct reviser_dev_dbg *reviser_device;
 
 	struct device_node *power_node;
 	struct platform_device *power_pdev;
@@ -239,7 +239,7 @@ static int reviser_probe(struct platform_device *pdev)
 	g_ioctl_enable = 0;
 	reviser_device->dev = &pdev->dev;
 
-	//memset(&g_reviser_info, 0, sizeof(struct reviser_dev_info));
+	//memset(&g_reviser_info, 0, sizeof(struct reviser_dev_dbg));
 	/* get major */
 	ret = alloc_chrdev_region(&reviser_device->reviser_devt,
 			0, 1, APUSYS_DRV_NAME);
@@ -453,7 +453,7 @@ out:
 
 static int reviser_remove(struct platform_device *pdev)
 {
-	struct reviser_dev_info *reviser_device = platform_get_drvdata(pdev);
+	struct reviser_dev_dbg *reviser_device = platform_get_drvdata(pdev);
 
 	DEBUG_TAG;
 
@@ -496,7 +496,7 @@ static long reviser_ioctl(struct file *filp, unsigned int cmd,
 		unsigned long arg)
 {
 	int ret = 0;
-	struct reviser_dev_info *reviser_device = filp->private_data;
+	struct reviser_dev_dbg *reviser_device = filp->private_data;
 	struct reviser_ioctl_info info;
 	unsigned long ctxID = 0;
 	struct table_tcm pg_table;
