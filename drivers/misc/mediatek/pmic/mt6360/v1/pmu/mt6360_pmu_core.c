@@ -271,7 +271,7 @@ static int mt6360_pmu_core_probe(struct platform_device *pdev)
 	}
 	/* irq register */
 	mt6360_pmu_core_irq_register(pdev);
-	dev_info(&pdev->dev, "%s: successfully probed\n", __func__);
+	dev_dbg(&pdev->dev, "%s: successfully probed\n", __func__);
 	return 0;
 }
 
