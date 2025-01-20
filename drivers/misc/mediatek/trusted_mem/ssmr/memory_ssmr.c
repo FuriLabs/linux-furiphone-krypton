@@ -198,7 +198,7 @@ static int __init dedicate_svp_memory(struct reserved_mem *rmem)
 
 	feature = &_ssmr_feats[SSMR_FEAT_SVP];
 
-	pr_info("%s, name: %s, base: 0x%pa, size: 0x%pa\n", __func__,
+	pr_debug("%s, name: %s, base: 0x%pa, size: 0x%pa\n", __func__,
 		rmem->name, &rmem->base, &rmem->size);
 
 	feature->use_cache_memory = true;
@@ -234,20 +234,20 @@ static int get_svp_memory_info(void)
 
 	node = of_find_compatible_node(NULL, NULL, "mediatek,memory-svp");
 	if (!node) {
-		pr_info("%s, svp no use static reserved memory\n", __func__);
+		pr_debug("%s, svp no use static reserved memory\n", __func__);
 		return 1;
 	}
 
 	reg = of_get_property(node, "reg", NULL);
 	base = dt_mem_read(2, &reg);
 	size = dt_mem_read(2, &reg);
-	pr_info("%s, svp base : 0x%llx, size : 0x%llx", __func__,
+	pr_debug("%s, svp base : 0x%llx, size : 0x%llx", __func__,
 							base, size);
 	feature->use_cache_memory = true;
 	feature->is_unmapping = true;
 	feature->count = size / PAGE_SIZE;
 	feature->cache_page = phys_to_page(base);
-	pr_info("%s, feature->count 0x%lx\n", __func__, feature->count);
+	pr_debug("%s, feature->count 0x%lx\n", __func__, feature->count);
 
 	return 0;
 }
@@ -296,7 +296,7 @@ static void  setup_feature_size(void)
 	dt_node = of_find_node_by_name(NULL, SSMR_FEATURES_DT_UNAME);
 
 	if (!dt_node)
-		pr_info("%s, failed to find the ssmr device tree\n",
+		pr_debug("%s, failed to find the ssmr device tree\n",
 							__func__);
 
 	if (!strncmp(dt_node->name, SSMR_FEATURES_DT_UNAME,
@@ -312,7 +312,7 @@ static void  setup_feature_size(void)
 	}
 
 	for (i = 0; i < __MAX_NR_SSMR_FEATURES; i++) {
-		pr_info("%s, %s: %pa\n", __func__, _ssmr_feats[i].dt_prop_name,
+		pr_debug("%s, %s: %pa\n", __func__, _ssmr_feats[i].dt_prop_name,
 			&_ssmr_feats[i].req_size);
 	}
 }
@@ -333,7 +333,7 @@ static void finalize_scenario_size(void)
 			}
 		}
 		_ssmrscheme[i].usable_size = total_size;
-		pr_info("%s, %s: %pa\n", __func__, _ssmrscheme[i].name,
+		pr_debug("%s, %s: %pa\n", __func__, _ssmrscheme[i].name,
 			&_ssmrscheme[i].usable_size);
 	}
 }
@@ -348,14 +348,14 @@ memory_ssmr_init_feature(char *name, u64 size, struct SSMR_Feature *feature,
 	}
 
 	feature->state = SSMR_STATE_ON;
-	pr_info("%s: %s is enable with size: %pa\n", __func__, name, &size);
+	pr_debug("%s: %s is enable with size: %pa\n", __func__, name, &size);
 	return 0;
 }
 
 static bool is_valid_feature(unsigned int feat)
 {
 	if (SSMR_INVALID_FEATURE(feat)) {
-		pr_info("%s: invalid feature_type: %d\n", __func__, feat);
+		pr_debug("%s: invalid feature_type: %d\n", __func__, feat);
 		return false;
 	}
 
@@ -369,11 +369,11 @@ static void show_scheme_status(u64 size)
 	for (; i < __MAX_NR_SCHEME; i++) {
 		int j = 0;
 
-		pr_info("**** %s  (size: %pa)****\n",  _ssmrscheme[i].name,
+		pr_debug("**** %s  (size: %pa)****\n",  _ssmrscheme[i].name,
 						&_ssmrscheme[i].usable_size);
 		for (; j < __MAX_NR_SSMR_FEATURES; j++) {
 			if (_ssmr_feats[j].scheme_flag & _ssmrscheme[i].flags) {
-				pr_info("%s: size= %pa, state=%s\n",
+				pr_debug("%s: size= %pa, state=%s\n",
 					_ssmr_feats[j].feat_name,
 					&_ssmr_feats[j].req_size,
 					ssmr_state_text[_ssmr_feats[j].state]);
@@ -390,7 +390,7 @@ static int get_reserved_cma_memory(struct device *dev)
 	np = of_parse_phandle(dev->of_node, "memory-region", 0);
 
 	if (!np) {
-		pr_info("%s, no ssmr region\n", __func__);
+		pr_debug("%s, no ssmr region\n", __func__);
 		return -EINVAL;
 	}
 
@@ -398,11 +398,11 @@ static int get_reserved_cma_memory(struct device *dev)
 	of_node_put(np);
 
 	if (!rmem) {
-		pr_info("%s, no ssmr device info\n", __func__);
+		pr_debug("%s, no ssmr device info\n", __func__);
 		return -EINVAL;
 	}
 
-	pr_info("resource base=%pa, size=%pa\n", &rmem->base, &rmem->size);
+	pr_debug("resource base=%pa, size=%pa\n", &rmem->base, &rmem->size);
 
 	/*
 	 * setup init device with rmem
@@ -473,7 +473,7 @@ static int set_memory_mapping(unsigned long start, phys_addr_t size, int map)
 	if ((start != (start & PMD_MASK)) || (size != (size & PMD_MASK))
 	    || !memblock_is_memory(virt_to_phys((void *)start)) || !size
 	    || !start) {
-		pr_info("[invalid parameter]: start=0x%lx, size=%pa\n", start,
+		pr_debug("[invalid parameter]: start=0x%lx, size=%pa\n", start,
 			&size);
 		return -1;
 	}
@@ -490,26 +490,26 @@ static int set_memory_mapping(unsigned long start, phys_addr_t size, int map)
 		pgd = pgd_offset_k(address);
 
 		if (pgd_none(*pgd) || pgd_bad(*pgd)) {
-			pr_info("bad pgd break\n");
+			pr_debug("bad pgd break\n");
 			goto fail;
 		}
 
 		pud = pud_offset(pgd, address);
 
 		if (pud_none(*pud) || pud_bad(*pud)) {
-			pr_info("bad pud break\n");
+			pr_debug("bad pud break\n");
 			goto fail;
 		}
 
 		pmd = pmd_offset(pud, address);
 
 		if (pmd_none(*pmd)) {
-			pr_info("none ");
+			pr_debug("none ");
 			goto fail;
 		}
 
 		if (pmd_table(*pmd)) {
-			pr_info("pmd_table not set PMD\n");
+			pr_debug("pmd_table not set PMD\n");
 			goto fail;
 		}
 
@@ -526,7 +526,7 @@ static int set_memory_mapping(unsigned long start, phys_addr_t size, int map)
 	flush_tlb_all();
 	return 0;
 fail:
-	pr_info("start=0x%lx, size=%pa, address=0x%p, map=%d\n", start, &size,
+	pr_debug("start=0x%lx, size=%pa, address=0x%p, map=%d\n", start, &size,
 		(void *)address, map);
 	//show_pte(NULL, address);
 	return -1;
@@ -538,7 +538,7 @@ static inline int set_memory_mapping(unsigned long start, phys_addr_t size,
 {
 	pr_debug("start=0x%lx, size=%pa, map=%d\n", start, &size, map);
 	if (!map) {
-		pr_info("Flush kmap page table\n");
+		pr_debug("Flush kmap page table\n");
 		kmap_flush_unused();
 	}
 	return 0;
@@ -555,7 +555,7 @@ static int memory_region_offline(struct SSMR_Feature *feature, phys_addr_t *pa,
 	struct page *page;
 
 	if (!ssmr_dev) {
-		pr_info("%s: No ssmr device\n", __func__);
+		pr_debug("%s: No ssmr device\n", __func__);
 		return -EINVAL;
 	}
 
@@ -569,7 +569,7 @@ static int memory_region_offline(struct SSMR_Feature *feature, phys_addr_t *pa,
 
 		feature->phy_addr = page_to_phys(page);
 		feature->alloc_size = alloc_size;
-		pr_info("%s: [cache memory] pa %pa(%zx) is allocated\n",
+		pr_debug("%s: [cache memory] pa %pa(%zx) is allocated\n",
 				__func__, &feature->phy_addr, alloc_size);
 		return 0;
 	}
@@ -577,7 +577,7 @@ static int memory_region_offline(struct SSMR_Feature *feature, phys_addr_t *pa,
 	np = of_parse_phandle(ssmr_dev->of_node, "memory-region", 0);
 
 	if (!np) {
-		pr_info(" %s, no ssmr region\n", __func__);
+		pr_debug(" %s, no ssmr region\n", __func__);
 		return -EINVAL;
 	}
 
@@ -586,7 +586,7 @@ static int memory_region_offline(struct SSMR_Feature *feature, phys_addr_t *pa,
 
 	feature->alloc_size = alloc_size;
 
-	pr_info("%s[%d]: upper_limit: %llx, feature{ alloc_size : %lu",
+	pr_debug("%s[%d]: upper_limit: %llx, feature{ alloc_size : %lu",
 		__func__, __LINE__, upper_limit, alloc_size);
 
 	/*
@@ -595,7 +595,7 @@ static int memory_region_offline(struct SSMR_Feature *feature, phys_addr_t *pa,
 	of_reserved_mem_device_init_by_idx(ssmr_dev, ssmr_dev->of_node, 0);
 
 	do {
-		pr_info("[SSMR-ALLOCATION]: retry: %d\n", offline_retry);
+		pr_debug("[SSMR-ALLOCATION]: retry: %d\n", offline_retry);
 		feature->virt_addr = dma_alloc_attrs(ssmr_dev, alloc_size,
 					&feature->phy_addr, GFP_KERNEL, DMA_ATTR_FORCE_CONTIGUOUS);
 		if (!feature->phy_addr) {
@@ -605,13 +605,13 @@ static int memory_region_offline(struct SSMR_Feature *feature, phys_addr_t *pa,
 	} while (!feature->phy_addr && offline_retry < 20);
 
 	if (feature->phy_addr) {
-		pr_info("%s: pa=%pad is allocated\n", __func__,
+		pr_debug("%s: pa=%pad is allocated\n", __func__,
 						&feature->phy_addr);
-		pr_info("%s: virt 0x%lx\n", __func__,
+		pr_debug("%s: virt 0x%lx\n", __func__,
 				(unsigned long)phys_to_virt(
 				dma_to_phys(ssmr_dev, feature->phy_addr)));
 	} else {
-		pr_info("%s: ssmr offline failed\n", __func__);
+		pr_debug("%s: ssmr offline failed\n", __func__);
 		return -1;
 	}
 
@@ -639,7 +639,7 @@ static int _ssmr_offline_internal(phys_addr_t *pa, unsigned long *size,
 	struct SSMR_Feature *feature = NULL;
 
 	feature = &_ssmr_feats[feat];
-	pr_info("%s %d: >>>>>> feat: %s, state: %s, upper_limit:0x%llx\n",
+	pr_debug("%s %d: >>>>>> feat: %s, state: %s, upper_limit:0x%llx\n",
 		__func__, __LINE__,
 		feat < __MAX_NR_SSMR_FEATURES ? feature->feat_name
 					      : "NULL",
@@ -659,12 +659,12 @@ static int _ssmr_offline_internal(phys_addr_t *pa, unsigned long *size,
 		goto out;
 	}
 	feature->state = SSMR_STATE_OFF;
-	pr_info("%s %d: [reserve done]: pa: %pad, size: 0x%lx\n", __func__,
+	pr_debug("%s %d: [reserve done]: pa: %pad, size: 0x%lx\n", __func__,
 		__LINE__, &feature->phy_addr,
 		feature->alloc_size);
 
 out:
-	pr_info("%s %d: <<<<< request feat: %s, state: %s, retval: %d\n",
+	pr_debug("%s %d: <<<<< request feat: %s, state: %s, retval: %d\n",
 		__func__, __LINE__,
 		feat < __MAX_NR_SSMR_FEATURES ?
 		_ssmr_feats[feat].feat_name : "NULL",
@@ -693,7 +693,7 @@ static int memory_region_online(struct SSMR_Feature *feature)
 	size_t alloc_size;
 
 	if (!ssmr_dev)
-		pr_info("%s: No ssmr device\n", __func__);
+		pr_debug("%s: No ssmr device\n", __func__);
 
 	if (feature->use_cache_memory) {
 		feature->alloc_pages = 0;
@@ -712,7 +712,7 @@ static int memory_region_online(struct SSMR_Feature *feature)
 			phys_to_virt(dma_to_phys(ssmr_dev, feature->phy_addr)),
 			alloc_size);
 		if (ret_map < 0)
-			pr_info("[remapping fail]: virt:0x%lx, size:0x%lx",
+			pr_debug("[remapping fail]: virt:0x%lx, size:0x%lx",
 			(unsigned long)
 			phys_to_virt(dma_to_phys(ssmr_dev, feature->phy_addr)),
 			alloc_size);
@@ -735,7 +735,7 @@ static int _ssmr_online_internal(unsigned int feat)
 	struct SSMR_Feature *feature = NULL;
 
 	feature = &_ssmr_feats[feat];
-	pr_info("%s %d: >>>>>> enter state: %s\n", __func__, __LINE__,
+	pr_debug("%s %d: >>>>>> enter state: %s\n", __func__, __LINE__,
 		ssmr_state_text[feature->state]);
 
 	if (feature->state != SSMR_STATE_OFF) {
@@ -748,11 +748,11 @@ static int _ssmr_online_internal(unsigned int feat)
 	feature->state = SSMR_STATE_ON;
 
 out:
-	pr_info("%s %d: <<<<<< request feature: %s, ",
+	pr_debug("%s %d: <<<<<< request feature: %s, ",
 		__func__, __LINE__,
 		feat < __MAX_NR_SSMR_FEATURES ?
 		_ssmr_feats[feat].feat_name : "NULL");
-	pr_info("leave state: %s, retval: %d\n",
+	pr_debug("leave state: %s, retval: %d\n",
 		ssmr_state_text[feature->state], retval);
 
 	return retval;
@@ -814,7 +814,7 @@ static ssize_t ssmr_store(struct kobject *kobj, struct kobj_attribute *attr,
 
 
 	if (count >= 64) {
-		pr_info("copy size too long.\n");
+		pr_debug("copy size too long.\n");
 		return -EINVAL;
 	}
 
@@ -824,7 +824,7 @@ static ssize_t ssmr_store(struct kobject *kobj, struct kobj_attribute *attr,
 		buf_size = min(count - 1, (sizeof(buf) - 1));
 		buf[buf_size] = 0;
 
-		pr_info("%s[%d]: cmd> %s\n", __func__, __LINE__, buf);
+		pr_debug("%s[%d]: cmd> %s\n", __func__, __LINE__, buf);
 
 		if (0 == __MAX_NR_SSMR_FEATURES)
 			return -EINVAL;
@@ -842,7 +842,7 @@ static ssize_t ssmr_store(struct kobject *kobj, struct kobj_attribute *attr,
 			}
 		}
 	} else {
-		pr_info("%s[%d]: get invalid cmd\n", __func__, __LINE__);
+		pr_debug("%s[%d]: get invalid cmd\n", __func__, __LINE__);
 	}
 
 	return count;
@@ -869,11 +869,11 @@ static int memory_ssmr_sysfs_init(void)
 	if (ssmr_kobject) {
 		error = sysfs_create_file(ssmr_kobject, &ssmr_attribute.attr);
 		if (error) {
-			pr_info("SSMR: sysfs create failed\n");
+			pr_debug("SSMR: sysfs create failed\n");
 			return -ENOMEM;
 		}
 	} else {
-		pr_info("SSMR: Cannot find module %s object\n",
+		pr_debug("SSMR: Cannot find module %s object\n",
 				KBUILD_MODNAME);
 		return -EINVAL;
 	}
@@ -887,7 +887,7 @@ int ssmr_probe(struct platform_device *pdev)
 {
 	int i;
 
-	pr_info("memory_ssmr driver probe done\n");
+	pr_debug("memory_ssmr driver probe done\n");
 
 	ssmr_dev = &pdev->dev;
 	pdev->dev.coherent_dma_mask = DMA_BIT_MASK(64);

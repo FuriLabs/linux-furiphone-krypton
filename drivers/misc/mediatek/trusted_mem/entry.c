@@ -274,7 +274,7 @@ static int tmem_core_alloc_chunk_internal(enum TRUSTED_MEM_TYPE mem_type,
 		return ret;
 	}
 
-	pr_info("[%d] allocated handle is 0x%x\n", mem_type, *sec_handle);
+	pr_debug("[%d] allocated handle is 0x%x\n", mem_type, *sec_handle);
 	regmgr_region_ref_inc(mem_device->reg_mgr, mem_device->mem_type);
 	return TMEM_OK;
 }
@@ -301,13 +301,13 @@ int tmem_query_gz_handle_to_pa(enum TRUSTED_MEM_TYPE mem_type, u32 alignment,
 	KREE_SESSION_HANDLE session = 0;
 
 	if (!gz_handle) {
-		pr_info("[%s] Fail.invalid parameters\n", __func__);
+		pr_debug("[%s] Fail.invalid parameters\n", __func__);
 		return TMEM_GENERAL_ERROR;
 	}
 
 	ret = KREE_CreateSession(TZ_TA_SECMEM_UUID, &session);
 	if (ret != TZ_RESULT_SUCCESS) {
-		pr_info("KREE_CreateSession error, ret = %x\n", ret);
+		pr_debug("KREE_CreateSession error, ret = %x\n", ret);
 		return ret;
 	}
 
@@ -316,7 +316,7 @@ int tmem_query_gz_handle_to_pa(enum TRUSTED_MEM_TYPE mem_type, u32 alignment,
 	ret = KREE_TeeServiceCall(session, TZCMD_MEM_Query_SECUREMEM_INFO,
 			TZ_ParamTypes2(TZPT_VALUE_INPUT, TZPT_VALUE_OUTPUT), p);
 	if (ret != TZ_RESULT_SUCCESS) {
-		pr_info("[%s] query pa Fail(0x%x)\n", __func__, ret);
+		pr_debug("[%s] query pa Fail(0x%x)\n", __func__, ret);
 		return ret;
 	}
 
@@ -391,7 +391,7 @@ int tmem_core_unref_chunk(enum TRUSTED_MEM_TYPE mem_type, u32 sec_handle,
 		return TMEM_OPERATION_NOT_REGISTERED;
 	}
 
-	pr_info("[%d] free handle is 0x%x\n", mem_type, sec_handle);
+	pr_debug("[%d] free handle is 0x%x\n", mem_type, sec_handle);
 
 	if (unlikely(!is_regmgr_region_on(mem_device->reg_mgr))) {
 		pr_err("[%d] regmgr region is still not online!\n", mem_type);
