@@ -22,6 +22,7 @@ bool mdla_trace_enable(void)
 
 void mdla_trace_begin(u32 core_id, struct command_entry *ce)
 {
+#ifdef CONFIG_TRACING
 	char buf[TRACE_LEN] = {0};
 
 	if (!mdla_trace_enable())
@@ -33,10 +34,12 @@ void mdla_trace_begin(u32 core_id, struct command_entry *ce)
 		mdla_perf_debug("%s\n", __func__);
 		trace_async_tag(1, buf);
 	}
+#endif
 }
 
 void mdla_trace_end(u32 core_id, int preempt, struct command_entry *ce)
 {
+#ifdef CONFIG_TRACING
 	char buf[TRACE_LEN] = {0};
 
 	if (!ce->req_end_t || !mdla_trace_enable())
@@ -48,6 +51,7 @@ void mdla_trace_end(u32 core_id, int preempt, struct command_entry *ce)
 		mdla_perf_debug("%s\n", __func__);
 		trace_async_tag(0, buf);
 	}
+#endif
 }
 
 /* restore trace settings after reset */
