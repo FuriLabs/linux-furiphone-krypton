@@ -2490,9 +2490,11 @@ EXPORT_SYMBOL(cmdq_event_verify);
 
 void tracing_mark_write(const char *buf)
 {
+#ifdef CONFIG_TRACING
 	preempt_disable();
 	trace_puts(buf);
 	preempt_enable();
+#endif
 }
 
 unsigned long cmdq_get_tracing_mark(void)
