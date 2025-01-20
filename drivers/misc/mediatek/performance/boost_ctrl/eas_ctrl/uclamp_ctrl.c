@@ -102,7 +102,9 @@ int update_eas_uclamp_min(int kicker, int cgroup_idx, int value)
 
 	if (cgroup_idx < 0 || cgroup_idx >= NR_CGROUP) {
 		pr_debug("cgroup_idx:%d, error\n", cgroup_idx);
+#ifdef CONFIG_TRACING
 		perfmgr_trace_printk("uclamp_min", "cgroup_idx >= NR_CGROUP\n");
+#endif
 		return -1;
 	}
 
@@ -119,7 +121,9 @@ int update_eas_uclamp_min(int kicker, int cgroup_idx, int value)
 
 	/* ptr return error EIO:I/O error */
 	if (len < 0) {
+#ifdef CONFIG_TRACING
 		perfmgr_trace_printk("uclamp_min", "return -EIO 1\n");
+#endif
 		mutex_unlock(&boost_eas);
 		return -EIO;
 	}
@@ -142,7 +146,9 @@ int update_eas_uclamp_min(int kicker, int cgroup_idx, int value)
 
 	/*ptr return error EIO:I/O error */
 	if (len < 0) {
+#ifdef CONFIG_TRACING
 		perfmgr_trace_printk("uclamp_min", "return -EIO 2\n");
+#endif
 		mutex_unlock(&boost_eas);
 		return -EIO;
 	}
@@ -151,7 +157,9 @@ int update_eas_uclamp_min(int kicker, int cgroup_idx, int value)
 			uclamp_policy_mask[cgroup_idx]);
 
 	if (len1 < 0) {
+#ifdef CONFIG_TRACING
 		perfmgr_trace_printk("uclamp_min", "return -EIO 3\n");
+#endif
 		mutex_unlock(&boost_eas);
 		return -EIO;
 	}

@@ -10,6 +10,10 @@
 #include <linux/trace_events.h>
 #endif
 
+#include <linux/mm.h>
+#include <linux/gfp.h>
+#include <linux/uaccess.h>
+
 char *perfmgr_copy_from_user_for_proc(const char __user *buffer,
 		size_t count)
 {
