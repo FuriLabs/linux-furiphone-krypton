@@ -141,7 +141,7 @@ static void process_dbg_opt(char *opt)
 			if (addr >= gdrm_disp1_reg_range[i].reg_base &&
 			    addr < gdrm_disp1_reg_range[i].reg_base +
 					    0x1000UL) {
-				DRM_INFO("%8s Read register 0x%08lX: 0x%08X\n",
+				DRM_DEBUG("%8s Read register 0x%08lX: 0x%08X\n",
 					 gdrm_disp1_reg_range[i].name, addr,
 					 readl(gdrm_disp1_base[i] + addr -
 					       gdrm_disp1_reg_range[i]
@@ -154,7 +154,7 @@ static void process_dbg_opt(char *opt)
 			if (addr >= gdrm_disp2_reg_range[i].reg_base &&
 			    addr < gdrm_disp2_reg_range[i].reg_base +
 					    0x1000UL) {
-				DRM_INFO("%8s Read register 0x%08lX: 0x%08X\n",
+				DRM_DEBUG("%8s Read register 0x%08lX: 0x%08X\n",
 					 gdrm_disp2_reg_range[i].name, addr,
 					 readl(gdrm_disp2_base[i] + addr -
 					       gdrm_disp2_reg_range[i]
@@ -164,7 +164,7 @@ static void process_dbg_opt(char *opt)
 		}
 
 	} else if (strncmp(opt, "autoregr:", 9) == 0) {
-		DRM_INFO("Set the register addr for Auto-test\n");
+		DRM_DEBUG("Set the register addr for Auto-test\n");
 	} else if (strncmp(opt, "dump:", 5) == 0) {
 		u64 i;
 		u32 j;
@@ -176,7 +176,7 @@ static void process_dbg_opt(char *opt)
 			     j < gdrm_disp1_reg_range[i].offset[0] +
 					 gdrm_disp1_reg_range[i].length[0];
 			     j += 16UL)
-				DRM_INFO("%8s 0x%08lX: %08X %08X %08X %08X\n",
+				DRM_DEBUG("%8s 0x%08lX: %08X %08X %08X %08X\n",
 					 gdrm_disp1_reg_range[i].name,
 					 gdrm_disp1_reg_range[i].reg_base + j,
 					 readl(gdrm_disp1_base[i] + j),
@@ -188,7 +188,7 @@ static void process_dbg_opt(char *opt)
 			     j < gdrm_disp1_reg_range[i].offset[1] +
 					 gdrm_disp1_reg_range[i].length[1];
 			     j += 16UL)
-				DRM_INFO("%8s 0x%08lX: %08X %08X %08X %08X\n",
+				DRM_DEBUG("%8s 0x%08lX: %08X %08X %08X %08X\n",
 					 gdrm_disp1_reg_range[i].name,
 					 gdrm_disp1_reg_range[i].reg_base + j,
 					 readl(gdrm_disp1_base[i] + j),
@@ -203,7 +203,7 @@ static void process_dbg_opt(char *opt)
 			     j < gdrm_disp2_reg_range[i].offset[0] +
 					 gdrm_disp2_reg_range[i].length[0];
 			     j += 16)
-				DRM_INFO("%8s 0x%08lX: %08X %08X %08X %08X\n",
+				DRM_DEBUG("%8s 0x%08lX: %08X %08X %08X %08X\n",
 					 gdrm_disp2_reg_range[i].name,
 					 gdrm_disp2_reg_range[i].reg_base + j,
 					 readl(gdrm_disp2_base[i] + j),
@@ -215,7 +215,7 @@ static void process_dbg_opt(char *opt)
 			     j < gdrm_disp2_reg_range[i].offset[1] +
 					 gdrm_disp2_reg_range[i].length[1];
 			     j += 16)
-				DRM_INFO("%8s 0x%08lX: %08X %08X %08X %08X\n",
+				DRM_DEBUG("%8s 0x%08lX: %08X %08X %08X %08X\n",
 					 gdrm_disp2_reg_range[i].name,
 					 gdrm_disp2_reg_range[i].reg_base + j,
 					 readl(gdrm_disp2_base[i] + j),
@@ -227,10 +227,10 @@ static void process_dbg_opt(char *opt)
 	} else if (strncmp(opt, "hdmi:", 5) == 0) {
 	} else if (strncmp(opt, "alpha", 5) == 0) {
 		if (dbgfs_alpha) {
-			DRM_INFO("set src alpha to src alpha\n");
+			DRM_DEBUG("set src alpha to src alpha\n");
 			dbgfs_alpha = false;
 		} else {
-			DRM_INFO("set src alpha to ONE\n");
+			DRM_DEBUG("set src alpha to ONE\n");
 			dbgfs_alpha = true;
 		}
 	} else if (strncmp(opt, "r:", 2) == 0) {
