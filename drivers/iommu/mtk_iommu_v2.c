@@ -74,7 +74,7 @@ void mtk_iommu_switch_tf_test(bool enable,
 {
 #ifdef IOMMU_DEBUG_ENABLED
 	g_tf_test = !!enable;
-	pr_notice("<<<<<<<<<<< mtk iommu translation fault test is switched to %d by %s >>>>>>>>>>>",
+	pr_debug("<<<<<<<<<<< mtk iommu translation fault test is switched to %d by %s >>>>>>>>>>>",
 		  g_tf_test, msg);
 #endif
 }
@@ -103,7 +103,7 @@ static struct mtk_iommu_data *mtk_iommu_get_m4u_data(int id)
 			return NULL;
 	}
 
-	pr_notice("%s, %d, failed to get data of %d\n", __func__, __LINE__, id);
+	pr_debug("%s, %d, failed to get data of %d\n", __func__, __LINE__, id);
 	return NULL;
 }
 
@@ -156,7 +156,7 @@ static unsigned int __mtk_iommu_get_domain_id(
 	int i;
 
 	if (larbid >= MTK_IOMMU_LARB_NR) {
-		pr_notice("%s, %d, cannot find domain of port(%d-%d)\n",
+		pr_debug("%s, %d, cannot find domain of port(%d-%d)\n",
 			  __func__, __LINE__,
 			  larbid, portid);
 		return MTK_IOVA_DOMAIN_COUNT;
@@ -171,7 +171,7 @@ static unsigned int __mtk_iommu_get_domain_id(
 	}
 
 	if (domain_id == MTK_IOVA_DOMAIN_COUNT)
-		pr_notice("%s, %d, cannot find domain of port(%d-%d)\n",
+		pr_debug("%s, %d, cannot find domain of port(%d-%d)\n",
 			  __func__, __LINE__,
 			  larbid, portid);
 	return domain_id;
@@ -348,12 +348,12 @@ int __mtk_iommu_atf_call(unsigned int cmd, unsigned int m4u_id,
 	if (cmd >= IOMMU_ATF_CMD_COUNT ||
 	    m4u_id >= MTK_IOMMU_M4U_COUNT ||
 	    bank > MTK_IOMMU_BANK_COUNT) {
-		pr_notice("%s, %d, invalid m4u:%d, bank:%d, cmd:%d\n",
+		pr_debug("%s, %d, invalid m4u:%d, bank:%d, cmd:%d\n",
 			  __func__, __LINE__, m4u_id, bank, cmd);
 		return -1;
 	}
 	atf_cmd = IOMMU_ATF_SET_COMMAND(m4u_id, bank, cmd);
-	/*pr_notice("%s, M4U CALL ATF CMD:0x%x\n", __func__, atf_cmd);*/
+	/*pr_debug("%s, M4U CALL ATF CMD:0x%x\n", __func__, atf_cmd);*/
 	arm_smccc_smc(MTK_M4U_DEBUG_DUMP, atf_cmd,
 			      0, 0, 0, 0, 0, 0, &res);
 	ret = res.a0;
@@ -384,7 +384,7 @@ int mtk_iommu_dump_sec_larb(int larb, int port)
 
 	if (larb >= SMI_LARB_NR ||
 	    port >= ONE_SMI_PORT_NR) {
-		pr_notice("%s, %d, invalid larb:%d, port:%d\n",
+		pr_debug("%s, %d, invalid larb:%d, port:%d\n",
 			  __func__, __LINE__, larb, port);
 		return -1;
 	}
@@ -425,29 +425,29 @@ void mtk_iommu_atf_test(unsigned int m4u_id, unsigned int cmd)
 
 #ifdef IOMMU_POWER_CLK_SUPPORT
 	if (!data->poweron) {
-		pr_notice("%s: iommu:%d power off\n",
+		pr_debug("%s: iommu:%d power off\n",
 			  __func__, m4u_id);
 		return;
 	}
 #endif
 
 	if (cmd < IOMMU_ATF_CMD_COUNT) {
-		pr_notice("======== IOMMU test ATF cmd %d: %s=========\n",
+		pr_debug("======== IOMMU test ATF cmd %d: %s=========\n",
 			  cmd, iommu_atf_cmd_name[cmd]);
 		ret = mtk_iommu_atf_call(cmd, m4u_id,
 				MTK_IOMMU_BANK_COUNT);
-		pr_notice(">>> cmd:%d %s, ret:%d\n", cmd,
+		pr_debug(">>> cmd:%d %s, ret:%d\n", cmd,
 			  (ret ? "FAIL" : "PASS"), ret);
 		mtk_iommu_atf_test_recovery(m4u_id, cmd);
 		return;
 	}
 
 	for (i = 0; i < IOMMU_ATF_DUMP_SECURE_PORT_CONFIG; i++) {
-		pr_notice("======== IOMMU test ATF cmd %d: %s=========\n",
+		pr_debug("======== IOMMU test ATF cmd %d: %s=========\n",
 			  i, iommu_atf_cmd_name[i]);
 		ret = mtk_iommu_atf_call(i, m4u_id,
 				MTK_IOMMU_BANK_COUNT);
-		pr_notice(">>> cmd:%d %s, ret:%d\n", i,
+		pr_debug(">>> cmd:%d %s, ret:%d\n", i,
 			  (ret ? "FAIL" : "PASS"), ret);
 		mtk_iommu_atf_test_recovery(m4u_id, cmd);
 	}
@@ -696,23 +696,23 @@ int mtk_iommu_dump_reg(int m4u_id, unsigned int start,
 	}
 #endif
 
-	pr_notice("====== [%s] dump reg of iommu:%d from 0x%x to 0x%x =======\n",
+	pr_debug("====== [%s] dump reg of iommu:%d from 0x%x to 0x%x =======\n",
 		  user, m4u_id, start, end);
 
 	ret = mtk_switch_secure_debug_func(m4u_id, 1);
 	if (ret) {
-		pr_notice("%s, %d, failed to enable secure debug signal\n",
+		pr_debug("%s, %d, failed to enable secure debug signal\n",
 			  __func__, __LINE__);
 		spin_unlock_irqrestore(&data->reg_lock, flags);
 		return 0;
 	}
 
 	mtk_dump_reg(data, start, (end - start + 4) / 4, NULL);
-	pr_notice("============= dump end ===============\n");
+	pr_debug("============= dump end ===============\n");
 
 	ret = mtk_switch_secure_debug_func(m4u_id, 0);
 	if (ret)
-		pr_notice("%s, %d, failed to disable secure debug signal\n",
+		pr_debug("%s, %d, failed to disable secure debug signal\n",
 			  __func__, __LINE__);
 
 	spin_unlock_irqrestore(&data->reg_lock, flags);
@@ -736,13 +736,13 @@ static int mtk_iommu_hw_clock_power_switch(const struct mtk_iommu_data *data,
 	struct clk *clk_node;
 
 	if (!data) {
-		pr_notice("%s, %d, invalid data\n", __func__, __LINE__);
+		pr_debug("%s, %d, invalid data\n", __func__, __LINE__);
 		return -1;
 	}
 
 	m4u_clks = data->m4u_clks;
 	if (!m4u_clks) {
-		pr_notice("%s, %d, invalid m4u_clks\n", __func__, __LINE__);
+		pr_debug("%s, %d, invalid m4u_clks\n", __func__, __LINE__);
 		return -1;
 	}
 
@@ -775,7 +775,7 @@ static int mtk_iommu_hw_clock_power_switch(const struct mtk_iommu_data *data,
 	}
 
 	if (ret)
-		pr_notice("%s failed to %s %s[%d] of iommu%d, id%d for %s, ret:%d\n",
+		pr_debug("%s failed to %s %s[%d] of iommu%d, id%d for %s, ret:%d\n",
 			  __func__, (enable ? "enable" : "disable"),
 			  (is_clk ? "clock" : "power"), i,
 			  data->m4uid, err_id, master, ret);
@@ -799,7 +799,7 @@ int mtk_iommu_larb_clock_switch(unsigned int larb, bool enable)
 	struct mtk_iommu_data *data;
 
 	if (larb >= ARRAY_SIZE(smi_clk_name)) {
-		pr_notice("%s, invalid larb %d\n",
+		pr_debug("%s, invalid larb %d\n",
 			  __func__, larb);
 		return -1;
 	}
@@ -810,7 +810,7 @@ int mtk_iommu_larb_clock_switch(unsigned int larb, bool enable)
 				enable, smi_clk_name[larb], true);
 
 	if (ret)
-		pr_notice("switch larb clock err:%d, larb:%d, on:%d\n",
+		pr_debug("switch larb clock err:%d, larb:%d, on:%d\n",
 			  ret, larb, enable);
 
 	return ret;
@@ -846,7 +846,7 @@ static int mtk_iommu_power_switch(struct mtk_iommu_data *data,
 		return 0;
 #endif
 	ret = mtk_iommu_hw_clock_power_switch(data, enable, master, !enable);
-	pr_notice("%s: %d: %s %s %s of iommu%d for %s, ret=%d\n",
+	pr_debug("%s: %d: %s %s %s of iommu%d for %s, ret=%d\n",
 		  __func__, __LINE__,
 		  enable ? "enable" : "disable",
 		  enable ? "power" : "clock",
@@ -858,7 +858,7 @@ static int mtk_iommu_power_switch(struct mtk_iommu_data *data,
 		return ret;
 
 	ret = mtk_iommu_hw_clock_power_switch(data, enable, master, enable);
-	pr_notice("%s, %d, %s %s %s at iommu%d, for %s, ret=%d\n",
+	pr_debug("%s, %d, %s %s %s at iommu%d, for %s, ret=%d\n",
 		  __func__, __LINE__,
 		  enable ? "enable" : "disable",
 		  enable ? "clock" : "power",
@@ -879,7 +879,7 @@ int mtk_iommu_power_switch_by_id(unsigned int m4uid,
 	struct mtk_iommu_data *data;
 
 	if (m4uid >= MTK_IOMMU_M4U_COUNT) {
-		pr_notice("%s, invalid m4uid:%d,%s\n",
+		pr_debug("%s, invalid m4uid:%d,%s\n",
 			  __func__, m4uid,
 			  master ? master : "NULL");
 		return -1;
@@ -887,7 +887,7 @@ int mtk_iommu_power_switch_by_id(unsigned int m4uid,
 
 	data = mtk_iommu_get_m4u_data(m4uid);
 	if (!data) {
-		pr_notice("%s, err data of m4uid:%d,%s\n",
+		pr_debug("%s, err data of m4uid:%d,%s\n",
 			  __func__, m4uid,
 			  master ? master : "NULL");
 		return -2;
@@ -898,7 +898,7 @@ int mtk_iommu_power_switch_by_id(unsigned int m4uid,
 static void __mtk_iommu_tlb_flush_all(const struct mtk_iommu_data *data)
 {
 	if (!data->base || IS_ERR(data->base)) {
-		pr_notice("%s, %d, invalid base\n",
+		pr_debug("%s, %d, invalid base\n",
 			  __func__, __LINE__);
 		return;
 	}
@@ -930,7 +930,7 @@ static void __mtk_iommu_tlb_add_flush_nosync(
 	unsigned long start, end, flags;
 
 	if (!data->base  || IS_ERR(data->base)) {
-		pr_notice("%s, %d, invalid base addr\n",
+		pr_debug("%s, %d, invalid base addr\n",
 			  __func__, __LINE__);
 		return;
 	}
@@ -998,19 +998,19 @@ void mtk_iommu_dump_iova_space(unsigned long target)
 	struct mtk_iommu_pgtable *pgtable = mtk_iommu_get_pgtable(NULL, 0);
 
 	if (!pgtable) {
-		pr_notice("%s, invalid pgtable\n", __func__);
+		pr_debug("%s, invalid pgtable\n", __func__);
 		return;
 	}
 
-	pr_notice("========= %s++ total %d domain ============\n",
+	pr_debug("========= %s++ total %d domain ============\n",
 		  __func__, pgtable->domain_count);
 	list_for_each_entry(dom, &pgtable->m4u_dom, list) {
-		pr_notice("===== domain %d =====\n", dom->id);
+		pr_debug("===== domain %d =====\n", dom->id);
 		iommu_dma_dump_iovad(&dom->domain, target);
 		if (++i >= pgtable->domain_count)
 			break;
 	}
-	pr_notice("========= %s-- ============\n", __func__);
+	pr_debug("========= %s-- ============\n", __func__);
 }
 
 static void mtk_iommu_tlb_flush_all_lock(void *cookie, bool lock)
@@ -1055,7 +1055,7 @@ static void mtk_iommu_tlb_sync(void *cookie)
 	list_for_each_entry_safe(data, temp, &m4ulist, list) {
 		ret = __mtk_iommu_tlb_sync(data);
 		if (ret)
-			pr_notice("%s, failed at iommu:%d, of the %d time\n",
+			pr_debug("%s, failed at iommu:%d, of the %d time\n",
 				  __func__, data->m4uid, i);
 		if (++i >= total_iommu_cnt)
 			return;  //do not while loop if m4ulist is destroyed
@@ -1070,16 +1070,16 @@ void mtk_iommu_dump_iova_space(unsigned long iova)
 	int i = 0;
 
 	for (i = 0; i < total_iommu_cnt; i++)
-		pr_notice("<<<<<<<< iommu %d >>>>>>>>\n", i);
+		pr_debug("<<<<<<<< iommu %d >>>>>>>>\n", i);
 		pgtable = mtk_iommu_get_pgtable(NULL, i);
 		if (!pgtable)
 			continue;
 		list_for_each_entry(dom, &pgtable->m4u_dom, list) {
-			pr_notice("===== domain %d =====\n", dom->id);
+			pr_debug("===== domain %d =====\n", dom->id);
 			iommu_dma_dump_iovad(dom->domain, iova);
-			pr_notice("=====================\n");
+			pr_debug("=====================\n");
 		}
-		pr_notice("<<<<<<<<<<<<>>>>>>>>>>>>\n");
+		pr_debug("<<<<<<<<<<<<>>>>>>>>>>>>\n");
 	}
 }
 
@@ -1111,7 +1111,7 @@ static void mtk_iommu_tlb_sync(void *cookie)
 
 	ret = __mtk_iommu_tlb_sync(data);
 	if (ret)
-		pr_notice("%s, failed at iommu:%d\n",
+		pr_debug("%s, failed at iommu:%d\n",
 			  __func__, data->m4uid);
 }
 #endif
@@ -1188,7 +1188,7 @@ static inline void mtk_iommu_intr_modify_all(unsigned long enable)
 
 	list_for_each_entry_safe(data, temp, &m4ulist, list) {
 		if (!data->base  || IS_ERR(data->base)) {
-			pr_notice("%s, %d, invalid base addr\n",
+			pr_debug("%s, %d, invalid base addr\n",
 				  __func__, __LINE__);
 			continue;
 		}
@@ -1285,7 +1285,7 @@ static irqreturn_t mtk_iommu_isr(int irq, void *dev_id)
 	void __iomem *base = NULL;
 
 #ifdef MTK_IOMMU_BANK_IRQ_SUPPORT
-	pr_notice("%s, irq=%d\n", __func__, irq);
+	pr_debug("%s, irq=%d\n", __func__, irq);
 	for (i = 0; i < MTK_IOMMU_M4U_COUNT; i++) {
 		for (j = 0; j < MTK_IOMMU_BANK_NODE_COUNT; j++) {
 			if (irq == mtk_irq_bank[i][j]) {
@@ -1293,7 +1293,7 @@ static irqreturn_t mtk_iommu_isr(int irq, void *dev_id)
 				bankid = j;
 				data = mtk_iommu_get_m4u_data(m4uid);
 				if (!data) {
-					pr_notice("%s, m4u:%u, bank:%u Invalid bank node\n",
+					pr_debug("%s, m4u:%u, bank:%u Invalid bank node\n",
 						__func__, m4uid, bankid);
 					return 0;
 				}
@@ -1306,7 +1306,7 @@ static irqreturn_t mtk_iommu_isr(int irq, void *dev_id)
 	if (!data) {
 		data = dev_id;
 		if (!data) {
-			pr_notice("%s, Invalid normal irq %d\n",
+			pr_debug("%s, Invalid normal irq %d\n",
 					__func__, irq);
 			return 0;
 		}
@@ -1316,21 +1316,21 @@ static irqreturn_t mtk_iommu_isr(int irq, void *dev_id)
 	}
 
 	if (!base || IS_ERR(base)) {
-		pr_notice("%s, %d, invalid base addr of iommu:%u, bank:%u\n",
+		pr_debug("%s, %d, invalid base addr of iommu:%u, bank:%u\n",
 			  __func__, __LINE__, m4uid, bankid);
 		return 0;
 	}
 #else
 	data = dev_id;
 	if (!data) {
-		pr_notice("%s, Invalid normal irq %d\n",
+		pr_debug("%s, Invalid normal irq %d\n",
 				__func__, irq);
 		return 0;
 	}
 
 	m4uid = data->m4uid;
 	if (!data->base || IS_ERR(data->base)) {
-		pr_notice("%s, %d, invalid base addr\n",
+		pr_debug("%s, %d, invalid base addr\n",
 			  __func__, __LINE__);
 		return 0;
 	}
@@ -1349,7 +1349,7 @@ static irqreturn_t mtk_iommu_isr(int irq, void *dev_id)
 
 	ret1 = mtk_switch_secure_debug_func(data->m4uid, 1);
 	if (ret1)
-		pr_notice("%s, %d, m4u:%u, failed to enable secure debug signal\n",
+		pr_debug("%s, %d, m4u:%u, failed to enable secure debug signal\n",
 			  __func__, __LINE__, data->m4uid);
 
 	/* Read error info from registers */
@@ -1361,7 +1361,7 @@ static irqreturn_t mtk_iommu_isr(int irq, void *dev_id)
 		goto out;
 	}
 
-	pr_notice("iommu:%u, bank:%u, L2 int sta(0x130)=0x%x, main sta(0x134)=0x%x\n",
+	pr_debug("iommu:%u, bank:%u, L2 int sta(0x130)=0x%x, main sta(0x134)=0x%x\n",
 		  m4uid,
 		  bankid == MTK_IOMMU_BANK_NODE_COUNT ? 0 : bankid + 1,
 		  int_state_l2, int_state);
@@ -1421,7 +1421,7 @@ static irqreturn_t mtk_iommu_isr(int irq, void *dev_id)
 		}
 	}
 	if (i == MTK_IOMMU_MMU_COUNT) {
-		pr_info("m4u interrupt error: status = 0x%x\n", int_state);
+		pr_debug("m4u interrupt error: status = 0x%x\n", int_state);
 		iommu_set_field_by_mask(base, REG_MMU_INT_CONTROL0,
 					F_INT_CTL0_INT_CLR,
 					F_INT_CTL0_INT_CLR);
@@ -1435,7 +1435,7 @@ static irqreturn_t mtk_iommu_isr(int irq, void *dev_id)
 				F_MMU_INT_TF_VAL(int_id),
 				m4uid, &fault_larb,
 				&fault_port);
-		pr_notice("iommu:%d, slave:%d, port_id=%d(%d-%d), tf_id:0x%x\n",
+		pr_debug("iommu:%d, slave:%d, port_id=%d(%d-%d), tf_id:0x%x\n",
 			  m4uid, slave_id, port_id,
 			  fault_larb, fault_port, int_id);
 
@@ -1457,7 +1457,7 @@ static irqreturn_t mtk_iommu_isr(int irq, void *dev_id)
 #else
 		fault_iova = (unsigned long)(regval);
 #endif
-		pr_notice("%s, %d, fault_iova=%lx, regval=0x%x\n",
+		pr_debug("%s, %d, fault_iova=%lx, regval=0x%x\n",
 			  __func__, __LINE__, fault_iova, regval);
 
 		domain = __mtk_iommu_get_domain(data,
@@ -1473,7 +1473,7 @@ static irqreturn_t mtk_iommu_isr(int irq, void *dev_id)
 					REG_MMU_INVLD_PA(slave_id));
 		fault_pa |= (unsigned long)(regval &
 					F_MMU_FAULT_PA_BIT32) << 26;
-		pr_notice("fault_pa=0x%lx, get pa=%x, tfrp=0x%x, ptbase=0x%x\n",
+		pr_debug("fault_pa=0x%lx, get pa=%x, tfrp=0x%x, ptbase=0x%x\n",
 			  fault_pa, (unsigned int)pa,
 			  readl_relaxed(base + REG_MMU_TFRP_PADDR),
 			  readl_relaxed(base + REG_MMU_PT_BASE_ADDR));
@@ -1563,7 +1563,7 @@ out:
 
 	ret1 = mtk_switch_secure_debug_func(data->m4uid, 0);
 	if (ret1)
-		pr_notice("%s, %d, m4u:%u, failed to disable secure debug signal\n",
+		pr_debug("%s, %d, m4u:%u, failed to disable secure debug signal\n",
 			  __func__, __LINE__, data->m4uid);
 
 	return ret;
@@ -1588,14 +1588,14 @@ irqreturn_t MTK_M4U_isr_sec(int irq, void *dev_id)
 	}
 
 	if (!data) {
-		pr_notice("%s, Invalid secure irq %d\n",
+		pr_debug("%s, Invalid secure irq %d\n",
 				__func__, irq);
 		return 0;
 	}
 
 	if (!data->base_sec || IS_ERR(data->base_sec) ||
 	    !data->base || IS_ERR(data->base)) {
-		pr_notice("%s, %d, invalid base addr of iommu:%d\n",
+		pr_debug("%s, %d, invalid base addr of iommu:%d\n",
 			  __func__, __LINE__, m4u_id);
 		return 0;
 	}
@@ -1612,7 +1612,7 @@ irqreturn_t MTK_M4U_isr_sec(int irq, void *dev_id)
 
 	ret = __mtk_iommu_atf_call(IOMMU_ATF_DUMP_SECURE_REG,
 			m4u_id, 4, &tf_port, &tf_iova, &tf_int);
-	pr_notice("iommu:%d secure bank fault_id:0x%zx port:0x%zx in normal world!\n",
+	pr_debug("iommu:%d secure bank fault_id:0x%zx port:0x%zx in normal world!\n",
 		  m4u_id, tf_int, tf_port);
 	if (!ret && tf_port < M4U_PORT_UNKNOWN) {
 		bool is_vpu;
@@ -1689,7 +1689,7 @@ int __mtk_iommu_get_pgtable_base_addr(
 		pgtable = mtk_iommu_get_pgtable(NULL, 0);
 
 	if (!pgtable) {
-		pr_notice("%s, %d, cannot find pgtable\n",
+		pr_debug("%s, %d, cannot find pgtable\n",
 			  __func__, __LINE__);
 		return -1;
 	}
@@ -1699,7 +1699,7 @@ int __mtk_iommu_get_pgtable_base_addr(
 		*pgd_pa |= pgtable->cfg.arm_v7s_cfg.ttbr[1] &
 			  F_MMU_PT_BASE_ADDR_BIT32;
 	} else {
-		pr_notice("%s, %d, invalid pgtable base addr, 0x%x_%x\n",
+		pr_debug("%s, %d, invalid pgtable base addr, 0x%x_%x\n",
 			  __func__, __LINE__,
 			  pgtable->cfg.arm_v7s_cfg.ttbr[1],
 			  pgtable->cfg.arm_v7s_cfg.ttbr[0]);
@@ -1769,11 +1769,11 @@ static int mtk_iommu_create_pgtable(struct mtk_iommu_data *data)
 	}
 
 	if (mtk_iommu_set_pgtable(data, init_data_id, pgtable)) {
-		pr_notice("%s, failed to set pgtable\n", __func__);
+		pr_debug("%s, failed to set pgtable\n", __func__);
 		return -EFAULT;
 	}
 
-	pr_notice("%s, %d, create pgtable done\n",
+	pr_debug("%s, %d, create pgtable done\n",
 		  __func__, __LINE__);
 	return 0;
 }
@@ -1794,7 +1794,7 @@ static int mtk_iommu_attach_pgtable(struct mtk_iommu_data *data,
 	if (!pgtable) {
 		ret = mtk_iommu_create_pgtable(data);
 		if (ret) {
-			pr_notice("%s, %d, failed to create pgtable, err %d\n",
+			pr_debug("%s, %d, failed to create pgtable, err %d\n",
 				  __func__, __LINE__, ret);
 			return ret;
 		}
@@ -1813,21 +1813,21 @@ static int mtk_iommu_attach_pgtable(struct mtk_iommu_data *data,
 	if (data->poweron) {
 		writel(pgd_pa_reg, data->base + REG_MMU_PT_BASE_ADDR);
 		regval = readl_relaxed(data->base + REG_MMU_PT_BASE_ADDR);
-		pr_notice("%s, %d, iommu:%d config pgtable base addr=0x%x, quiks=0x%lx\n",
+		pr_debug("%s, %d, iommu:%d config pgtable base addr=0x%x, quiks=0x%lx\n",
 			  __func__, __LINE__, data->m4uid,
 			  regval, pgtable->cfg.quirks);
 		spin_unlock_irqrestore(&data->reg_lock, flags);
 	} else {
 		spin_unlock_irqrestore(&data->reg_lock, flags);
 		reg->pt_base = pgd_pa_reg;
-		pr_notice("%s, %d, iommu:%d backup pgtable base addr=0x%x, quiks=0x%lx\n",
+		pr_debug("%s, %d, iommu:%d backup pgtable base addr=0x%x, quiks=0x%lx\n",
 			  __func__, __LINE__, data->m4uid,
 			  reg->pt_base, pgtable->cfg.quirks);
 	}
 #else
 	writel(pgd_pa_reg, data->base + REG_MMU_PT_BASE_ADDR);
 	regval = readl_relaxed(data->base + REG_MMU_PT_BASE_ADDR);
-	pr_notice("%s, %d, iommu:%d config pgtable base addr=0x%x, quiks=0x%lx\n",
+	pr_debug("%s, %d, iommu:%d config pgtable base addr=0x%x, quiks=0x%lx\n",
 		  __func__, __LINE__, data->m4uid,
 		  regval, pgtable->cfg.quirks);
 	spin_unlock_irqrestore(&data->reg_lock, flags);
@@ -1842,7 +1842,7 @@ static int mtk_extend_iommu_mapping(struct dma_iommu_mapping *mapping)
 	int next_bitmap;
 
 	if (mapping->nr_bitmaps >= mapping->extensions) {
-		pr_notice("%s, %d, err nr:0x%x > externsions:0x%x\n",
+		pr_debug("%s, %d, err nr:0x%x > externsions:0x%x\n",
 			  __func__, __LINE__,
 			  mapping->nr_bitmaps, mapping->extensions);
 		return -EINVAL;
@@ -1869,7 +1869,7 @@ static inline int mtk_do_reserve_iova(
 	int i, sbitmap, ebitmap;
 
 	if (iova < mapping->base) {
-		pr_notice("%s, %d, err iova:0x%x < base:0x%x\n",
+		pr_debug("%s, %d, err iova:0x%x < base:0x%x\n",
 			  __func__, __LINE__, iova, mapping->base);
 		return -EINVAL;
 	}
@@ -1882,7 +1882,7 @@ static inline int mtk_do_reserve_iova(
 	start = start % mapping->bits;
 
 	if (ebitmap > mapping->extensions) {
-		pr_notice("%s, %d, err end:0x%x > extensions:0x%x\n",
+		pr_debug("%s, %d, err end:0x%x > extensions:0x%x\n",
 			  __func__, __LINE__, ebitmap,
 			  mapping->extensions);
 		return -EINVAL;
@@ -1892,7 +1892,7 @@ static inline int mtk_do_reserve_iova(
 
 	for (i = mapping->nr_bitmaps; i <= ebitmap; i++) {
 		if (mtk_extend_iommu_mapping(mapping)) {
-			pr_notice("%s, %d, err extend\n",
+			pr_debug("%s, %d, err extend\n",
 				  __func__, __LINE__);
 			spin_unlock_irqrestore(&mapping->lock, flags);
 			return -ENOMEM;
@@ -1959,13 +1959,13 @@ static int mtk_iova_reserve_iommu_regions(struct mtk_iommu_domain *dom,
 
 		ret = mtk_do_reserve_iova(mapping, start, end - start, pg_off);
 		if (ret != 0) {
-			pr_notice("%s, %d, err reserve (0x%llx+0x%lx) in the mapping of group %d, pg_off=0x%x\n",
+			pr_debug("%s, %d, err reserve (0x%llx+0x%lx) in the mapping of group %d, pg_off=0x%x\n",
 				  __func__, __LINE__, region->start,
 				  region->length, dom->id, pg_off);
 			goto out;
 		} else {
 			dom->resv_status = 1;
-			pr_notice("%s, %d, finish reserve (0x%llx+0x%lx) in the mapping of group %d, pg_off=0x%x\n",
+			pr_debug("%s, %d, finish reserve (0x%llx+0x%lx) in the mapping of group %d, pg_off=0x%x\n",
 				  __func__, __LINE__, region->start,
 				  region->length, dom->id, pg_off);
 		}
@@ -1987,7 +1987,7 @@ static int mtk_iommu_create_mapping(struct device *dev)
 
 	dom = __mtk_iommu_get_mtk_domain(dev);
 	if (!dom) {
-		pr_notice("%s, %d, err domain\n",
+		pr_debug("%s, %d, err domain\n",
 			  __func__, __LINE__);
 		return -ENODEV;
 	}
@@ -2002,7 +2002,7 @@ static int mtk_iommu_create_mapping(struct device *dev)
 #if (CONFIG_MTK_IOMMU_PGTABLE_EXT > 32)
 		if (start >> 32 != end >> 32 ||
 		    start >> 32 != mtk_domain_array[dom->id].boundary) {
-			pr_notice("%s, %d, err start:0x%lx, end:0x%lx, boundary:%d\n",
+			pr_debug("%s, %d, err start:0x%lx, end:0x%lx, boundary:%d\n",
 				  __func__, __LINE__, start, end,
 				  mtk_domain_array[dom->id].boundary);
 			return -EINVAL;
@@ -2011,14 +2011,14 @@ static int mtk_iommu_create_mapping(struct device *dev)
 		size = end - start + 1;
 		if (size < 0 || size > DMA_BIT_MASK(
 		    CONFIG_MTK_IOMMU_PGTABLE_EXT)) {
-			pr_notice("%s, %d, err domain size 0x%x\n",
+			pr_debug("%s, %d, err domain size 0x%x\n",
 				  __func__, __LINE__, size);
 			return -EINVAL;
 		}
 		mapping = arm_iommu_create_mapping(&platform_bus_type,
 						start, size);
 		if (IS_ERR(mapping)) {
-			pr_notice("%s, %d, err mapping\n",
+			pr_debug("%s, %d, err mapping\n",
 				  __func__, __LINE__);
 			return -ENOMEM;
 		}
@@ -2059,13 +2059,13 @@ static struct iommu_domain *mtk_iommu_domain_alloc(unsigned int type)
 #endif
 
 	if (!pgtable) {
-		pr_notice("%s, %d, err pgtabe of iommu%d\n",
+		pr_debug("%s, %d, err pgtabe of iommu%d\n",
 			  __func__, __LINE__, init_data_id);
 		return NULL;
 	}
 
 	if (type != domain_type) {
-		pr_notice("%s, %d, err type%d\n",
+		pr_debug("%s, %d, err type%d\n",
 			  __func__, __LINE__, type);
 		return NULL;
 	}
@@ -2085,7 +2085,7 @@ static void mtk_iommu_domain_free(struct iommu_domain *domain)
 	struct mtk_iommu_domain *dom = to_mtk_domain(domain);
 	struct mtk_iommu_pgtable *pgtable = dom->pgtable;
 
-	pr_notice("%s, %d, domain_count=%d, free the %d domain\n",
+	pr_debug("%s, %d, domain_count=%d, free the %d domain\n",
 		  __func__, __LINE__, pgtable->domain_count, dom->id);
 
 #ifdef CONFIG_ARM64
@@ -2231,7 +2231,7 @@ static struct iommu_group *mtk_iommu_create_iova_space(
 #endif
 
 	if (!pgtable) {
-		pr_notice("%s, %d, err pgtable of iommu%d\n",
+		pr_debug("%s, %d, err pgtable of iommu%d\n",
 			  __func__, __LINE__, init_data_id);
 		return NULL;
 	}
@@ -2265,7 +2265,7 @@ static struct iommu_group *mtk_iommu_create_iova_space(
 	spin_lock_irqsave(&pgtable->domain_lock, flags);
 	if (pgtable->domain_count >= MTK_IOVA_DOMAIN_COUNT) {
 		spin_unlock_irqrestore(&pgtable->domain_lock, flags);
-		pr_notice("%s, %d, too many domain, count=%d\n",
+		pr_debug("%s, %d, too many domain, count=%d\n",
 			  __func__, __LINE__, pgtable->domain_count);
 		goto free_group;
 	}
@@ -2291,7 +2291,7 @@ static struct iommu_group *mtk_iommu_create_iova_space(
 	boundary = mtk_domain_array[dom->id].boundary;
 	if (start >> 32 != end >> 32 ||
 	    start >> 32 != boundary) {
-		pr_notice("%s, %d, err start:0x%lx, end:0x%lx, boundary:%d\n",
+		pr_debug("%s, %d, err start:0x%lx, end:0x%lx, boundary:%d\n",
 			  __func__, __LINE__, start, end, boundary);
 		goto free_group;
 	}
@@ -2304,7 +2304,7 @@ static struct iommu_group *mtk_iommu_create_iova_space(
 #endif
 	dom->owner = mtk_domain_array[dom->id].owner;
 #ifdef IOMMU_DEBUG_ENABLED
-	pr_notice("%s, %d, dev:%s allocated IOVA group%d:%p, domain%d:%p owner:%d start:0x%llx end:0x%llx ext=%d\n",
+	pr_debug("%s, %d, dev:%s allocated IOVA group%d:%p, domain%d:%p owner:%d start:0x%llx end:0x%llx ext=%d\n",
 		  __func__, __LINE__, dev_name(dev),
 		  iommu_group_id(group),
 		  group, dom->id, &dom->domain,
@@ -2392,7 +2392,7 @@ static int mtk_iommu_add_device(struct device *dev)
 	// attach the device to domain before access it when create mapping
 	ret = iommu_group_add_device(group, dev);
 	iommu_group_put(group);
-	pr_notice("%s, %d\n", __func__, __LINE__);
+	pr_debug("%s, %d\n", __func__, __LINE__);
 
 	if (ret < 0) {
 		dev_notice(dev, "%s, %d, Failed to add device to IPMMU group\n",
@@ -2412,7 +2412,7 @@ static int mtk_iommu_add_device(struct device *dev)
 	}
 
 	if (!idx) {
-		pr_notice("%s, %d invalid idx:%d\n",
+		pr_debug("%s, %d invalid idx:%d\n",
 			  __func__, __LINE__, idx);
 		return -ENODEV;
 	}
@@ -2489,7 +2489,7 @@ static void mtk_iommu_get_resv_region(
 					 dom_data->resv_size[i],
 					 0, IOMMU_RESV_RESERVED);
 			if (!region) {
-				pr_notice("Out of memory allocating dm-regions for %s\n",
+				pr_debug("Out of memory allocating dm-regions for %s\n",
 					  dev_name(dev));
 				return;
 			}
@@ -2506,7 +2506,7 @@ static void mtk_iommu_get_resv_region(
 						 dom_data->resv_start[i],
 						 0, IOMMU_RESV_RESERVED);
 				if (!region) {
-					pr_notice("Out of memory allocating dm-regions for %s\n",
+					pr_debug("Out of memory allocating dm-regions for %s\n",
 						  dev_name(dev));
 					return;
 				}
@@ -2520,7 +2520,7 @@ static void mtk_iommu_get_resv_region(
 					 dom_data->resv_size[i] + 1,
 					 0, IOMMU_RESV_RESERVED);
 			if (!region) {
-				pr_notice("Out of memory allocating dm-regions for %s\n",
+				pr_debug("Out of memory allocating dm-regions for %s\n",
 					  dev_name(dev));
 				return;
 			}
@@ -2559,7 +2559,7 @@ int mtk_iommu_get_iova_space(struct device *dev,
 	unsigned long flags = 0;
 
 	if (!pgtable)
-		pr_notice("%s, invalid pgtable\n", __func__);
+		pr_debug("%s, invalid pgtable\n", __func__);
 
 	dom = __mtk_iommu_get_mtk_domain(dev);
 	if (dom)
@@ -2786,14 +2786,14 @@ int mtk_dump_valid_main0_tlb(
 	unsigned int i = 0;
 	struct mmu_tlb_t tlb;
 
-	pr_notice("dump main tlb start %d -- %d\n", data->m4uid, m4u_slave_id);
+	pr_debug("dump main tlb start %d -- %d\n", data->m4uid, m4u_slave_id);
 	for (i = 0; i < g_tag_count[data->m4uid]; i++) {
 		mtk_get_main_tlb(data, m4u_slave_id, i, &tlb);
 		if ((tlb.tag & F_MAIN_TLB_VALID_BIT) == F_MAIN_TLB_VALID_BIT)
-			pr_info("%d:0x%x:0x%x\n", i, tlb.tag, tlb.desc);
+			pr_debug("%d:0x%x:0x%x\n", i, tlb.tag, tlb.desc);
 
 	}
-	pr_notice("dump inv main tlb end\n");
+	pr_debug("dump inv main tlb end\n");
 
 	return 0;
 }
@@ -2815,7 +2815,7 @@ int dump_fault_mva_pfh_tlb(const struct mtk_iommu_data *data, unsigned int mva)
 			valid = !!(regval & F_MMU_PFH_VLD_BIT(set, way));
 
 			mtk_get_pfh_tlb(data, set, page, way, &tlb);
-			pr_notice(
+			pr_debug(
 				  "fault_mva:0x%x, way:%d, set:%d, page:%d, valid:%d--0x%x, tag:0x%x, des:0x%x\n",
 				  mva, way, set, page, valid,
 				  regval, tlb.tag, tlb.desc);
@@ -3122,7 +3122,7 @@ int mtk_confirm_main_range_invalidated(
 					tag_e = tag_s + PAGE_SIZE - 1;
 
 				if (!((tag_e < sa) || (tag_s > ea))) {
-					pr_notice(
+					pr_debug(
 						  "main: i=%d, idx=0x%x, iova_s=0x%x, iova_e=0x%x, RegValue=0x%x\n",
 						  i, data->m4uid, iova_s,
 						  iova_e, regval);
@@ -3142,7 +3142,7 @@ int mtk_confirm_main_range_invalidated(
 								1;
 
 				if ((tag_s >= sa) && (tag_e <= ea)) {
-					pr_notice(
+					pr_debug(
 						  "main: i=%d, idx=0x%x, iova_s=0x%x, iova_e=0x%x, RegValue=0x%x\n",
 						  i, data->m4uid,
 						  iova_s, iova_e, regval);
@@ -3212,7 +3212,7 @@ int mtk_confirm_range_invalidated(const struct mtk_iommu_data *data,
 							PAGE_SIZE * 8 - 1;
 
 					if (!((tag_e < sa) || (tag_s > ea))) {
-						pr_notice(
+						pr_debug(
 							  "main: i=%d, idx=0x%x, iova_s=0x%x, iova_e=0x%x, RegValue=0x%x\n",
 							  i, data->m4uid,
 							  iova_s,
@@ -3234,7 +3234,7 @@ int mtk_confirm_range_invalidated(const struct mtk_iommu_data *data,
 
 					/* if((tag_s>=sa)&&(tag_e<=ea)) */
 					if (!((tag_e < sa) || (tag_s > ea))) {
-						pr_notice(
+						pr_debug(
 							  "main: i=%d, idx=0x%x, iova_s=0x%x, iova_e=0x%x, RegValue=0x%x\n",
 							  i, data->m4uid,
 							  iova_s,
@@ -3259,7 +3259,7 @@ int mtk_confirm_main_all_invalid(
 		regval = mtk_get_main_tag(data, m4u_slave_id, i);
 
 		if (regval & (F_MAIN_TLB_VALID_BIT)) {
-			pr_notice(
+			pr_debug(
 				  "main: i=%d, idx=0x%x, RegValue=0x%x\n",
 				  i, data->m4uid, regval);
 			return -1;
@@ -3321,7 +3321,7 @@ int mau_start_monitor(unsigned int m4u_id, unsigned int slave,
 	if (!data || !mau_info ||
 	    slave >= MTK_MMU_NUM_OF_IOMMU(m4u_id) ||
 	    mau >= MTK_MAU_NUM_OF_MMU(slave)) {
-		pr_notice("%s, %d, invalid m4u:%d, slave:%d, mau:%d\n",
+		pr_debug("%s, %d, invalid m4u:%d, slave:%d, mau:%d\n",
 			  __func__, __LINE__, m4u_id, slave, mau);
 		return -1;
 	}
@@ -3330,7 +3330,7 @@ int mau_start_monitor(unsigned int m4u_id, unsigned int slave,
 #ifdef IOMMU_POWER_CLK_SUPPORT
 	if (!data->poweron) {
 		spin_unlock_irqrestore(&data->reg_lock, flags);
-		pr_notice("%s, iommu%u power off\n",
+		pr_debug("%s, iommu%u power off\n",
 			  __func__, data->m4uid);
 		return 0;
 	}
@@ -3340,7 +3340,7 @@ int mau_start_monitor(unsigned int m4u_id, unsigned int slave,
 	ret = mtk_switch_secure_debug_func(m4u_id, 1);
 	if (ret) {
 		spin_unlock_irqrestore(&data->reg_lock, flags);
-		pr_notice("%s, %d, failed to enable secure debug signal\n",
+		pr_debug("%s, %d, failed to enable secure debug signal\n",
 			  __func__, __LINE__);
 		return ret;
 	}
@@ -3384,7 +3384,7 @@ int mau_start_monitor(unsigned int m4u_id, unsigned int slave,
 				F_MAU_BIT_VAL(mau_info->virt, mau));
 	wmb(); /*make sure the MAU ops has been triggered*/
 
-	pr_notice("%s iommu:%d, slave:%d, mau:%d, start=0x%x(0x%x), end=0x%x(0x%x), vir:%d, wr:%d, io:0x%x, port:0x%x, larb:0x%x\n",
+	pr_debug("%s iommu:%d, slave:%d, mau:%d, start=0x%x(0x%x), end=0x%x(0x%x), vir:%d, wr:%d, io:0x%x, port:0x%x, larb:0x%x\n",
 		  __func__, m4u_id, slave, mau,
 		  readl_relaxed(base + REG_MMU_MAU_SA(slave, mau)),
 		  readl_relaxed(base + REG_MMU_MAU_SA_EXT(slave, mau)),
@@ -3398,7 +3398,7 @@ int mau_start_monitor(unsigned int m4u_id, unsigned int slave,
 
 	ret = mtk_switch_secure_debug_func(m4u_id, 0);
 	if (ret)
-		pr_notice("%s, %d, failed to disable secure debug signal\n",
+		pr_debug("%s, %d, failed to disable secure debug signal\n",
 			  __func__, __LINE__);
 
 	spin_unlock_irqrestore(&data->reg_lock, flags);
@@ -3419,7 +3419,7 @@ void mau_stop_monitor(unsigned int m4u_id, unsigned int slave,
 			return;
 #ifdef IOMMU_POWER_CLK_SUPPORT
 		if (!data->poweron) {
-			pr_notice("%s, iommu%u power off\n",
+			pr_debug("%s, iommu%u power off\n",
 				  __func__, data->m4uid);
 			return;
 		}
@@ -3446,7 +3446,7 @@ int mau_get_config_info(struct mau_config_info *cfg)
 	if (!data ||
 	    slave >= MTK_MMU_NUM_OF_IOMMU(cfg->m4u_id) ||
 	    mau >= MTK_MAU_NUM_OF_MMU(slave)) {
-		pr_notice("%s, %d, invalid m4u:%d, slave:%d, mau:%d\n",
+		pr_debug("%s, %d, invalid m4u:%d, slave:%d, mau:%d\n",
 			  __func__, __LINE__, cfg->m4u_id, slave, mau);
 		return -1;
 	}
@@ -3501,7 +3501,7 @@ int __mau_dump_status(int m4u_id, int slave, int mau)
 	if (!data ||
 	    slave >= MTK_MMU_NUM_OF_IOMMU(m4u_id) ||
 	    mau >= MTK_MAU_NUM_OF_MMU(slave)) {
-		pr_notice("%s, %d, invalid m4u:%d, slave:%d, mau:%d\n",
+		pr_debug("%s, %d, invalid m4u:%d, slave:%d, mau:%d\n",
 			  __func__, __LINE__, m4u_id, slave, mau);
 		return -1;
 	}
@@ -3517,7 +3517,7 @@ int __mau_dump_status(int m4u_id, int slave, int mau)
 	status = readl_relaxed(base + REG_MMU_MAU_ASRT_STA(slave));
 
 	if (status & (1 << mau)) {
-		pr_notice("%s: mau_assert in set %d, status:0x%x\n",
+		pr_debug("%s: mau_assert in set %d, status:0x%x\n",
 			  __func__, mau, status);
 		assert_id = readl_relaxed(base +
 			REG_MMU_MAU_ASRT_ID(slave, mau));
@@ -3529,7 +3529,7 @@ int __mau_dump_status(int m4u_id, int slave, int mau)
 		//port = F_MMU_MAU_ASRT_ID_PORT(assert_id);
 		name = mtk_iommu_get_port_name(m4u_id,
 				(assert_id & F_MMU_MAU_ASRT_ID_VAL) << 2);
-		pr_notice("%s: mau dump: id=0x%x(%s),addr=0x%x,b32=0x%x\n",
+		pr_debug("%s: mau dump: id=0x%x(%s),addr=0x%x,b32=0x%x\n",
 			  __func__, assert_id, name,
 			  assert_addr, assert_b32);
 
@@ -3543,7 +3543,7 @@ int __mau_dump_status(int m4u_id, int slave, int mau)
 		mau_cfg.mau = mau;
 		mau_get_config_info(&mau_cfg);
 
-		pr_notice(
+		pr_debug(
 			  "%s: mau_cfg: start=0x%x,end=0x%x,virt(%d),io(%d),wr(%d),s_b32(%d),e_b32(%d),larb(0x%x),port(0x%x)\n",
 		 __func__,
 		 mau_cfg.start, mau_cfg.end,
@@ -3570,7 +3570,7 @@ int iommu_perf_get_counter(int m4u_id,
 
 	if (!data ||
 	    slave >= MTK_MMU_NUM_OF_IOMMU(m4u_id)) {
-		pr_notice("%s, %d, invalid m4u:%d, slave:%d\n",
+		pr_debug("%s, %d, invalid m4u:%d, slave:%d\n",
 			  __func__, __LINE__, m4u_id, slave);
 		return -1;
 	}
@@ -3579,7 +3579,7 @@ int iommu_perf_get_counter(int m4u_id,
 #ifdef IOMMU_POWER_CLK_SUPPORT
 	if (!data->poweron) {
 		spin_unlock_irqrestore(&data->reg_lock, flags);
-		pr_notice("%s: iommu:%d power off\n",
+		pr_debug("%s: iommu:%d power off\n",
 			  __func__, m4u_id);
 		return -2;
 	}
@@ -3589,7 +3589,7 @@ int iommu_perf_get_counter(int m4u_id,
 	ret = mtk_switch_secure_debug_func(m4u_id, 1);
 	if (ret) {
 		spin_unlock_irqrestore(&data->reg_lock, flags);
-		pr_notice("%s, %d, failed to enable secure debug signal\n",
+		pr_debug("%s, %d, failed to enable secure debug signal\n",
 			  __func__, __LINE__);
 		return ret;
 	}
@@ -3618,7 +3618,7 @@ int iommu_perf_get_counter(int m4u_id,
 	spin_unlock_irqrestore(&data->reg_lock, flags);
 	ret = mtk_switch_secure_debug_func(m4u_id, 0);
 	if (ret)
-		pr_notice("%s, %d, failed to disable secure debug signal\n",
+		pr_debug("%s, %d, failed to disable secure debug signal\n",
 			  __func__, __LINE__);
 
 	return 0;
@@ -3629,18 +3629,18 @@ void iommu_perf_print_counter(int m4u_id, int slave, const char *msg)
 	struct IOMMU_PERF_COUNT cnt;
 	int ret = 0;
 
-	pr_info(
+	pr_debug(
 		"==== performance count for %s iommu:%d, slave:%d======\n",
 		msg, m4u_id, slave);
 	ret = iommu_perf_get_counter(m4u_id, slave, &cnt);
 	if (!ret)
-		pr_info(
+		pr_debug(
 			">>> total trans=%u, main_miss=%u, pfh_miss=%u, pfh_cnt=%u, rs_perf_cnt=%u\n",
 			cnt.transaction_cnt, cnt.main_tlb_miss_cnt,
 			cnt.pfh_tlb_miss_cnt, cnt.pfh_cnt,
 			cnt.rs_perf_cnt);
 	else
-		pr_info("failed to get performance data, ret:%d\n", ret);
+		pr_debug("failed to get performance data, ret:%d\n", ret);
 }
 
 int iommu_perf_monitor_start(int m4u_id)
@@ -3650,7 +3650,7 @@ int iommu_perf_monitor_start(int m4u_id)
 	unsigned long flags;
 
 	if (!data) {
-		pr_notice("%s, %d, invalid m4u:%d\n",
+		pr_debug("%s, %d, invalid m4u:%d\n",
 			  __func__, __LINE__, m4u_id);
 		return -1;
 	}
@@ -3659,14 +3659,14 @@ int iommu_perf_monitor_start(int m4u_id)
 #ifdef IOMMU_POWER_CLK_SUPPORT
 	if (!data->poweron) {
 		spin_unlock_irqrestore(&data->reg_lock, flags);
-		pr_notice("%s: iommu:%d power off\n",
+		pr_debug("%s: iommu:%d power off\n",
 			  __func__, m4u_id);
 		return 0;
 	}
 #endif
 	base = data->base;
 
-	pr_info("====%s: %d======\n", __func__, m4u_id);
+	pr_debug("====%s: %d======\n", __func__, m4u_id);
 	/* clear GMC performance counter */
 	iommu_set_field_by_mask(base, REG_MMU_CTRL_REG,
 				F_MMU_CTRL_MONITOR_CLR(1),
@@ -3692,7 +3692,7 @@ int iommu_perf_monitor_stop(int m4u_id)
 	unsigned long flags;
 
 	if (!data) {
-		pr_notice("%s, %d, invalid m4u:%d\n",
+		pr_debug("%s, %d, invalid m4u:%d\n",
 			  __func__, __LINE__, m4u_id);
 		return -1;
 	}
@@ -3701,14 +3701,14 @@ int iommu_perf_monitor_stop(int m4u_id)
 #ifdef IOMMU_POWER_CLK_SUPPORT
 	if (!data->poweron) {
 		spin_unlock_irqrestore(&data->reg_lock, flags);
-		pr_notice("%s: iommu:%d power off\n",
+		pr_debug("%s: iommu:%d power off\n",
 			  __func__, m4u_id);
 		return 0;
 	}
 #endif
 	base = data->base;
 
-	pr_info("====%s: %d======\n", __func__, m4u_id);
+	pr_debug("====%s: %d======\n", __func__, m4u_id);
 	/* disable GMC performance monitor */
 	iommu_set_field_by_mask(base, REG_MMU_CTRL_REG,
 				F_MMU_CTRL_MONITOR_EN(1),
@@ -3739,7 +3739,7 @@ static int mau_reg_backup(const struct mtk_iommu_data *data)
 #endif
 
 	if (!p_reg_backup[data->m4uid]) {
-		pr_notice("%s, %d, iommu:%d no memory for backup\n",
+		pr_debug("%s, %d, iommu:%d no memory for backup\n",
 			  __func__, __LINE__, data->m4uid);
 		return -1;
 	}
@@ -3793,7 +3793,7 @@ static int mau_reg_restore(const struct mtk_iommu_data *data)
 #endif
 
 	if (!p_reg_backup[data->m4uid]) {
-		pr_notice("%s, %d, iommu:%d no memory for restore\n",
+		pr_debug("%s, %d, iommu:%d no memory for restore\n",
 			  __func__, __LINE__, data->m4uid);
 		return -1;
 	}
@@ -3844,14 +3844,14 @@ static int mtk_iommu_reg_backup(struct mtk_iommu_data *data)
 		return 0;
 #endif
 	if (!base || IS_ERR((void *)(unsigned long)base)) {
-		pr_notice("%s, %d, invalid base addr\n",
+		pr_debug("%s, %d, invalid base addr\n",
 			  __func__, __LINE__);
 		return -1;
 	}
 
 	ret = mtk_switch_secure_debug_func(data->m4uid, 1);
 	if (ret)
-		pr_notice("%s, %d, m4u:%u, failed to enable secure debug signal\n",
+		pr_debug("%s, %d, m4u:%u, failed to enable secure debug signal\n",
 			  __func__, __LINE__, data->m4uid);
 
 	reg->standard_axi_mode = readl_relaxed(base +
@@ -3883,7 +3883,7 @@ static int mtk_iommu_reg_backup(struct mtk_iommu_data *data)
 
 	ret = mtk_switch_secure_debug_func(data->m4uid, 0);
 	if (ret)
-		pr_notice("%s, %d, m4u:%u, failed to disable secure debug signal\n",
+		pr_debug("%s, %d, m4u:%u, failed to disable secure debug signal\n",
 			  __func__, __LINE__, data->m4uid);
 
 	return 0;
@@ -3900,7 +3900,7 @@ static int mtk_iommu_reg_restore(struct mtk_iommu_data *data)
 		return 0;
 #endif
 	if (!base || IS_ERR(base)) {
-		pr_notice("%s, %d, invalid base addr\n",
+		pr_debug("%s, %d, invalid base addr\n",
 			  __func__, __LINE__);
 		return -1;
 	}
@@ -3915,7 +3915,7 @@ static int mtk_iommu_reg_restore(struct mtk_iommu_data *data)
 
 	ret = mtk_switch_secure_debug_func(data->m4uid, 1);
 	if (ret)
-		pr_notice("%s, %d, m4u:%u, failed to enable secure debug signal\n",
+		pr_debug("%s, %d, m4u:%u, failed to enable secure debug signal\n",
 			  __func__, __LINE__, data->m4uid);
 
 	mau_reg_restore(data);
@@ -3940,7 +3940,7 @@ static int mtk_iommu_reg_restore(struct mtk_iommu_data *data)
 
 	ret = mtk_switch_secure_debug_func(data->m4uid, 0);
 	if (ret)
-		pr_notice("%s, %d, m4u:%u, failed to disable secure debug signal\n",
+		pr_debug("%s, %d, m4u:%u, failed to disable secure debug signal\n",
 			  __func__, __LINE__, data->m4uid);
 
 	return 0;
@@ -3959,19 +3959,19 @@ static void mtk_iommu_pg_after_on(enum subsys_id sys)
 
 		data = mtk_iommu_get_m4u_data(i);
 		if (!data) {
-			pr_notice("%s, %d iommu %d is null\n",
+			pr_debug("%s, %d iommu %d is null\n",
 				  __func__, __LINE__, i);
 			continue;
 		}
 		if (!data->m4u_clks->nr_powers) {
-			pr_notice("%s, iommu%u power control is not support\n",
+			pr_debug("%s, iommu%u power control is not support\n",
 				  __func__, data->m4uid);
 			continue;
 		}
 
 		spin_lock_irqsave(&data->reg_lock, flags);
 		if (data->poweron) {
-			pr_notice("%s, iommu%u already power on, skip restore\n",
+			pr_debug("%s, iommu%u already power on, skip restore\n",
 				  __func__, data->m4uid);
 			spin_unlock_irqrestore(&data->reg_lock, flags);
 			continue;
@@ -3980,14 +3980,14 @@ static void mtk_iommu_pg_after_on(enum subsys_id sys)
 
 		ret = mtk_iommu_reg_restore(data);
 		if (ret) {
-			pr_notice("%s, %d, iommu:%d, sys:%d restore failed %d\n",
+			pr_debug("%s, %d, iommu:%d, sys:%d restore failed %d\n",
 				  __func__, __LINE__, data->m4uid, sys, ret);
 			data->poweron = false;
 			spin_unlock_irqrestore(&data->reg_lock, flags);
 			continue;
 		}
 		spin_unlock_irqrestore(&data->reg_lock, flags);
-		/*pr_notice("%s,%d,iommu:%d,sys:%d restore after on\n",
+		/*pr_debug("%s,%d,iommu:%d,sys:%d restore after on\n",
 		 *	  __func__, __LINE__, data->m4uid, sys);
 		 */
 	}
@@ -4006,14 +4006,14 @@ static void mtk_iommu_pg_before_off(enum subsys_id sys)
 
 		data = mtk_iommu_get_m4u_data(i);
 		if (!data) {
-			pr_notice("%s, %d iommu %d is null\n",
+			pr_debug("%s, %d iommu %d is null\n",
 				  __func__, __LINE__, i);
 			continue;
 		}
 
 		spin_lock_irqsave(&data->reg_lock, flags);
 		if (!data->poweron) {
-			pr_notice("%s, iommu%u already power off, skip backup\n",
+			pr_debug("%s, iommu%u already power off, skip backup\n",
 				  __func__, data->m4uid);
 			spin_unlock_irqrestore(&data->reg_lock, flags);
 			continue;
@@ -4029,13 +4029,13 @@ static void mtk_iommu_pg_before_off(enum subsys_id sys)
 				}
 			}
 			if (end)
-				pr_notice("%s pg waiting isr:%lluns, ref:%d\n",
+				pr_debug("%s pg waiting isr:%lluns, ref:%d\n",
 					  __func__, end - start, data->isr_ref);
 			spin_lock_irqsave(&data->reg_lock, flags);
 		}
 		ret = mtk_iommu_reg_backup(data);
 		if (ret) {
-			pr_notice("%s, %d, iommu:%d, sys:%d backup failed %d\n",
+			pr_debug("%s, %d, iommu:%d, sys:%d backup failed %d\n",
 				  __func__, __LINE__, data->m4uid, sys, ret);
 			data->poweron = false;
 			spin_unlock_irqrestore(&data->reg_lock, flags);
@@ -4043,7 +4043,7 @@ static void mtk_iommu_pg_before_off(enum subsys_id sys)
 		}
 		data->poweron = false;
 		spin_unlock_irqrestore(&data->reg_lock, flags);
-		/*pr_notice("%s,%d,iommu:%d,sys:%d backup before off\n",
+		/*pr_debug("%s,%d,iommu:%d,sys:%d backup before off\n",
 		 *	  __func__, __LINE__, data->m4uid, sys);
 		 */
 	}
@@ -4060,7 +4060,7 @@ static void mtk_iommu_pg_debug_dump(enum subsys_id sys)
 
 		data = mtk_iommu_get_m4u_data(i);
 		if (!data) {
-			pr_notice("%s, %d iommu:%d is null\n",
+			pr_debug("%s, %d iommu:%d is null\n",
 				  __func__, __LINE__, i);
 			continue;
 		}
@@ -4087,14 +4087,14 @@ static int mtk_iommu_hw_init(struct mtk_iommu_data *data)
 #endif
 
 	if (!data->base || IS_ERR(data->base)) {
-		pr_notice("%s, %d, invalid base addr\n",
+		pr_debug("%s, %d, invalid base addr\n",
 			  __func__, __LINE__);
 		return -1;
 	}
 
 #ifdef IOMMU_POWER_CLK_SUPPORT
 	if (!data->poweron) {
-		pr_notice("%s, iommu%u power off\n",
+		pr_debug("%s, iommu%u power off\n",
 			  __func__, data->m4uid);
 		return 0;
 	}
@@ -4157,7 +4157,7 @@ static int mtk_iommu_hw_init(struct mtk_iommu_data *data)
 	node = of_find_compatible_node(NULL, NULL,
 					 iommu_secure_compatible[m4u_id]);
 	if (!node) {
-		pr_notice(
+		pr_debug(
 			  "%s, WARN: didn't find secure node of iommu:%d\n",
 			  __func__, m4u_id);
 		return 0;
@@ -4166,13 +4166,13 @@ static int mtk_iommu_hw_init(struct mtk_iommu_data *data)
 	data->base_sec = of_iomap(node, 0);
 	mtk_irq_sec[m4u_id] = irq_of_parse_and_map(node, 0);
 
-	pr_notice("%s, secure bank, of_iomap: 0x%lx, irq_num: %d, m4u_id:%d\n",
+	pr_debug("%s, secure bank, of_iomap: 0x%lx, irq_num: %d, m4u_id:%d\n",
 			__func__, data->base_sec,
 			mtk_irq_sec[m4u_id], m4u_id);
 
 	if (request_irq(mtk_irq_sec[m4u_id], MTK_M4U_isr_sec,
 			IRQF_TRIGGER_NONE, "secure_m4u", NULL)) {
-		pr_notice("request secure m4u%d IRQ line failed\n",
+		pr_debug("request secure m4u%d IRQ line failed\n",
 			  m4u_id);
 		return -ENODEV;
 	}
@@ -4183,7 +4183,7 @@ static int mtk_iommu_hw_init(struct mtk_iommu_data *data)
 		node = of_find_compatible_node(NULL, NULL,
 				 iommu_bank_compatible[m4u_id][i]);
 		if (!node) {
-			pr_notice(
+			pr_debug(
 				  "%s, WARN: didn't find bank node of iommu:%d\n",
 				  __func__, m4u_id);
 			continue;
@@ -4192,13 +4192,13 @@ static int mtk_iommu_hw_init(struct mtk_iommu_data *data)
 		data->base_bank[i] = of_iomap(node, 0);
 		mtk_irq_bank[m4u_id][i] = irq_of_parse_and_map(node, 0);
 
-		pr_notice("%s, bank:%d, of_iomap: 0x%lx, irq_num: %d, m4u_id:%d\n",
+		pr_debug("%s, bank:%d, of_iomap: 0x%lx, irq_num: %d, m4u_id:%d\n",
 				__func__, i + 1, (uintptr_t)data->base_bank[i],
 				mtk_irq_bank[m4u_id][i], m4u_id);
 
 		if (request_irq(mtk_irq_bank[m4u_id][i], mtk_iommu_isr,
 				IRQF_TRIGGER_NONE, "bank_m4u", NULL)) {
-			pr_notice("request bank%d m4u%d IRQ line failed\n",
+			pr_debug("request bank%d m4u%d IRQ line failed\n",
 				  i + 1, m4u_id);
 			continue;
 		}
@@ -4211,7 +4211,7 @@ static int mtk_iommu_hw_init(struct mtk_iommu_data *data)
 			   data->base_bank[i] + REG_MMU_TFRP_PADDR);
 	}
 #endif
-	pr_notice("%s, done\n", __func__);
+	pr_debug("%s, done\n", __func__);
 
 	return 0;
 }
@@ -4233,10 +4233,10 @@ static s32 mtk_iommu_clks_get(struct mtk_iommu_data *data)
 	int i, ret = 0;
 
 	if (!data || !data->dev) {
-		pr_info("iommu No such device or address\n");
+		pr_debug("iommu No such device or address\n");
 		return -ENXIO;
 	} else if (data->m4u_clks) {
-		pr_notice("%s, %d, clk reinit\n", __func__, __LINE__);
+		pr_debug("%s, %d, clk reinit\n", __func__, __LINE__);
 		return 0;
 	}
 
@@ -4248,7 +4248,7 @@ static s32 mtk_iommu_clks_get(struct mtk_iommu_data *data)
 
 	nr = of_property_count_strings(dev->of_node, clk_names);
 	if (nr > IOMMU_CLK_ID_COUNT * 2) {
-		pr_info("iommu clk count %d exceed the max number of %d\n",
+		pr_debug("iommu clk count %d exceed the max number of %d\n",
 			nr, IOMMU_CLK_ID_COUNT);
 		ret = -ENXIO;
 		goto free_clks;
@@ -4286,7 +4286,7 @@ static s32 mtk_iommu_clks_get(struct mtk_iommu_data *data)
 	    !apusys_power_check()) {
 		m4u_clks->nr_powers = 0;
 		m4u_clks->nr_clks = 0;
-		pr_notice("%s, %d, apu power not support, power:%d, clk:%d\n",
+		pr_debug("%s, %d, apu power not support, power:%d, clk:%d\n",
 			  __func__, __LINE__,
 			  m4u_clks->nr_powers, m4u_clks->nr_clks);
 	}
@@ -4332,7 +4332,7 @@ static s32 mtk_iommu_larbs_get(struct mtk_iommu_data *data)
 	struct component_match  *match = NULL;
 
 	if (!data || !data->dev) {
-		pr_info("iommu No such device or address\n");
+		pr_debug("iommu No such device or address\n");
 		return -ENXIO;
 	}
 
@@ -4340,7 +4340,7 @@ static s32 mtk_iommu_larbs_get(struct mtk_iommu_data *data)
 	larb_nr = of_count_phandle_with_args(dev->of_node,
 					 "mediatek,larbs", NULL);
 	if (larb_nr < 0) {
-		pr_notice("%s, %d, no larbs of iommu%d, larbnr=%d\n",
+		pr_debug("%s, %d, no larbs of iommu%d, larbnr=%d\n",
 			  __func__, __LINE__, data->m4uid, larb_nr);
 		data->smi_imu.larb_nr = 0;
 		return 0;
@@ -4363,7 +4363,7 @@ static s32 mtk_iommu_larbs_get(struct mtk_iommu_data *data)
 		if (ret) {
 			/* The id is consecutive on legacy chip */
 			id = i;
-			pr_notice("%s, cannot find larbid, id=%d\n",
+			pr_debug("%s, cannot find larbid, id=%d\n",
 				  __func__, id);
 		}
 
@@ -4376,7 +4376,7 @@ static s32 mtk_iommu_larbs_get(struct mtk_iommu_data *data)
 
 		plarbdev = of_find_device_by_node(larbnode);
 		if (!plarbdev) {
-			pr_notice("%s, invalid plarbdev, probe defer\n",
+			pr_debug("%s, invalid plarbdev, probe defer\n",
 				  __func__);
 			return -EPROBE_DEFER;
 		}
@@ -4397,7 +4397,7 @@ static s32 mtk_iommu_larbs_get(struct mtk_iommu_data *data)
 
 
 	if (ret)
-		pr_notice("%s, err add match, ret=%d, probe defer\n",
+		pr_debug("%s, err add match, ret=%d, probe defer\n",
 			  __func__, ret);
 
 	return ret;
@@ -4415,17 +4415,17 @@ static int mtk_iommu_probe(struct platform_device *pdev)
 	int ret = 0;
 	unsigned int id = 0, slave = 0, mau = 0;
 
-	pr_notice("%s+, %d\n",
+	pr_debug("%s+, %d\n",
 		  __func__, __LINE__);
 
 	ret = of_property_read_u32(dev->of_node, "cell-index", &id);
 	if (ret)
-		pr_notice("%s, failed to get cell index, ret=%d\n",
+		pr_debug("%s, failed to get cell index, ret=%d\n",
 			  __func__, ret);
 
 	if (total_iommu_cnt >= MTK_IOMMU_M4U_COUNT ||
 	    id >= MTK_IOMMU_M4U_COUNT) {
-		pr_notice("%s invalid iommu device: %d\n",
+		pr_debug("%s invalid iommu device: %d\n",
 			  __func__, id);
 		return 0;
 	}
@@ -4470,25 +4470,25 @@ static int mtk_iommu_probe(struct platform_device *pdev)
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res) {
-		pr_info("%s, get resource is NULL\n", __func__);
+		pr_debug("%s, get resource is NULL\n", __func__);
 		return -EINVAL;
 	}
 	data->base = devm_ioremap_resource(dev, res);
 	if (IS_ERR(data->base)) {
-		pr_notice("mtk_iommu base is null\n");
+		pr_debug("mtk_iommu base is null\n");
 		return PTR_ERR(data->base);
 	}
 	ioaddr = res->start;
 
 	data->irq = platform_get_irq(pdev, 0);
 	if (data->irq < 0) {
-		pr_notice("mtk_iommu irq error\n");
+		pr_debug("mtk_iommu irq error\n");
 		return data->irq;
 	}
 #ifdef CONFIG_MTK_SMI_EXT
 	ret = mtk_iommu_larbs_get(data);
 	if (ret) {
-		pr_notice("%s, failed to get larbs\n", __func__);
+		pr_debug("%s, failed to get larbs\n", __func__);
 		return ret;
 	}
 #endif
@@ -4496,13 +4496,13 @@ static int mtk_iommu_probe(struct platform_device *pdev)
 
 	ret = mtk_iommu_clks_get(data);
 	if (ret) {
-		pr_notice("%s, failed to get clk\n", __func__);
+		pr_debug("%s, failed to get clk\n", __func__);
 		return ret;
 	}
 
 	ret = mtk_iommu_power_switch(data, true, "iommu_probe");
 	if (ret) {
-		pr_notice("%s, failed to power switch on\n", __func__);
+		pr_debug("%s, failed to power switch on\n", __func__);
 		return ret;
 	}
 #ifdef IOMMU_POWER_CLK_SUPPORT
@@ -4510,20 +4510,20 @@ static int mtk_iommu_probe(struct platform_device *pdev)
 	if (data->m4u_clks->nr_powers)
 		data->poweron = true;
 	else
-		pr_notice("%s, iommu%u power control is not support\n",
+		pr_debug("%s, iommu%u power control is not support\n",
 			  __func__, data->m4uid);
 #endif
 
 	ret = mtk_iommu_hw_init(data);
 	if (ret) {
-		pr_notice("%s, failed to hw init\n", __func__);
+		pr_debug("%s, failed to hw init\n", __func__);
 		return ret;
 	}
 
 	ret = iommu_device_sysfs_add(&data->iommu, dev, NULL,
 				 "mtk-iommu.%pa", &ioaddr);
 	if (ret) {
-		pr_notice("%s, failed to sysfs add\n", __func__);
+		pr_debug("%s, failed to sysfs add\n", __func__);
 		return ret;
 	}
 
@@ -4532,7 +4532,7 @@ static int mtk_iommu_probe(struct platform_device *pdev)
 
 	ret = iommu_device_register(&data->iommu);
 	if (ret) {
-		pr_notice("%s, failed to device register\n", __func__);
+		pr_debug("%s, failed to device register\n", __func__);
 		return ret;
 	}
 
@@ -4565,10 +4565,10 @@ static int mtk_iommu_probe(struct platform_device *pdev)
 
 	ret = mtk_iommu_power_switch(data, false, "iommu_probe");
 	if (ret)
-		pr_notice("%s, failed to power switch off\n", __func__);
+		pr_debug("%s, failed to power switch off\n", __func__);
 #endif
 
-	pr_notice("%s-, %d,total=%d,m4u%d,base=0x%lx,protect=0x%pa\n",
+	pr_debug("%s-, %d,total=%d,m4u%d,base=0x%lx,protect=0x%pa\n",
 		  __func__, __LINE__, total_iommu_cnt, data->m4uid,
 		  (uintptr_t)data->base, &data->protect_base);
 	return ret;
@@ -4579,11 +4579,11 @@ static int mtk_iommu_remove(struct platform_device *pdev)
 	struct mtk_iommu_data *data = platform_get_drvdata(pdev);
 
 	if (!data) {
-		pr_notice("%s, data is NULL\n", __func__);
+		pr_debug("%s, data is NULL\n", __func__);
 		return 0;
 	}
 
-	pr_notice("%s, %d, iommu%d\n",
+	pr_debug("%s, %d, iommu%d\n",
 		  __func__, __LINE__, data->m4uid);
 
 	iommu_device_sysfs_remove(&data->iommu);
@@ -4602,7 +4602,7 @@ static int mtk_iommu_remove(struct platform_device *pdev)
 
 static void mtk_iommu_shutdown(struct platform_device *pdev)
 {
-	pr_notice("%s, %d\n",
+	pr_debug("%s, %d\n",
 		  __func__, __LINE__);
 	mtk_iommu_remove(pdev);
 }
@@ -4619,27 +4619,27 @@ static int mtk_iommu_suspend(struct device *dev)
 	 * for IOMMU of APU, power off is controlled by APU
 	 */
 	if (!data) {
-		pr_notice("%s, data is NULL\n", __func__);
+		pr_debug("%s, data is NULL\n", __func__);
 		return 0;
 	}
 
 	spin_lock_irqsave(&data->reg_lock, flags);
 	ret = mtk_iommu_reg_backup(data);
 	if (ret)
-		pr_notice("%s, %d, iommu:%d, backup failed %d\n",
+		pr_debug("%s, %d, iommu:%d, backup failed %d\n",
 			  __func__, __LINE__, data->m4uid, ret);
 	spin_unlock_irqrestore(&data->reg_lock, flags);
 
 	ret = mtk_iommu_power_switch(data, false, "iommu_suspend");
 	if (ret)
-		pr_notice("%s, failed to power switch off\n", __func__);
+		pr_debug("%s, failed to power switch off\n", __func__);
 #else
 	if (!data) {
-		pr_notice("%s, data is NULL\n", __func__);
+		pr_debug("%s, data is NULL\n", __func__);
 		return 0;
 	}
 	if (data->poweron)
-		pr_notice("%s, iommu:%d user did not power off\n",
+		pr_debug("%s, iommu:%d user did not power off\n",
 			  __func__, data->m4uid);
 #endif
 	return ret;
@@ -4657,18 +4657,18 @@ static int mtk_iommu_resume(struct device *dev)
 	 * for IOMMU of APU, power on is controlled by APU
 	 */
 	if (!data) {
-		pr_notice("%s, data is NULL\n", __func__);
+		pr_debug("%s, data is NULL\n", __func__);
 		return 0;
 	}
 
 	ret = mtk_iommu_power_switch(data, true, "iommu_resume");
 	if (ret)
-		pr_notice("%s, failed to power switch on\n", __func__);
+		pr_debug("%s, failed to power switch on\n", __func__);
 
 	spin_lock_irqsave(&data->reg_lock, flags);
 	ret = mtk_iommu_reg_restore(data);
 	if (ret)
-		pr_notice("%s, %d, iommu:%d, restore failed %d\n",
+		pr_debug("%s, %d, iommu:%d, restore failed %d\n",
 			  __func__, __LINE__, data->m4uid, ret);
 	spin_unlock_irqrestore(&data->reg_lock, flags);
 #endif
@@ -4711,20 +4711,20 @@ static int mtk_iommu_init_fn(struct device_node *np)
 	struct platform_device *pdev;
 
 	if (!np)
-		pr_notice("%s, %d, error np\n", __func__, __LINE__);
+		pr_debug("%s, %d, error np\n", __func__, __LINE__);
 
 	dma_debug_init(PREALLOC_DMA_DEBUG_ENTRIES);
 	if (!init_done) {
 		pdev = of_platform_device_create(np, NULL,
 						 platform_bus_type.dev_root);
 		if (!pdev) {
-			pr_notice("%s: Failed to create device\n", __func__);
+			pr_debug("%s: Failed to create device\n", __func__);
 			return -ENOMEM;
 		}
 
 		ret = platform_driver_register(&mtk_iommu_driver);
 		if (ret) {
-			pr_notice("%s: Failed to register driver\n", __func__);
+			pr_debug("%s: Failed to register driver\n", __func__);
 			return ret;
 		}
 		init_done = true;
@@ -4744,7 +4744,7 @@ static int mtk_iommu_init_fn(struct device_node *np)
 	dma_debug_init(PREALLOC_DMA_DEBUG_ENTRIES);
 	ret = platform_driver_register(&mtk_iommu_driver);
 	if (ret) {
-		pr_notice("%s: Failed to register driver\n", __func__);
+		pr_debug("%s: Failed to register driver\n", __func__);
 		return ret;
 	}
 #ifdef IOMMU_DEBUG_ENABLED
@@ -4763,7 +4763,7 @@ static int __init mtk_iommu_init(void)
 
 	ret = platform_driver_register(&mtk_iommu_driver);
 	if (ret != 0)
-		pr_notice("Failed to register MTK IOMMU driver\n");
+		pr_debug("Failed to register MTK IOMMU driver\n");
 	else
 		mtk_iommu_debug_init();
 
