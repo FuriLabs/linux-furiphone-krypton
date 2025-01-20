@@ -15,7 +15,7 @@
 #else
 #define GED_LOGD(...)
 #endif
-#define GED_LOGI(...) pr_info(GED_TAG"[INFO]" __VA_ARGS__)
+#define GED_LOGI(...) pr_debug(GED_TAG"[INFO]" __VA_ARGS__)
 #define GED_LOGE(...) pr_err(GED_TAG"[ERROR]" __VA_ARGS__)
 #define GED_CONTAINER_OF(ptr, type, member) \
 	((type *)(((char *)ptr) - offsetof(type, member)))
