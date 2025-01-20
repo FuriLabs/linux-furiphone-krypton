@@ -39,7 +39,9 @@
 #include "ufshcd-pltfrm.h"
 #include "ufs_quirks.h"
 #include "ufs-mediatek.h"
+#ifdef CONFIG_TRACING
 #include "ufs-mediatek-dbg.h"
+#endif
 #include "ufs-mtk-block.h"
 #include "unipro.h"
 
@@ -1073,8 +1075,10 @@ int ufs_mtk_perf_setup_req(struct ufs_mtk_host *host, bool perf)
 	clk_disable_unprepare(host->crypto_clk_mux);
 
 out:
+#ifdef CONFIG_TRACING
 	ufs_mtk_dbg_add_trace(dev_name(host->hba->dev), "perf_mode", perf,
 			0, (u32) err, 0, 0, 0, 0, 0);
+#endif
 
 	return err;
 }
@@ -1357,7 +1361,9 @@ static int ufs_mtk_init(struct ufs_hba *hba)
 
 	ufs_mtk_biolog_init(host->qos_allowed);
 
+#ifdef CONFIG_TRACING
 	ufsdbg_register(hba->dev);
+#endif
 
 	goto out;
 
@@ -1822,12 +1828,16 @@ static void ufs_mtk_abort_handler(struct ufs_hba *hba, int tag,
 		if (hba->lrb[tag].cmd)
 			cmd = hba->lrb[tag].cmd->cmnd[0];
 
+#ifdef CONFIG_TRACING
 		cmd_hist_disable();
 		ufs_mediatek_dbg_dump();
+#endif
 		aee_kernel_warning_api(file, line, DB_OPT_FS_IO_LOG,
 			"[UFS] Command Timeout", "Command 0x%x timeout, %s:%d",
 			cmd, file, line);
+#ifdef CONFIG_TRACING
 		cmd_hist_enable();
+#endif
 	}
 #endif
 }

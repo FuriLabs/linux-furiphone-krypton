@@ -29,7 +29,7 @@ do { \
 	if (evt) \
 		seq_printf(evt, fmt, ##args); \
 	if (!buff && !evt) { \
-		pr_info(fmt, ##args); \
+		pr_debug(fmt, ##args); \
 	} \
 } while (0)
 
@@ -45,7 +45,7 @@ do { \
 	if (evt) \
 		seq_printf(evt, fmt, ##args); \
 	if (!buff && !evt) { \
-		dev_info(dev, fmt, ##args); \
+		dev_dbg(dev, fmt, ##args); \
 	} \
 } while (0)
 
