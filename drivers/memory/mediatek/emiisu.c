@@ -64,7 +64,7 @@ static ssize_t emiisu_ctrl_store
 		return count;
 
 	if ((strlen(buf) + 1) > MTK_EMI_MAX_CMD_LEN) {
-		pr_info("%s: store command overflow\n", __func__);
+		pr_debug("%s: store command overflow\n", __func__);
 		return count;
 	}
 
@@ -175,7 +175,7 @@ static int emiisu_probe(struct platform_device *pdev)
 	unsigned long long addr_temp;
 	int ret;
 
-	pr_info("%s: module probe.\n", __func__);
+	pr_debug("%s: module probe.\n", __func__);
 	emiisu_pdev = pdev;
 	emiisu_dev_ptr = devm_kmalloc(&pdev->dev,
 		sizeof(struct emiisu_dev_t), GFP_KERNEL);
@@ -185,13 +185,13 @@ static int emiisu_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(emiisu_node,
 		"buf_size", &(emiisu_dev_ptr->buf_size));
 	if (ret) {
-		pr_info("%s: get buf_size fail\n", __func__);
+		pr_debug("%s: get buf_size fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u64(emiisu_node, "buf_addr", &addr_temp);
 	if (ret) {
-		pr_info("%s: get buf_addr fail\n", __func__);
+		pr_debug("%s: get buf_addr fail\n", __func__);
 		return -EINVAL;
 	}
 	if (addr_temp)
@@ -202,7 +202,7 @@ static int emiisu_probe(struct platform_device *pdev)
 
 	ret = of_property_read_u64(emiisu_node, "ver_addr", &addr_temp);
 	if (ret) {
-		pr_info("%s: get ver_addr fail\n", __func__);
+		pr_debug("%s: get ver_addr fail\n", __func__);
 		return -EINVAL;
 	}
 	if (addr_temp)
@@ -212,7 +212,7 @@ static int emiisu_probe(struct platform_device *pdev)
 
 	ret = of_property_read_u64(emiisu_node, "con_addr", &addr_temp);
 	if (ret) {
-		pr_info("%s: get con_addr fail\n", __func__);
+		pr_debug("%s: get con_addr fail\n", __func__);
 		return -EINVAL;
 	}
 	if (addr_temp)
@@ -223,11 +223,11 @@ static int emiisu_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(emiisu_node,
 		"ctrl_intf", &(emiisu_dev_ptr->ctrl_intf));
 	if (ret) {
-		pr_info("%s: get ctrl_intf fail\n", __func__);
+		pr_debug("%s: get ctrl_intf fail\n", __func__);
 		return -EINVAL;
 	}
 
-	pr_info("%s: %s(%x),%s(%lx),%s(%lx),%s(%lx),%s(%d)\n", __func__,
+	pr_debug("%s: %s(%x),%s(%lx),%s(%lx),%s(%lx),%s(%d)\n", __func__,
 		"buf_size", emiisu_dev_ptr->buf_size,
 		"buf_addr", (unsigned long)(emiisu_dev_ptr->buf_addr),
 		"ver_addr", (unsigned long)(emiisu_dev_ptr->ver_addr),
@@ -236,14 +236,14 @@ static int emiisu_probe(struct platform_device *pdev)
 
 	emiisu_dev_ptr->dump_dir = debugfs_create_dir("emi_mbw", NULL);
 	if (!emiisu_dev_ptr->dump_dir) {
-		pr_info("%s: fail to create dump_dir\n", __func__);
+		pr_debug("%s: fail to create dump_dir\n", __func__);
 		return -EINVAL;
 	}
 
 	emiisu_dev_ptr->dump_buf = debugfs_create_file("dump_buf", 0444,
 		emiisu_dev_ptr->dump_dir, NULL, &dump_buf_fops);
 	if (!emiisu_dev_ptr->dump_buf) {
-		pr_info("%s: fail to create dump_buf\n", __func__);
+		pr_debug("%s: fail to create dump_buf\n", __func__);
 		return -EINVAL;
 	}
 
@@ -252,7 +252,7 @@ static int emiisu_probe(struct platform_device *pdev)
 	ret = driver_create_file(&emiisu_drv.driver,
 		&driver_attr_emiisu_ctrl);
 	if (ret)
-		pr_info("%s: fail to create emiisu_ctrl\n", __func__);
+		pr_debug("%s: fail to create emiisu_ctrl\n", __func__);
 
 	return ret;
 }
@@ -263,7 +263,7 @@ static int __init emiisu_drv_init(void)
 
 	ret = platform_driver_register(&emiisu_drv);
 	if (ret) {
-		pr_info("%s: init fail, ret 0x%x\n", __func__, ret);
+		pr_debug("%s: init fail, ret 0x%x\n", __func__, ret);
 		return ret;
 	}
 

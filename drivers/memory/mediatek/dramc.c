@@ -184,7 +184,7 @@ static int dramc_probe(struct platform_device *pdev)
 	unsigned int i, size;
 	int ret;
 
-	pr_info("%s: module probe.\n", __func__);
+	pr_debug("%s: module probe.\n", __func__);
 	dramc_dev_ptr = devm_kmalloc(&pdev->dev,
 		sizeof(struct dramc_dev_t), GFP_KERNEL);
 
@@ -235,7 +235,7 @@ static int dramc_probe(struct platform_device *pdev)
 
 	ret = of_property_read_u32(dramc_node, "mr4_version", &mr4_version);
 	if (ret)
-		pr_info("%s: not support mr4\n", __func__);
+		pr_debug("%s: not support mr4\n", __func__);
 	else if (mr4_version == 1) {
 		dramc_dev_ptr->mr4_dev_ptr = devm_kmalloc(&pdev->dev,
 				sizeof(struct mr4_dev_t), GFP_KERNEL);
@@ -250,7 +250,7 @@ static int dramc_probe(struct platform_device *pdev)
 	} else
 		dramc_dev_ptr->mr4_dev_ptr = NULL;
 
-	pr_info("%s: %s(%d),%s(%d),%s(%d),%s(%d),%s(%d),%s(%d),%s(%s)\n",
+	pr_debug("%s: %s(%d),%s(%d),%s(%d),%s(%d),%s(%d),%s(%d),%s(%s)\n",
 		__func__,
 		"dram_type", dramc_dev_ptr->dram_type,
 		"support_ch_cnt", dramc_dev_ptr->support_ch_cnt,
@@ -283,7 +283,7 @@ static int dramc_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 	for (i = 0; i < dramc_dev_ptr->mr_cnt; i++)
-		pr_info("%s: mr%d(%x)\n", __func__,
+		pr_debug("%s: mr%d(%x)\n", __func__,
 			dramc_dev_ptr->mr_info_ptr[i].mr_index,
 			dramc_dev_ptr->mr_info_ptr[i].mr_value);
 
@@ -370,12 +370,12 @@ static int dramc_probe(struct platform_device *pdev)
 		pr_err("%s: get fmeter_version fail\n", __func__);
 		return -EINVAL;
 	}
-	pr_info("%s: fmeter_version(%d)\n", __func__, fmeter_version);
+	pr_debug("%s: fmeter_version(%d)\n", __func__, fmeter_version);
 
 	dramc_dev_ptr->fmeter_dev_ptr = devm_kmalloc(&pdev->dev,
 		sizeof(struct fmeter_dev_t), GFP_KERNEL);
 	if (!(dramc_dev_ptr->fmeter_dev_ptr)) {
-		pr_info("%s: memory  alloc fail\n", __func__);
+		pr_debug("%s: memory  alloc fail\n", __func__);
 		return -ENOMEM;
 	}
 	switch (fmeter_version) {
@@ -401,7 +401,7 @@ static int dramc_probe(struct platform_device *pdev)
 	ret = driver_create_file(
 		pdev->dev.driver, &driver_attr_binning_test);
 	if (ret) {
-		pr_info("%s: fail to create binning_test sysfs\n", __func__);
+		pr_debug("%s: fail to create binning_test sysfs\n", __func__);
 		return ret;
 	}
 
@@ -431,10 +431,10 @@ static int dramc_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, dramc_dev_ptr);
 	dramc_pdev = pdev;
 
-	pr_info("%s: DRAM data type = %d\n", __func__,
+	pr_debug("%s: DRAM data type = %d\n", __func__,
 		mtk_dramc_get_ddr_type());
 
-	pr_info("%s: DRAM data rate = %d\n", __func__,
+	pr_debug("%s: DRAM data rate = %d\n", __func__,
 		mtk_dramc_get_data_rate());
 
 	return ret;

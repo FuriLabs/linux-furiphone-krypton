@@ -155,11 +155,11 @@ static ssize_t emimpu_ctrl_store
 	}
 
 	if ((strlen(buf) + 1) > MTK_EMI_MAX_CMD_LEN) {
-		pr_info("%s: store command overflow\n", __func__);
+		pr_debug("%s: store command overflow\n", __func__);
 		return count;
 	}
 
-	pr_info("%s: store: %s\n", __func__, buf);
+	pr_debug("%s: store: %s\n", __func__, buf);
 
 	command = kmalloc((size_t) MTK_EMI_MAX_CMD_LEN, GFP_KERNEL);
 	if (!command)
@@ -178,39 +178,39 @@ static ssize_t emimpu_ctrl_store
 		if (i < 2)
 			goto emimpu_ctrl_store_end;
 
-		pr_info("%s: %s %s\n", __func__, token[0], token[1]);
+		pr_debug("%s: %s %s\n", __func__, token[0], token[1]);
 
 		ret = kstrtoul(token[1], 10, &region);
 		if (ret != 0) {
-			pr_info("%s: fail to parse region\n", __func__);
+			pr_debug("%s: fail to parse region\n", __func__);
 			goto emimpu_ctrl_store_end;
 		}
 
 		if (region < emimpu_dev_ptr->region_cnt) {
 			emimpu_dev_ptr->show_region = (unsigned int) region;
-			pr_info("%s: show_region to %u\n",
+			pr_debug("%s: show_region to %u\n",
 				__func__, emimpu_dev_ptr->show_region);
 		}
 	} else if (!strncmp(buf, "SET", strlen("SET"))) {
 		if (i < 3)
 			goto emimpu_ctrl_store_end;
 
-		pr_info("%s: %s %s %s\n",
+		pr_debug("%s: %s %s %s\n",
 			__func__, token[0], token[1], token[2]);
 
 		ret = kstrtoul(token[1], 10, &dgroup);
 		if (ret != 0) {
-			pr_info("%s: fail to parse dgroup\n", __func__);
+			pr_debug("%s: fail to parse dgroup\n", __func__);
 			goto emimpu_ctrl_store_end;
 		}
 		ret = kstrtoul(token[2], 16, &apc);
 		if (ret != 0) {
-			pr_info("[MPU] fail to parse apc\n");
+			pr_debug("[MPU] fail to parse apc\n");
 			goto emimpu_ctrl_store_end;
 		}
 
 		if (dgroup < (emimpu_dev_ptr->domain_cnt / 8)) {
-			pr_info("%s: apc[%lu]: 0x%lx\n",
+			pr_debug("%s: apc[%lu]: 0x%lx\n",
 				__func__, dgroup, apc);
 
 			for (j = 0; j < 8; j++)
@@ -223,22 +223,22 @@ static ssize_t emimpu_ctrl_store
 		if (i < 4)
 			goto emimpu_ctrl_store_end;
 
-		pr_info("%s: %s %s %s %s\n",
+		pr_debug("%s: %s %s %s %s\n",
 			__func__, token[0], token[1], token[2], token[3]);
 
 		ret = kstrtoull(token[1], 16, &start);
 		if (ret != 0) {
-			pr_info("%s: fail to parse start\n", __func__);
+			pr_debug("%s: fail to parse start\n", __func__);
 			goto emimpu_ctrl_store_end;
 		}
 		ret = kstrtoull(token[2], 16, &end);
 		if (ret != 0) {
-			pr_info("%s: fail to parse end\n", __func__);
+			pr_debug("%s: fail to parse end\n", __func__);
 			goto emimpu_ctrl_store_end;
 		}
 		ret = kstrtoul(token[3], 10, &region);
 		if (ret != 0) {
-			pr_info("%s: fail to parse region\n", __func__);
+			pr_debug("%s: fail to parse region\n", __func__);
 			goto emimpu_ctrl_store_end;
 		}
 
@@ -252,11 +252,11 @@ static ssize_t emimpu_ctrl_store
 		if (i < 2)
 			goto emimpu_ctrl_store_end;
 
-		pr_info("%s: %s %s\n", __func__, token[0], token[1]);
+		pr_debug("%s: %s %s\n", __func__, token[0], token[1]);
 
 		ret = kstrtoul(token[1], 10, &region);
 		if (ret != 0) {
-			pr_info("%s: fail to parse region\n", __func__);
+			pr_debug("%s: fail to parse region\n", __func__);
 			goto emimpu_ctrl_store_end;
 		}
 
@@ -265,7 +265,7 @@ static ssize_t emimpu_ctrl_store
 			mtk_emimpu_clear_protection(rg_info);
 		}
 	} else
-		pr_info("%s: unknown store command\n", __func__);
+		pr_debug("%s: unknown store command\n", __func__);
 
 emimpu_ctrl_store_end:
 	kfree(backup_command);
@@ -311,7 +311,7 @@ static void emimpu_dump_msg(struct work_struct *work)
 		curr_dbg_cb = curr_dbg_cb->next_dbg_cb)
 		curr_dbg_cb->func();
 
-	pr_info("%s: call aee\n", __func__);
+	pr_debug("%s: call aee\n", __func__);
 	aee_kernel_exception("EMIMPU", emimpu_dev_ptr->violation_msg);
 	emimpu_dev_ptr->in_msg_dump = 0;
 }
@@ -393,7 +393,7 @@ static irqreturn_t emimpu_violation_irq(int irq, void *dev_id)
 		}
 	}
 
-	pr_info("%s: %s", __func__, aee_msg);
+	pr_debug("%s: %s", __func__, aee_msg);
 	if (mpu_violation) {
 		emimpu_dev_ptr->in_msg_dump = 1;
 		schedule_work(&emimpu_dump_msg_wq);
@@ -444,7 +444,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	int size;
 	int ret;
 
-	pr_info("%s: module probe.\n", __func__);
+	pr_debug("%s: module probe.\n", __func__);
 	emimpu_dev_ptr = devm_kmalloc(&pdev->dev,
 		sizeof(struct emimpu_dev_t), GFP_KERNEL);
 	if (!emimpu_dev_ptr)
@@ -461,53 +461,53 @@ static int emimpu_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(emimpu_node,
 		"region_cnt", &(emimpu_dev_ptr->region_cnt));
 	if (ret) {
-		pr_info("%s: get region_cnt fail\n", __func__);
+		pr_debug("%s: get region_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(emimpu_node,
 		"domain_cnt", &(emimpu_dev_ptr->domain_cnt));
 	if (ret) {
-		pr_info("%s: get domain_cnt fail\n", __func__);
+		pr_debug("%s: get domain_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(emimpu_node,
 		"addr_align", &(emimpu_dev_ptr->addr_align));
 	if (ret) {
-		pr_info("%s: get addr_align fail\n", __func__);
+		pr_debug("%s: get addr_align fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u64(emimpu_node,
 		"dram_start", &(emimpu_dev_ptr->dram_start));
 	if (ret) {
-		pr_info("%s: get dram_start fail\n", __func__);
+		pr_debug("%s: get dram_start fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u64(emimpu_node,
 		"dram_start", &(emimpu_dev_ptr->dram_start));
 	if (ret) {
-		pr_info("%s: get dram_start fail\n", __func__);
+		pr_debug("%s: get dram_start fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u64(emimpu_node,
 		"dram_end", &(emimpu_dev_ptr->dram_end));
 	if (ret) {
-		pr_info("%s: get dram_end fail\n", __func__);
+		pr_debug("%s: get dram_end fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(emimpu_node,
 		"ctrl_intf", &(emimpu_dev_ptr->ctrl_intf));
 	if (ret) {
-		pr_info("%s: get ctrl_intf fail\n", __func__);
+		pr_debug("%s: get ctrl_intf fail\n", __func__);
 		return -EINVAL;
 	}
 
-	pr_info("%s: %s(%d),%s(%d),%s(%d),%s(%llx),%s(%llx),%s(%d)\n",
+	pr_debug("%s: %s(%d),%s(%d),%s(%d),%s(%llx),%s(%llx),%s(%d)\n",
 		__func__,
 		"region_cnt", emimpu_dev_ptr->region_cnt,
 		"domain_cnt", emimpu_dev_ptr->domain_cnt,
@@ -520,7 +520,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	size = of_property_count_elems_of_size(emimpu_node,
 		"dump", sizeof(char));
 	if (size <= 0) {
-		pr_info("%s: get dump size fail\n", __func__);
+		pr_debug("%s: get dump size fail\n", __func__);
 		return -EINVAL;
 	}
 	dump_list = devm_kmalloc(&pdev->dev, size, GFP_KERNEL);
@@ -531,7 +531,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	ret = of_property_read_u32_array(emimpu_node, "dump",
 		dump_list, size);
 	if (ret) {
-		pr_info("%s: get dump fail\n", __func__);
+		pr_debug("%s: get dump fail\n", __func__);
 		return -EINVAL;
 	}
 	size *= sizeof(struct reg_info_t);
@@ -550,7 +550,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	size = of_property_count_elems_of_size(emimpu_node,
 		"clear", sizeof(char));
 	if (size <= 0) {
-		pr_info("%s: get clear fail\n", __func__);
+		pr_debug("%s: get clear fail\n", __func__);
 		return -EINVAL;
 	}
 	emimpu_dev_ptr->clear_reg = devm_kmalloc(&pdev->dev,
@@ -562,7 +562,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	ret = of_property_read_u32_array(emimpu_node, "clear",
 		(unsigned int *)(emimpu_dev_ptr->clear_reg), size);
 	if (ret) {
-		pr_info("%s: get clear fail\n", __func__);
+		pr_debug("%s: get clear fail\n", __func__);
 		return -EINVAL;
 	}
 
@@ -570,7 +570,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	size = of_property_count_elems_of_size(emimpu_node,
 		"clear_md", sizeof(char));
 	if (size <= 0) {
-		pr_info("%s: get clear_md size fail\n", __func__);
+		pr_debug("%s: get clear_md size fail\n", __func__);
 		return -EINVAL;
 	}
 	emimpu_dev_ptr->clear_md_reg = devm_kmalloc(&pdev->dev,
@@ -582,7 +582,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	ret = of_property_read_u32_array(emimpu_node, "clear_md",
 		(unsigned int *)(emimpu_dev_ptr->clear_md_reg), size);
 	if (ret) {
-		pr_info("%s: get clear_md fail\n", __func__);
+		pr_debug("%s: get clear_md fail\n", __func__);
 		return -EINVAL;
 	}
 
@@ -590,7 +590,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	ret = of_property_count_elems_of_size(
 			emicen_node, "reg", sizeof(unsigned int) * 4);
 	if (ret <= 0) {
-		pr_info("%s: get emi_cen_cnt fail\n", __func__);
+		pr_debug("%s: get emi_cen_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 	emimpu_dev_ptr->emi_cen_cnt = (unsigned int)ret;
@@ -605,7 +605,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	for (i = 0; i < emimpu_dev_ptr->emi_cen_cnt; i++) {
 		emimpu_dev_ptr->emi_cen_base[i] = of_iomap(emicen_node, i);
 		if (IS_ERR(emimpu_dev_ptr->emi_cen_base[i])) {
-			pr_info("%s: unable to map EMI%d CEN base\n",
+			pr_debug("%s: unable to map EMI%d CEN base\n",
 				__func__, i);
 			return -EINVAL;
 		}
@@ -614,7 +614,7 @@ static int emimpu_probe(struct platform_device *pdev)
 		emimpu_dev_ptr->emi_mpu_base[i] =
 			devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(emimpu_dev_ptr->emi_mpu_base[i])) {
-			pr_info("%s: unable to map EMI%d MPU base\n",
+			pr_debug("%s: unable to map EMI%d MPU base\n",
 				__func__, i);
 			return -EINVAL;
 		}
@@ -627,7 +627,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(emimpu_node, "ap_region", &ap_region);
 	if (ret) {
 		emimpu_dev_ptr->ap_rg_info = NULL;
-		pr_info("%s: no ap_region\n", __func__);
+		pr_debug("%s: no ap_region\n", __func__);
 	} else {
 		size = sizeof(unsigned int) * emimpu_dev_ptr->domain_cnt;
 		ap_apc = devm_kmalloc(&pdev->dev, size, GFP_KERNEL);
@@ -636,7 +636,7 @@ static int emimpu_probe(struct platform_device *pdev)
 		ret = of_property_read_u32_array(emimpu_node, "ap_apc",
 			(unsigned int *)ap_apc, emimpu_dev_ptr->domain_cnt);
 		if (ret) {
-			pr_info("%s: fail to get ap_apc\n", __func__);
+			pr_debug("%s: fail to get ap_apc\n", __func__);
 			return -EINVAL;
 		}
 
@@ -659,7 +659,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	ret = request_irq(emimpu_irq, (irq_handler_t)emimpu_violation_irq,
 		IRQF_TRIGGER_NONE, "emimpu", &emimpu_drv);
 	if (ret) {
-		pr_info("%s: fail to request irq\n", __func__);
+		pr_debug("%s: fail to request irq\n", __func__);
 		return -EINVAL;
 	}
 
@@ -672,7 +672,7 @@ static int emimpu_probe(struct platform_device *pdev)
 	ret = driver_create_file(&emimpu_drv.driver,
 		&driver_attr_emimpu_ctrl);
 	if (ret)
-		pr_info("%s: fail to create emimpu_ctrl\n", __func__);
+		pr_debug("%s: fail to create emimpu_ctrl\n", __func__);
 #endif
 	return ret;
 }
@@ -684,7 +684,7 @@ static int __init emimpu_ap_region_init(void)
 	if (!emimpu_pdev)
 		return 0;
 
-	pr_info("%s: enable AP region\n", __func__);
+	pr_debug("%s: enable AP region\n", __func__);
 
 	emimpu_dev_ptr =
 		(struct emimpu_dev_t *)platform_get_drvdata(emimpu_pdev);
@@ -706,7 +706,7 @@ static int __init emimpu_drv_init(void)
 
 	ret = platform_driver_register(&emimpu_drv);
 	if (ret) {
-		pr_info("%s: init fail, ret 0x%x\n", __func__, ret);
+		pr_debug("%s: init fail, ret 0x%x\n", __func__, ret);
 		return ret;
 	}
 
@@ -743,7 +743,7 @@ int mtk_emimpu_init_region(
 		(struct emimpu_dev_t *)platform_get_drvdata(emimpu_pdev);
 
 	if (rg_num >= emimpu_dev_ptr->region_cnt) {
-		pr_info("%s: fail, out-of-range region\n", __func__);
+		pr_debug("%s: fail, out-of-range region\n", __func__);
 		return -1;
 	}
 
@@ -813,7 +813,7 @@ int mtk_emimpu_set_apc(struct emimpu_region_t *rg_info,
 		(struct emimpu_dev_t *)platform_get_drvdata(emimpu_pdev);
 
 	if (d_num >= emimpu_dev_ptr->domain_cnt) {
-		pr_info("%s: fail, out-of-range domain\n", __func__);
+		pr_debug("%s: fail, out-of-range domain\n", __func__);
 		return -1;
 	}
 
@@ -859,7 +859,7 @@ int mtk_emimpu_set_protection(struct emimpu_region_t *rg_info)
 	d_group = emimpu_dev_ptr->domain_cnt / 8;
 
 	if (!(rg_info->apc)) {
-		pr_info("%s: fail, protect without init\n", __func__);
+		pr_debug("%s: fail, protect without init\n", __func__);
 		return -1;
 	}
 
@@ -904,7 +904,7 @@ int mtk_emimpu_clear_protection(struct emimpu_region_t *rg_info)
 		(struct emimpu_dev_t *)platform_get_drvdata(emimpu_pdev);
 
 	if (rg_info->rg_num > emimpu_dev_ptr->region_cnt) {
-		pr_info("%s: region %u overflow\n", __func__, rg_info->rg_num);
+		pr_debug("%s: region %u overflow\n", __func__, rg_info->rg_num);
 		return -1;
 	}
 
@@ -926,7 +926,7 @@ int mtk_emimpu_prehandle_register(
 	(unsigned int emi_id, struct reg_info_t *dump, unsigned int leng))
 {
 	if (!bypass_func) {
-		pr_info("%s: bypass_func is NULL\n", __func__);
+		pr_debug("%s: bypass_func is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -944,7 +944,7 @@ EXPORT_SYMBOL(mtk_emimpu_prehandle_register);
 int mtk_emimpu_postclear_register(void (*clear_func)(unsigned int emi_id))
 {
 	if (!clear_func) {
-		pr_info("%s: clear_func is NULL\n", __func__);
+		pr_debug("%s: clear_func is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -972,7 +972,7 @@ int mtk_emimpu_debugdump_register(void (*debug_func)(void))
 		(struct emimpu_dev_t *)platform_get_drvdata(emimpu_pdev);
 
 	if (!debug_func) {
-		pr_info("%s: debug_func is NULL\n", __func__);
+		pr_debug("%s: debug_func is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1011,7 +1011,7 @@ int mtk_emimpu_md_handling_register(
 	(unsigned int emi_id, struct reg_info_t *dump, unsigned int leng))
 {
 	if (!md_handling_func) {
-		pr_info("%s: md_handling_func is NULL\n", __func__);
+		pr_debug("%s: md_handling_func is NULL\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1035,7 +1035,7 @@ int mtk_emimpu_register_callback(
 	struct emimpu_callbacks *mpucb;
 
 	if (!debug_dump) {
-		pr_info("%s: %p is NULL", __func__, __builtin_return_address(0));
+		pr_debug("%s: %p is NULL", __func__, __builtin_return_address(0));
 		return -EINVAL;
 	}
 

@@ -29,7 +29,7 @@ static int emicen_probe(struct platform_device *pdev)
 	unsigned int i;
 	int ret;
 
-	pr_info("%s: module probe.\n", __func__);
+	pr_debug("%s: module probe.\n", __func__);
 	emicen_dev_ptr = devm_kmalloc(&pdev->dev,
 		sizeof(struct emicen_dev_t), GFP_KERNEL);
 	if (!emicen_dev_ptr)
@@ -38,18 +38,18 @@ static int emicen_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(emicen_node,
 		"ch_cnt", &(emicen_dev_ptr->ch_cnt));
 	if (ret) {
-		pr_info("%s: get ch_cnt fail\n", __func__);
+		pr_debug("%s: get ch_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(emicen_node,
 		"rk_cnt", &(emicen_dev_ptr->rk_cnt));
 	if (ret) {
-		pr_info("%s: get rk_cnt fail\n", __func__);
+		pr_debug("%s: get rk_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 
-	pr_info("%s: %s(%d), %s(%d)\n", __func__,
+	pr_debug("%s: %s(%d), %s(%d)\n", __func__,
 		"ch_cnt", emicen_dev_ptr->ch_cnt,
 		"rk_cnt", emicen_dev_ptr->rk_cnt);
 
@@ -62,13 +62,13 @@ static int emicen_probe(struct platform_device *pdev)
 		"rk_size", emicen_dev_ptr->rk_size, emicen_dev_ptr->rk_cnt);
 
 	for (i = 0; i < emicen_dev_ptr->rk_cnt; i++)
-		pr_info("%s: rk_size%d(0x%llx)\n", __func__,
+		pr_debug("%s: rk_size%d(0x%llx)\n", __func__,
 			i, emicen_dev_ptr->rk_size[i]);
 
 	ret = of_property_count_elems_of_size(
 		emicen_node, "reg", sizeof(unsigned int) * 4);
 	if (ret <= 0) {
-		pr_info("%s: get emi_cen_cnt fail\n", __func__);
+		pr_debug("%s: get emi_cen_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 	emicen_dev_ptr->emi_cen_cnt = (unsigned int)ret;
@@ -118,7 +118,7 @@ static int __init emicen_drv_init(void)
 
 	ret = platform_driver_register(&emicen_drv);
 	if (ret) {
-		pr_info("%s: init fail, ret 0x%x\n", __func__, ret);
+		pr_debug("%s: init fail, ret 0x%x\n", __func__, ret);
 		return ret;
 	}
 
@@ -211,7 +211,7 @@ void mtk_emidbg_dump(void)
 		arm_smccc_smc(MTK_SIP_EMIMPU_CONTROL, MTK_EMIDBG_MSG,
 		0, 0, 0, 0, 0, 0, &smc_res);
 
-		pr_info("%s: %d, 0x%x, 0x%x, 0x%x\n", __func__,
+		pr_debug("%s: %d, 0x%x, 0x%x, 0x%x\n", __func__,
 			(int)smc_res.a0,
 			(unsigned int)smc_res.a1,
 			(unsigned int)smc_res.a2,

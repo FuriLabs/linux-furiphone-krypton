@@ -149,7 +149,7 @@ static int dramc_probe(struct platform_device *pdev)
 	unsigned int i, size;
 	int ret;
 
-	pr_info("%s: module probe.\n", __func__);
+	pr_debug("%s: module probe.\n", __func__);
 	dramc_pdev = pdev;
 	dramc_dev_ptr = devm_kmalloc(&pdev->dev,
 		sizeof(struct dramc_dev_t), GFP_KERNEL);
@@ -160,48 +160,48 @@ static int dramc_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(dramc_node,
 		"dram_type", &(dramc_dev_ptr->dram_type));
 	if (ret) {
-		pr_info("%s: get dram_type fail\n", __func__);
+		pr_debug("%s: get dram_type fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(dramc_node,
 		"support_ch_cnt", &(dramc_dev_ptr->support_ch_cnt));
 	if (ret) {
-		pr_info("%s: get support_ch_cnt fail\n", __func__);
+		pr_debug("%s: get support_ch_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(dramc_node,
 		"ch_cnt", &(dramc_dev_ptr->ch_cnt));
 	if (ret) {
-		pr_info("%s: get ch_cnt fail\n", __func__);
+		pr_debug("%s: get ch_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(dramc_node,
 		"rk_cnt", &(dramc_dev_ptr->rk_cnt));
 	if (ret) {
-		pr_info("%s: get rk_cnt fail\n", __func__);
+		pr_debug("%s: get rk_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(dramc_node,
 		"mr_cnt", &(dramc_dev_ptr->mr_cnt));
 	if (ret) {
-		pr_info("%s: get mr_cnt fail\n", __func__);
+		pr_debug("%s: get mr_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(dramc_node,
 		"freq_cnt", &(dramc_dev_ptr->freq_cnt));
 	if (ret) {
-		pr_info("%s: get freq_cnt fail\n", __func__);
+		pr_debug("%s: get freq_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(dramc_node, "mr4_version", &mr4_version);
 	if (ret)
-		pr_info("%s: not support mr4\n", __func__);
+		pr_debug("%s: not support mr4\n", __func__);
 	else if (mr4_version == 1) {
 		dramc_dev_ptr->mr4_dev_ptr = devm_kmalloc(&pdev->dev,
 				sizeof(struct mr4_dev_t), GFP_KERNEL);
@@ -210,13 +210,13 @@ static int dramc_probe(struct platform_device *pdev)
 		ret = mr4_v1_init(pdev,
 			(struct mr4_dev_t *)(dramc_dev_ptr->mr4_dev_ptr));
 		if (ret) {
-			pr_info("%s: mr4_v1_init fail\n", __func__);
+			pr_debug("%s: mr4_v1_init fail\n", __func__);
 			return -EINVAL;
 		}
 	} else
 		dramc_dev_ptr->mr4_dev_ptr = NULL;
 
-	pr_info("%s: %s(%d),%s(%d),%s(%d),%s(%d),%s(%d),%s(%d),%s(%s)\n",
+	pr_debug("%s: %s(%d),%s(%d),%s(%d),%s(%d),%s(%d),%s(%d),%s(%s)\n",
 		__func__,
 		"dram_type", dramc_dev_ptr->dram_type,
 		"support_ch_cnt", dramc_dev_ptr->support_ch_cnt,
@@ -233,7 +233,7 @@ static int dramc_probe(struct platform_device *pdev)
 	ret = of_property_read_u32_array(dramc_node,
 		"rk_size", dramc_dev_ptr->rk_size, dramc_dev_ptr->rk_cnt);
 	if (ret) {
-		pr_info("%s: get rk_size fail\n", __func__);
+		pr_debug("%s: get rk_size fail\n", __func__);
 		return -EINVAL;
 	}
 
@@ -245,11 +245,11 @@ static int dramc_probe(struct platform_device *pdev)
 	ret = of_property_read_u32_array(dramc_node, "mr",
 		(unsigned int *)dramc_dev_ptr->mr_info_ptr, size >> 2);
 	if (ret) {
-		pr_info("%s: get mr_info fail\n", __func__);
+		pr_debug("%s: get mr_info fail\n", __func__);
 		return -EINVAL;
 	}
 	for (i = 0; i < dramc_dev_ptr->mr_cnt; i++)
-		pr_info("%s: mr%d(%x)\n", __func__,
+		pr_debug("%s: mr%d(%x)\n", __func__,
 			dramc_dev_ptr->mr_info_ptr[i].mr_index,
 			dramc_dev_ptr->mr_info_ptr[i].mr_value);
 
@@ -260,14 +260,14 @@ static int dramc_probe(struct platform_device *pdev)
 	ret = of_property_read_u32_array(dramc_node, "freq_step",
 		dramc_dev_ptr->freq_step, dramc_dev_ptr->freq_cnt);
 	if (ret) {
-		pr_info("%s: get freq_step fail\n", __func__);
+		pr_debug("%s: get freq_step fail\n", __func__);
 		return -EINVAL;
 	}
 
 	dramc_dev_ptr->sleep_base = of_iomap(dramc_node,
 		dramc_dev_ptr->support_ch_cnt * 4);
 	if (IS_ERR(dramc_dev_ptr->sleep_base)) {
-		pr_info("%s: unable to map sleep base\n", __func__);
+		pr_debug("%s: unable to map sleep base\n", __func__);
 		return -EINVAL;
 	}
 
@@ -294,7 +294,7 @@ static int dramc_probe(struct platform_device *pdev)
 		dramc_dev_ptr->dramc_chn_base_ao[i] =
 			devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(dramc_dev_ptr->dramc_chn_base_ao[i])) {
-			pr_info("%s: unable to map ch%d DRAMC AO base\n",
+			pr_debug("%s: unable to map ch%d DRAMC AO base\n",
 				__func__, i);
 			return -EINVAL;
 		}
@@ -304,7 +304,7 @@ static int dramc_probe(struct platform_device *pdev)
 		dramc_dev_ptr->dramc_chn_base_nao[i] =
 			devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(dramc_dev_ptr->dramc_chn_base_nao[i])) {
-			pr_info("%s: unable to map ch%d DRAMC NAO base\n",
+			pr_debug("%s: unable to map ch%d DRAMC NAO base\n",
 				__func__, i);
 			return -EINVAL;
 		}
@@ -314,7 +314,7 @@ static int dramc_probe(struct platform_device *pdev)
 		dramc_dev_ptr->ddrphy_chn_base_ao[i] =
 			devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(dramc_dev_ptr->ddrphy_chn_base_ao[i])) {
-			pr_info("%s: unable to map ch%d DDRPHY AO base\n",
+			pr_debug("%s: unable to map ch%d DDRPHY AO base\n",
 				__func__, i);
 			return -EINVAL;
 		}
@@ -324,7 +324,7 @@ static int dramc_probe(struct platform_device *pdev)
 		dramc_dev_ptr->ddrphy_chn_base_nao[i] =
 			devm_ioremap_resource(&pdev->dev, res);
 		if (IS_ERR(dramc_dev_ptr->ddrphy_chn_base_nao[i])) {
-			pr_info("%s: unable to map ch%d DDRPHY NAO base\n",
+			pr_debug("%s: unable to map ch%d DDRPHY NAO base\n",
 				__func__, i);
 			return -EINVAL;
 		}
@@ -333,21 +333,21 @@ static int dramc_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(
 		dramc_node, "fmeter_version", &fmeter_version);
 	if (ret) {
-		pr_info("%s: get fmeter_version fail\n", __func__);
+		pr_debug("%s: get fmeter_version fail\n", __func__);
 		return -EINVAL;
 	}
-	pr_info("%s: fmeter_version(%d)\n", __func__, fmeter_version);
+	pr_debug("%s: fmeter_version(%d)\n", __func__, fmeter_version);
 
 	if (fmeter_version == 1) {
 		dramc_dev_ptr->fmeter_dev_ptr = devm_kmalloc(&pdev->dev,
 			sizeof(struct fmeter_dev_t), GFP_KERNEL);
 		if (!(dramc_dev_ptr->fmeter_dev_ptr)) {
-			pr_info("%s: memory  alloc fail\n", __func__);
+			pr_debug("%s: memory  alloc fail\n", __func__);
 			return -ENOMEM;
 		}
 		ret = fmeter_v1_init(pdev, dramc_dev_ptr->fmeter_dev_ptr);
 		if (ret) {
-			pr_info("%s: fmeter_init fail\n", __func__);
+			pr_debug("%s: fmeter_init fail\n", __func__);
 			return -EINVAL;
 		}
 	} else
@@ -356,21 +356,21 @@ static int dramc_probe(struct platform_device *pdev)
 	ret = driver_create_file(
 		pdev->dev.driver, &driver_attr_binning_test);
 	if (ret) {
-		pr_info("%s: fail to create binning_test sysfs\n", __func__);
+		pr_debug("%s: fail to create binning_test sysfs\n", __func__);
 		return ret;
 	}
 
 	ret = driver_create_file(
 		pdev->dev.driver, &driver_attr_dram_data_rate);
 	if (ret) {
-		pr_info("%s: fail to create dram_data_rate sysfs\n", __func__);
+		pr_debug("%s: fail to create dram_data_rate sysfs\n", __func__);
 		return ret;
 	}
 
 	ret = driver_create_file(
 		pdev->dev.driver, &driver_attr_mr);
 	if (ret) {
-		pr_info("%s: fail to create mr sysfs\n", __func__);
+		pr_debug("%s: fail to create mr sysfs\n", __func__);
 		return ret;
 	}
 
@@ -378,16 +378,16 @@ static int dramc_probe(struct platform_device *pdev)
 		ret = driver_create_file(
 			pdev->dev.driver, &driver_attr_mr4);
 		if (ret) {
-			pr_info("%s: fail to create mr4 sysfs\n", __func__);
+			pr_debug("%s: fail to create mr4 sysfs\n", __func__);
 			return ret;
 		}
 	}
 
 	platform_set_drvdata(pdev, dramc_dev_ptr);
-	pr_info("%s: DRAM data type = %d\n", __func__,
+	pr_debug("%s: DRAM data type = %d\n", __func__,
 		mtk_dramc_get_ddr_type());
 
-	pr_info("%s: DRAM data rate = %d\n", __func__,
+	pr_debug("%s: DRAM data rate = %d\n", __func__,
 		mtk_dramc_get_data_rate());
 	return ret;
 }
@@ -418,7 +418,7 @@ static int __init dramc_drv_init(void)
 
 	ret = platform_driver_register(&dramc_drv);
 	if (ret) {
-		pr_info("%s: init fail, ret 0x%x\n", __func__, ret);
+		pr_debug("%s: init fail, ret 0x%x\n", __func__, ret);
 		return ret;
 	}
 

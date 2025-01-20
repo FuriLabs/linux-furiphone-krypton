@@ -1051,7 +1051,7 @@ static int emicen_probe(struct platform_device *pdev)
 	int ret;
 	int emi_cen_cnt_temp;
 
-	pr_info("%s: module probe.\n", __func__);
+	pr_debug("%s: module probe.\n", __func__);
 
 	cen = devm_kzalloc(&pdev->dev,
 		sizeof(struct emi_cen), GFP_KERNEL);
@@ -1063,18 +1063,18 @@ static int emicen_probe(struct platform_device *pdev)
 	ret = of_property_read_u32(emicen_node,
 		"ch_cnt", &(cen->ch_cnt));
 	if (ret) {
-		pr_info("%s: get ch_cnt fail\n", __func__);
+		pr_debug("%s: get ch_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 
 	ret = of_property_read_u32(emicen_node,
 		"rk_cnt", &(cen->rk_cnt));
 	if (ret) {
-		pr_info("%s: get rk_cnt fail\n", __func__);
+		pr_debug("%s: get rk_cnt fail\n", __func__);
 		return -EINVAL;
 	}
 
-	pr_info("%s: %s(%d), %s(%d)\n", __func__,
+	pr_debug("%s: %s(%d), %s(%d)\n", __func__,
 		"ch_cnt", cen->ch_cnt,
 		"rk_cnt", cen->rk_cnt);
 
@@ -1087,13 +1087,13 @@ static int emicen_probe(struct platform_device *pdev)
 		"rk_size", cen->rk_size, cen->rk_cnt);
 
 	for (i = 0; i < cen->rk_cnt; i++)
-		pr_info("%s: rk_size%d(0x%llx)\n", __func__,
+		pr_debug("%s: rk_size%d(0x%llx)\n", __func__,
 			i, cen->rk_size[i]);
 
 	emi_cen_cnt_temp = of_property_count_elems_of_size(
 		emicen_node, "reg", sizeof(unsigned int) * 4);
 	if (emi_cen_cnt_temp <= 0) {
-		pr_info("%s: get emi_cen_cnt fail\n", __func__);
+		pr_debug("%s: get emi_cen_cnt fail\n", __func__);
 		return -EINVAL;
 	} else
 		cen->emi_cen_cnt = (unsigned int)emi_cen_cnt_temp;
@@ -1203,14 +1203,14 @@ static int __init emicen_drv_init(void)
 
 	ret = platform_driver_register(&emicen_drv);
 	if (ret) {
-		pr_info("%s: init fail, ret 0x%x\n", __func__, ret);
+		pr_debug("%s: init fail, ret 0x%x\n", __func__, ret);
 		return ret;
 	}
 
 	ret = driver_create_file(&emicen_drv.driver,
 		&driver_attr_emicen_addr2dram);
 	if (ret) {
-		pr_info("emicen: failed to create addr2dram file\n");
+		pr_debug("emicen: failed to create addr2dram file\n");
 		return ret;
 	}
 	return ret;
@@ -1278,7 +1278,7 @@ void mtk_emidbg_dump(void)
 		arm_smccc_smc(MTK_SIP_EMIMPU_CONTROL, MTK_EMIDBG_MSG,
 		0, 0, 0, 0, 0, 0, &smc_res);
 
-		pr_info("%s: %d, 0x%x, 0x%x, 0x%x\n", __func__,
+		pr_debug("%s: %d, 0x%x, 0x%x, 0x%x\n", __func__,
 			smc_res.a0, smc_res.a1, smc_res.a2, smc_res.a3);
 	}
 

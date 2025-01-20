@@ -37,9 +37,9 @@ int mtk_dramc_binning_test(void)
 	mem16_base = (unsigned short *)ptr;
 	mem32_base = (unsigned int *)ptr;
 	mem_base = (unsigned int *)ptr;
-	/* pr_info("Test DRAM start address 0x%lx\n", (unsigned long)ptr); */
-	pr_info("Test DRAM start address %p\n", ptr);
-	pr_info("Test DRAM SIZE 0x%x\n", len);
+	/* pr_debug("Test DRAM start address 0x%lx\n", (unsigned long)ptr); */
+	pr_debug("Test DRAM start address %p\n", ptr);
+	pr_debug("Test DRAM SIZE 0x%x\n", len);
 	size = len >> 2;
 
 	/* === test the tied bits (tied high) === */
@@ -364,7 +364,7 @@ int mtk_dramc_binning_test(void)
 		}
 		pattern32++;
 	}
-	pr_info("complex R/W mem test pass\n");
+	pr_debug("complex R/W mem test pass\n");
 
 fail:
 	vfree(ptr);
