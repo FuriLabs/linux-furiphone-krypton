@@ -37,27 +37,27 @@ extern unsigned int gPMICREGDbgLvl;
 
 #define PMICLOG(fmt, arg...) do { \
 	if (gPMICDbgLvl >= PMIC_LOG_DBG) \
-		pr_notice(PMICTAG "%s: " fmt, __func__, ##arg); \
+		pr_debug(PMICTAG "%s: " fmt, __func__, ##arg); \
 } while (0)
 
 #define HKLOG(fmt, arg...) do { \
 	if (gPMICHKDbgLvl >= PMIC_LOG_DBG) \
-		pr_notice(PMICTAG "%s: " fmt, __func__, ##arg); \
+		pr_debug(PMICTAG "%s: " fmt, __func__, ##arg); \
 } while (0)
 
 #define COMLOG(fmt, arg...) do { \
 	if (gPMICCOMDbgLvl >= PMIC_LOG_DBG) \
-		pr_notice(PMICTAG "%s: " fmt, __func__, ##arg); \
+		pr_debug(PMICTAG "%s: " fmt, __func__, ##arg); \
 } while (0)
 
 #define IRQLOG(fmt, arg...) do { \
 	if (gPMICIRQDbgLvl >= PMIC_LOG_DBG) \
-		pr_notice(PMICTAG "%s: " fmt, __func__, ##arg); \
+		pr_debug(PMICTAG "%s: " fmt, __func__, ##arg); \
 } while (0)
 
 #define RGLTRLOG(fmt, arg...) do { \
 	if (gPMICREGDbgLvl >= PMIC_LOG_DBG) \
-		pr_notice(PMICTAG "%s: " fmt, __func__, ##arg); \
+		pr_debug(PMICTAG "%s: " fmt, __func__, ##arg); \
 } while (0)
 
 extern void wk_pmic_enable_sdn_delay(void);
