@@ -163,6 +163,6 @@ void ssusb_dpidle_request(int mode)
 		return;
 	}
 
-	pr_info("%s operation = %d\n", __func__, op);
+	pr_debug("%s operation = %d\n", __func__, op);
 	arm_smccc_smc(MTK_SIP_USB_CONTROL, op, 0, 0, 0, 0, 0, 0, &res);
 }

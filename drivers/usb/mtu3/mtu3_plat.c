@@ -27,22 +27,22 @@ void ssusb_spm_request(struct ssusb_mtk *ssusb, int mode)
         switch (mode) {
         case MTU3_RESOURCE_ALL:
         case MTU3_RESOURCE_RESUME:
-                dev_info(ssusb->dev, "RESOURCE_ALL\n");
+                dev_dbg(ssusb->dev, "RESOURCE_ALL\n");
                 spm_resource_req(SPM_RESOURCE_USER_SSUSB, SPM_RESOURCE_ALL);
                 break;
         case MTU3_RESOURCE_NONE:
-                dev_info(ssusb->dev, "RESOURCE_NONE\n");
+                dev_dbg(ssusb->dev, "RESOURCE_NONE\n");
                 spm_resource_req(SPM_RESOURCE_USER_SSUSB,
                         SPM_RESOURCE_RELEASE);
                 break;
         case MTU3_RESOURCE_SUSPEND:
-                dev_info(ssusb->dev, "RESOURCE_SUSPEND\n");
+                dev_dbg(ssusb->dev, "RESOURCE_SUSPEND\n");
                 spm_resource_req(SPM_RESOURCE_USER_SSUSB,
                         SPM_RESOURCE_MAINPLL | SPM_RESOURCE_CK_26M |
                         SPM_RESOURCE_AXI_BUS);
                 break;
         default:
-                dev_info(ssusb->dev, "%s not support mode\n", __func__);
+                dev_dbg(ssusb->dev, "%s not support mode\n", __func__);
                 break;
         }
 
@@ -63,10 +63,10 @@ void ssusb_smc_request(struct ssusb_mtk *ssusb, int mode)
 		op = MTK_USB_SMC_INFRA_RELEASE;
 		break;
 	default:
-		dev_info(ssusb->dev, "%s not support mode\n", __func__);
+		dev_dbg(ssusb->dev, "%s not support mode\n", __func__);
 		return;
 	}
-	dev_info(ssusb->dev, "%s operation = %d\n", __func__, op);
+	dev_dbg(ssusb->dev, "%s operation = %d\n", __func__, op);
 	arm_smccc_smc(MTK_SIP_KERNEL_USB_CONTROL, op, 0, 0, 0, 0, 0, 0, &res);
 }
 #endif
@@ -208,7 +208,7 @@ static void ssusb_dp_pullup_work(struct work_struct *w)
 
 void ssusb_phy_dp_pullup(struct ssusb_mtk *ssusb)
 {
-	dev_info(ssusb->dev, "%s\n", __func__);
+	dev_dbg(ssusb->dev, "%s\n", __func__);
 	queue_work(system_power_efficient_wq, &ssusb->dp_work);
 }
 
@@ -217,7 +217,7 @@ int ssusb_clks_enable(struct ssusb_mtk *ssusb)
 	int ret;
 
 	if (ssusb->clk_on == true) {
-		dev_info(ssusb->dev, "clk already enabled\n");
+		dev_dbg(ssusb->dev, "clk already enabled\n");
 		return 0;
 	}
 
@@ -247,7 +247,7 @@ int ssusb_clks_enable(struct ssusb_mtk *ssusb)
 
 	ret = clk_prepare_enable(ssusb->host_clk);
 	if (ret) {
-		dev_info(ssusb->dev, "failed to enable host_clk\n");
+		dev_dbg(ssusb->dev, "failed to enable host_clk\n");
 		goto host_clk_err;
 	}
 
@@ -447,7 +447,7 @@ static int get_ssusb_rscs(struct platform_device *pdev, struct ssusb_mtk *ssusb)
 	}
 
 out:
-	dev_info(dev, "dr_mode: %d, is_u3_dr: %d, u3p_dis_msk: %x, drd: %s\n",
+	dev_dbg(dev, "dr_mode: %d, is_u3_dr: %d, u3p_dis_msk: %x, drd: %s\n",
 		ssusb->dr_mode, otg_sx->is_u3_drd, ssusb->u3p_dis_msk,
 		otg_sx->manual_drd_enabled ? "manual" : "auto");
 
@@ -474,7 +474,7 @@ static int mtu3_probe(struct platform_device *pdev)
 
 	ret = device_rename(dev, node->name);
 	if (ret)
-		dev_info(&pdev->dev, "failed to rename\n");
+		dev_dbg(&pdev->dev, "failed to rename\n");
 	/* fix uaf(use after free) issue: backup pdev->name,
 	 * device_rename will free pdev->name
 	 */

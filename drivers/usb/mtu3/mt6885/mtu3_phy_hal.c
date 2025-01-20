@@ -24,7 +24,7 @@ static struct pm_qos_request vcore_pm_qos;
 void Charger_Detect_Init(void)
 {
 	if (mtu3_cable_mode == CABLE_MODE_FORCEON) {
-		pr_info("%s-, SKIP\n", __func__);
+		pr_debug("%s-, SKIP\n", __func__);
 		return;
 	}
 
@@ -35,7 +35,7 @@ void Charger_Detect_Init(void)
 void Charger_Detect_Release(void)
 {
 	if (mtu3_cable_mode == CABLE_MODE_FORCEON) {
-		pr_info("%s-, SKIP\n", __func__);
+		pr_debug("%s-, SKIP\n", __func__);
 		return;
 	}
 
@@ -48,7 +48,7 @@ void usb_dpdm_pulldown(bool enable)
 {
 #ifdef CONFIG_MTK_TYPEC_WATER_DETECT
 	if (mtk_phy) {
-		pr_info("%s: pulldown=%d\n", __func__, enable);
+		pr_debug("%s: pulldown=%d\n", __func__, enable);
 		usb_mtkphy_dpdm_pulldown(mtk_phy, enable);
 	}
 #endif
@@ -62,12 +62,12 @@ int ssusb_dual_phy_power_on(struct ssusb_mtk *ssusb, bool host_mode)
 	if (host_mode) {
 		if (pm_qos_request_active(&vcore_pm_qos)) {
 			pm_qos_update_request(&vcore_pm_qos, VCORE_OPP);
-			dev_info(ssusb->dev, "%s: Vcore QOS update %d\n", __func__,
+			dev_dbg(ssusb->dev, "%s: Vcore QOS update %d\n", __func__,
 								VCORE_OPP);
 		} else {
 			pm_qos_add_request(&vcore_pm_qos, PM_QOS_VCORE_OPP,
 								VCORE_OPP);
-			dev_info(ssusb->dev, "%s: Vcore QOS request %d\n", __func__,
+			dev_dbg(ssusb->dev, "%s: Vcore QOS request %d\n", __func__,
 								VCORE_OPP);
 		}
 	}
@@ -87,9 +87,9 @@ void ssusb_dual_phy_power_off(struct ssusb_mtk *ssusb, bool host_mode)
 	if (host_mode) {
 		if (pm_qos_request_active(&vcore_pm_qos)) {
 			pm_qos_remove_request(&vcore_pm_qos);
-			dev_info(ssusb->dev, "%s: Vcore QOS remove\n",  __func__);
+			dev_dbg(ssusb->dev, "%s: Vcore QOS remove\n",  __func__);
 		} else
-			dev_info(ssusb->dev, "%s: Vcore QOS remove again\n", __func__);
+			dev_dbg(ssusb->dev, "%s: Vcore QOS remove again\n", __func__);
 
 		usb_mtkphy_host_mode(ssusb->phys[0], false);
 	}
