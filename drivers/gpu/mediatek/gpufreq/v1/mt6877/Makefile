@@ -37,7 +37,10 @@ ccflags-y += -I$(srctree)/drivers/gpu/mediatek/ged/include
 ccflags-y += -Wno-unused-variable
 ccflags-y += -Wno-unused-function
 
+ccflags-y += -DMT_GPUFREQ_DFD_ENABLE_NOPE=0
+
 obj-y += mtk_gpufreq_plat.o
+
 
 ifeq ($(findstring aging,$(PROJECT_DTB_NAMES)),aging)
 	subdir-ccflags-y += -DAGING_LOAD
