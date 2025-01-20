@@ -38,13 +38,13 @@ u32 mtk_jpeg_enc_enum_result(void __iomem *base, u32 irq_status, u32 *fileSize)
 	*fileSize = mtk_jpeg_enc_get_file_size(base);
 
 	if (irq_status & JPEG_DRV_ENC_INT_STATUS_DONE) {
-		pr_info("irq status done file size %d\n", *fileSize);
+		pr_debug("irq status done file size %d\n", *fileSize);
 		return 0;
 	} else if (irq_status & JPEG_DRV_ENC_INT_STATUS_STALL) {
-		pr_info("irq status stall\n");
+		pr_debug("irq status stall\n");
 		return 1;
 	} else if (irq_status & JPEG_DRV_ENC_INT_STATUS_VCODEC_IRQ) {
-		pr_info("irq status vcodec irq\n");
+		pr_debug("irq status vcodec irq\n");
 		return 2;
 	}
 	return 3;
@@ -121,7 +121,7 @@ static void mtk_jpeg_enc_set_dst_buf(void __iomem *base, u32 dst_addr,
 			u32 stall_size, u32 init_offset, u32 offset_mask)
 {
 
-	pr_info("%s dst_addr 0x%x  stall_size %d init_offset 0x%x\n", __func__,
+	pr_debug("%s dst_addr 0x%x  stall_size %d init_offset 0x%x\n", __func__,
 		dst_addr, stall_size, init_offset);
 
 	writel((init_offset & (~0xF)), base + JPGENC_OFFSET_ADDR);
@@ -206,7 +206,7 @@ void mtk_jpeg_enc_set_config(void __iomem *base,
 		(config->enc_format == JPEG_YUV_FORMAT_NV21)) &&
 		fb->num_planes == 1) {
 
-		pr_info("%s set 2 plane by add offset w %d h %d\n", __func__,
+		pr_debug("%s set 2 plane by add offset w %d h %d\n", __func__,
 			config->img_stride, config->align_h);
 
 		mtk_jpeg_enc_set_src_buf(base, config->img_stride,
