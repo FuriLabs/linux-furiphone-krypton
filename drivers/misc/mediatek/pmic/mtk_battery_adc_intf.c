@@ -25,7 +25,7 @@
 
 bool __attribute__ ((weak)) is_power_path_supported(void)
 {
-	pr_notice_once("%s: check mtk_charger\n", __func__);
+	pr_debug("%s: check mtk_charger\n", __func__);
 	return 0;
 }
 
@@ -150,7 +150,7 @@ int pmic_get_ibus(void)
 int __attribute__ ((weak))
 	charger_get_rsense(void)
 {
-	pr_notice_once("%s: do not define r_sense\n", __func__);
+	pr_debug("%s: do not define r_sense\n", __func__);
 	return 56;
 }
 
@@ -176,28 +176,28 @@ int pmic_get_charging_current(void)
 bool __attribute__ ((weak))
 	mtk_bif_is_hw_exist(void)
 {
-	pr_notice_once("%s: do not have bif driver\n", __func__);
+	pr_debug("%s: do not have bif driver\n", __func__);
 	return false;
 }
 
 int __attribute__ ((weak))
 	mtk_bif_get_vbat(int *vbat)
 {
-	pr_notice_once("%s: do not have bif driver\n", __func__);
+	pr_debug("%s: do not have bif driver\n", __func__);
 	return -ENOTSUPP;
 }
 
 int __attribute__ ((weak))
 	mtk_bif_get_tbat(int *tmp)
 {
-	pr_notice_once("%s: do not have bif driver\n", __func__);
+	pr_debug("%s: do not have bif driver\n", __func__);
 	return -ENOTSUPP;
 }
 
 int __attribute__ ((weak))
 	mtk_bif_init(void)
 {
-	pr_notice_once("%s: do not have bif driver\n", __func__);
+	pr_debug("%s: do not have bif driver\n", __func__);
 	return -ENOTSUPP;
 }
 
@@ -231,7 +231,7 @@ int pmic_enable_hw_vbus_ovp(bool enable)
 	ret = pmic_set_register_value(PMIC_RG_VCDT_HV_EN, enable);
 #endif
 	if (ret != 0)
-		pr_notice("%s: failed, ret = %d\n", __func__, ret);
+		pr_debug("%s: failed, ret = %d\n", __func__, ret);
 
 	return ret;
 }
