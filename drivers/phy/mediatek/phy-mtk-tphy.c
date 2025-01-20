@@ -574,16 +574,16 @@ static int proc_loopback_test_show(struct seq_file *s, void *unused)
 	writel(tmp, u3_banks->phyd + U3P_U3_PHYD_RX0);
 	mdelay(100);
 
-	dev_info(dev, "%s, U3 loop back started\n", __func__);
+	dev_dbg(dev, "%s, U3 loop back started\n", __func__);
 
 	/* check result */
 	tmp = readl(u3_banks->phyd + 0x0b4);
 
 	/* verbose dump */
-	dev_info(dev, "rb back             : 0x%x\n", tmp);
-	dev_info(dev, "rb t2rlb_lock  : %d\n", (tmp >> 2) & 0x01);
-	dev_info(dev, "rb t2rlb_pass  : %d\n", (tmp >> 3) & 0x01);
-	dev_info(dev, "rb t2rlb_passth: %d\n", (tmp >> 4) & 0x01);
+	dev_dbg(dev, "rb back             : 0x%x\n", tmp);
+	dev_dbg(dev, "rb t2rlb_lock  : %d\n", (tmp >> 2) & 0x01);
+	dev_dbg(dev, "rb t2rlb_pass  : %d\n", (tmp >> 3) & 0x01);
+	dev_dbg(dev, "rb t2rlb_passth: %d\n", (tmp >> 4) & 0x01);
 
 	/* return result */
 	tmp &= 0x0E;
@@ -598,7 +598,7 @@ static int proc_loopback_test_show(struct seq_file *s, void *unused)
 	writel(r_mix0, u3_banks->phyd + U3P_U3_PHYD_MIX0);
 	writel(r_t2rlb, u3_banks->phyd + U3P_U3_PHYD_T2RLB);
 
-	dev_info(dev, "%s, loopback_test=0x%x\n", __func__, tmp);
+	dev_dbg(dev, "%s, loopback_test=0x%x\n", __func__, tmp);
 
 	seq_printf(s,  "%d\n", ret);
 	return 0;
@@ -626,14 +626,14 @@ static int u3_phy_procfs_init(struct mtk_tphy *tphy,
 	int ret;
 
 	if (!root) {
-		dev_info(dev, "phy proc root not exist\n");
+		dev_dbg(dev, "phy proc root not exist\n");
 		ret = -ENOMEM;
 		goto err0;
 	}
 
 	phy_root = proc_mkdir("u3_phy", root);
 	if (!root) {
-		dev_info(dev, "failed to creat dir proc u3_phy\n");
+		dev_dbg(dev, "failed to creat dir proc u3_phy\n");
 		ret = -ENOMEM;
 		goto err0;
 	}
@@ -641,7 +641,7 @@ static int u3_phy_procfs_init(struct mtk_tphy *tphy,
 	file = proc_create_data(LOOPBACK_STR, 0444,
 			phy_root, &proc_loopback_test_fops, instance);
 	if (!file) {
-		dev_info(dev, "failed to creat proc file: %s\n", LOOPBACK_STR);
+		dev_dbg(dev, "failed to creat proc file: %s\n", LOOPBACK_STR);
 		ret = -ENOMEM;
 		goto err1;
 	}
@@ -895,14 +895,14 @@ static int u2_phy_procfs_init(struct mtk_tphy *tphy,
 	int ret;
 
 	if (!root) {
-		dev_info(dev, "proc root not exist\n");
+		dev_dbg(dev, "proc root not exist\n");
 		ret = -ENOMEM;
 		goto err0;
 	}
 
 	phy_root = proc_mkdir("u2_phy", root);
 	if (!root) {
-		dev_info(dev, "failed to creat dir proc /u2_phy\n");
+		dev_dbg(dev, "failed to creat dir proc /u2_phy\n");
 		ret = -ENOMEM;
 		goto err0;
 	}
@@ -910,7 +910,7 @@ static int u2_phy_procfs_init(struct mtk_tphy *tphy,
 	file = proc_create_data(PROC_FILE_TERM_SEL, 0644,
 			phy_root, &proc_term_sel_fops, instance);
 	if (!file) {
-		dev_info(dev, "failed to creat proc file: %s\n", PROC_FILE_TERM_SEL);
+		dev_dbg(dev, "failed to creat proc file: %s\n", PROC_FILE_TERM_SEL);
 		ret = -ENOMEM;
 		goto err1;
 	}
@@ -918,7 +918,7 @@ static int u2_phy_procfs_init(struct mtk_tphy *tphy,
 	file = proc_create_data(PROC_FILE_VRT_SEL, 0644,
 			phy_root, &proc_vrt_sel_fops, instance);
 	if (!file) {
-		dev_info(dev, "failed to creat proc file: %s\n", PROC_FILE_VRT_SEL);
+		dev_dbg(dev, "failed to creat proc file: %s\n", PROC_FILE_VRT_SEL);
 		ret = -ENOMEM;
 		goto err1;
 	}
@@ -926,7 +926,7 @@ static int u2_phy_procfs_init(struct mtk_tphy *tphy,
 	file = proc_create_data(PROC_FILE_PHY_REV6, 0644,
 			phy_root, &proc_phy_rev6_fops, instance);
 	if (!file) {
-		dev_info(dev, "failed to creat proc file: %s\n", PROC_FILE_PHY_REV6);
+		dev_dbg(dev, "failed to creat proc file: %s\n", PROC_FILE_PHY_REV6);
 		ret = -ENOMEM;
 		goto err1;
 	}
@@ -934,7 +934,7 @@ static int u2_phy_procfs_init(struct mtk_tphy *tphy,
 	file = proc_create_data(PROC_FILE_DISCTH, 0644,
 			phy_root, &proc_discth_fops, instance);
 	if (!file) {
-		dev_info(dev, "failed to creat proc file: %s\n", PROC_FILE_DISCTH);
+		dev_dbg(dev, "failed to creat proc file: %s\n", PROC_FILE_DISCTH);
 		ret = -ENOMEM;
 		goto err1;
 	}
@@ -962,7 +962,7 @@ static int mtk_phy_procfs_init(struct mtk_tphy *tphy)
 
 	root = proc_mkdir("mtk_usb/usb-phy0", NULL);
 	if (!root) {
-		dev_info(tphy->dev, "failed to creat usb-phy0  dir\n");
+		dev_dbg(tphy->dev, "failed to creat usb-phy0  dir\n");
 		return -ENOMEM;
 	}
 
@@ -1004,7 +1004,7 @@ static int phy_efuse_set(struct mtk_phy_instance *instance,
 		return 0;
 
 	val = (val & mask) >> (ffs(mask) - 1);
-	dev_info(dev, "%s, %s=0x%x\n", __func__, efuse_name[type], val);
+	dev_dbg(dev, "%s, %s=0x%x\n", __func__, efuse_name[type], val);
 
 	switch (type) {
 	case INTR_CAL:
@@ -1359,7 +1359,7 @@ static void u2_phy_instance_power_on(struct mtk_tphy *tphy,
 		tmp |= PA6_RG_U2_DISCTH_VAL(0xf);
 	writel(tmp, com + U3P_USBPHYACR6);
 #endif
-	dev_info(tphy->dev, "%s(%d)\n", __func__, index);
+	dev_dbg(tphy->dev, "%s(%d)\n", __func__, index);
 }
 
 static void u2_phy_instance_power_off(struct mtk_tphy *tphy,
@@ -1375,7 +1375,7 @@ static void u2_phy_instance_power_off(struct mtk_tphy *tphy,
 	tmp &= ~(P2C_RG_XCVRSEL | P2C_RG_DATAIN);
 	tmp |= P2C_RG_XCVRSEL_VAL(1) | P2C_DTM0_PART_MASK2;
 #if defined(CONFIG_MACH_MT6739)
-	dev_info(tphy->dev, "%s, write DTM0 SUSPENDM\n", __func__);
+	dev_dbg(tphy->dev, "%s, write DTM0 SUSPENDM\n", __func__);
 	tmp |= P2C_RG_SUSPENDM;
 #endif
 #else
@@ -1450,7 +1450,7 @@ static void u2_phy_instance_power_off(struct mtk_tphy *tphy,
 	 */
 	u2_phy_instance_set_mode_ext(tphy, instance, PHY_MODE_BC11_SW_SET);
 #endif
-	dev_info(tphy->dev, "%s(%d)\n", __func__, index);
+	dev_dbg(tphy->dev, "%s(%d)\n", __func__, index);
 }
 
 static void u2_phy_instance_exit(struct mtk_tphy *tphy,
@@ -1658,7 +1658,7 @@ static void u2_phy_instance_set_mode_ext(struct mtk_tphy *tphy,
 	struct u2phy_banks *u2_banks = &instance->u2_banks;
 	u32 tmp;
 
-	dev_info(tphy->dev, "%s submode(%d)\n", __func__, submode);
+	dev_dbg(tphy->dev, "%s submode(%d)\n", __func__, submode);
 
 	switch (submode) {
 	case PHY_MODE_BC11_SW_SET:
@@ -1732,7 +1732,7 @@ static void u3_phy_instance_power_on(struct mtk_tphy *tphy,
 	tmp &= ~(P3C_RG_SWRST_U3_PHYD_FORCE_EN | P3C_RG_SWRST_U3_PHYD);
 	writel(tmp, bank->chip + U3P_U3_CHIP_GPIO_CTLE);
 
-	dev_info(tphy->dev, "%s(%d)\n", __func__, index);
+	dev_dbg(tphy->dev, "%s(%d)\n", __func__, index);
 }
 
 static void u3_phy_instance_power_off(struct mtk_tphy *tphy,
@@ -1750,7 +1750,7 @@ static void u3_phy_instance_power_off(struct mtk_tphy *tphy,
 	tmp |= P3C_RG_SWRST_U3_PHYD_FORCE_EN | P3C_RG_SWRST_U3_PHYD;
 	writel(tmp, bank->chip + U3P_U3_CHIP_GPIO_CTLE);
 
-	dev_info(tphy->dev, "%s(%d)\n", __func__, index);
+	dev_dbg(tphy->dev, "%s(%d)\n", __func__, index);
 }
 
 static void pcie_phy_instance_init(struct mtk_tphy *tphy,
@@ -2032,7 +2032,7 @@ static void u2_phy_props_set(struct mtk_tphy *tphy,
 	struct device *dev = &instance->phy->dev;
 	u32 tmp;
 
-	dev_info(dev, "%s, bc12:%d, src:%d, vrt:%d, term:%d, rev6:%d, dis:%d",
+	dev_dbg(dev, "%s, bc12:%d, src:%d, vrt:%d, term:%d, rev6:%d, dis:%d",
 		__func__, instance->bc12_en, instance->eye_src,
 		instance->eye_vrt, instance->eye_term, instance->eye_rev6,
 		instance->eye_disc);
@@ -2364,7 +2364,7 @@ static int mtk_tphy_probe(struct platform_device *pdev)
 
 	retval = device_rename(dev, np->name);
 	if (retval)
-		dev_info(&pdev->dev, "failed to rename\n");
+		dev_dbg(&pdev->dev, "failed to rename\n");
 	/* fix uaf(use after free) issue: backup pdev->name,
 	 * device_rename will free pdev->name
 	 */
