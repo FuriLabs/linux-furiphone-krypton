@@ -24,7 +24,7 @@
 #include <linux/pinctrl/consumer.h>
 
 /*debug macros */
-#define TPD_DEBUG
+//#define TPD_DEBUG
 #define TPD_DEBUG_CODE
 /* #define TPD_DEBUG_TRACK */
 #define TPD_DMESG(a, arg...) \
