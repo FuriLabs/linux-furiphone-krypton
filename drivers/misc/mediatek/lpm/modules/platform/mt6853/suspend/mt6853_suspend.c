@@ -326,7 +326,7 @@ static struct hrtimer lpm_hrtimer[NR_CPUS];
 static enum hrtimer_restart lpm_hrtimer_timeout(struct hrtimer *timer)
 {
 	if (mtk_lpm_in_suspend) {
-		pr_info("[name:spm&][SPM] wakeup system due to not entering suspend\n");
+		pr_debug("[name:spm&][SPM] wakeup system due to not entering suspend\n");
 		pm_system_wakeup();
 	}
 	return HRTIMER_NORESTART;
@@ -393,7 +393,7 @@ static int mt6853_spm_suspend_pm_event(struct notifier_block *notifier,
 				kthread_bind(mtk_lpm_ac[cpu].ts, cpu);
 				wake_up_process(mtk_lpm_ac[cpu].ts);
 			} else {
-				pr_info("[name:spm&][SPM] create LPM monitor thread %d fail\n",
+				pr_debug("[name:spm&][SPM] create LPM monitor thread %d fail\n",
 											cpu);
 				mtk_lpm_in_suspend = 0;
 				/* terminate previously created threads */
@@ -418,7 +418,7 @@ static int mt6853_spm_suspend_pm_event(struct notifier_block *notifier,
 		mtk_lpm_in_suspend = 0;
 		spin_lock(&lpm_abort_locker);
 		if (!cpumask_empty(&abort_cpumask)) {
-			pr_info("[name:spm&][SPM] check cpumask %*pb\n",
+			pr_debug("[name:spm&][SPM] check cpumask %*pb\n",
 					cpumask_pr_args(&abort_cpumask));
 			for_each_cpu(cpu, &abort_cpumask)
 				send_sig(SIGKILL, mtk_lpm_ac[cpu].ts, 0);

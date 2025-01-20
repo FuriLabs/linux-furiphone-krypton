@@ -253,7 +253,7 @@ void mtk_wait_mbox_init_done(void)
 		if (!lpm_apmcu_mbox_data) {
 #ifdef CONFIG_MTK_TINYSYS_SSPM_SUPPORT
 			if (!is_sspm_ready()) {
-				pr_info("[name:mtk_lpm] - sspm mbox not ready !\n");
+				pr_debug("[name:mtk_lpm] - sspm mbox not ready !\n");
 				continue;
 			}
 

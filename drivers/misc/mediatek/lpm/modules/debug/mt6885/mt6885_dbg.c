@@ -33,7 +33,7 @@ static int __init mt6885_dbg_init(void)
 	mt6885_power_gs_init();
 #endif
 	mtk_dbg_common_fs_init();
-	pr_info("%s %d: finish", __func__, __LINE__);
+	pr_debug("%s %d: finish", __func__, __LINE__);
 	return 0;
 }
 

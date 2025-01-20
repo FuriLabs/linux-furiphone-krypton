@@ -257,16 +257,16 @@ int __init mtk_cpc_init(void)
 
 	ret = snprintf(cpc.cpu[CPU_TYPE_L].name, PROF_DEV_NAME_SIZE, "cpu_L");
 	if (ret < 0 || ret >= PROF_DEV_NAME_SIZE)
-		pr_info("LPM cpc debug name assign fail");
+		pr_debug("LPM cpc debug name assign fail");
 	ret = snprintf(cpc.cpu[CPU_TYPE_B].name, PROF_DEV_NAME_SIZE, "cpu_B");
 	if (ret < 0 || ret >= PROF_DEV_NAME_SIZE)
-		pr_info("LPM cpc debug name assign fail");
+		pr_debug("LPM cpc debug name assign fail");
 	ret = snprintf(cpc.cluster.name, PROF_DEV_NAME_SIZE, "cluster");
 	if (ret < 0 || ret >= PROF_DEV_NAME_SIZE)
-		pr_info("LPM cpc debug name assign fail");
+		pr_debug("LPM cpc debug name assign fail");
 	ret = snprintf(cpc.mcusys.name, PROF_DEV_NAME_SIZE, "mcusys");
 	if (ret < 0 || ret >= PROF_DEV_NAME_SIZE)
-		pr_info("LPM cpc debug name assign fail");
+		pr_debug("LPM cpc debug name assign fail");
 
 	mtk_lpm_notifier_register(&mtk_cpc_nb);
 	return 0;

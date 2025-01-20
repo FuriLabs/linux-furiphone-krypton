@@ -37,7 +37,7 @@ static int __init mt6781_dbg_init(void)
 #ifdef CONFIG_MTK_LPM_GS_DUMP_SUPPORT
 	mt6781_power_gs_init();
 #endif
-	pr_info("%s %d: finish", __func__, __LINE__);
+	pr_debug("%s %d: finish", __func__, __LINE__);
 	return 0;
 }
 

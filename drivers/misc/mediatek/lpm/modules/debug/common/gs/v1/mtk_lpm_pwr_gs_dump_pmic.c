@@ -37,7 +37,7 @@ void generic_dump_pmic(const char *pmic_name, int pmic_num,
 		goto ERROR;
 
 	if (IS_ERR(regmap)) {
-		pr_info("%s regmap get failed\n", __func__);
+		pr_debug("%s regmap get failed\n", __func__);
 		goto ERROR;
 	}
 
@@ -52,7 +52,7 @@ void generic_dump_pmic(const char *pmic_name, int pmic_num,
 		for (i = 0; i < user->array_sz; i += 3) {
 			ret = regmap_read(regmap, user->array[i], &val0);
 			if (ret) {
-				pr_info("read pmic-%d 0x%x error\n",
+				pr_debug("read pmic-%d 0x%x error\n",
 					pmic_num, user->array[i]);
 				goto ERROR;
 			}
@@ -78,7 +78,7 @@ void generic_dump_pmic(const char *pmic_name, int pmic_num,
 
 				if (dump_cnt &&
 					((dump_cnt % PER_LINE_TO_PRINT) == 0)) {
-					pr_info("%s", buf);
+					pr_debug("%s", buf);
 					p = buf;
 					p += snprintf(p, sizeof(buf), "\n");
 				}
@@ -86,7 +86,7 @@ void generic_dump_pmic(const char *pmic_name, int pmic_num,
 
 		}
 		if (dump_cnt % PER_LINE_TO_PRINT)
-			pr_info("%s", buf);
+			pr_debug("%s", buf);
 
 	/* dump raw data mode */
 	} else {
@@ -98,7 +98,7 @@ void generic_dump_pmic(const char *pmic_name, int pmic_num,
 		for (i = 0; i < user->array_sz; i += 3) {
 			ret = regmap_read(regmap, user->array[i], &val0);
 			if (ret) {
-				pr_info("read pmic-%d 0x%x error\n",
+				pr_debug("read pmic-%d 0x%x error\n",
 				pmic_num, user->array[i]);
 				goto ERROR;
 			}
@@ -109,13 +109,13 @@ void generic_dump_pmic(const char *pmic_name, int pmic_num,
 					user->array[i], val0);
 
 			if (dump_cnt && ((dump_cnt % PER_LINE_TO_PRINT) == 0)) {
-				pr_info("%s", buf);
+				pr_debug("%s", buf);
 				p = buf;
 				p += snprintf(p, sizeof(buf), "\n");
 			}
 		}
 		if (dump_cnt % PER_LINE_TO_PRINT)
-			pr_info("%s", buf);
+			pr_debug("%s", buf);
 	}
 ERROR:
 	return;
@@ -155,12 +155,12 @@ int mtk_lpm_gs_pmic_cmp(int user)
 		regulator = regulator_get_optional(NULL, (*_pmic)->regulator);
 
 		if (IS_ERR(regulator)) {
-			pr_info("%s regulator get failed\n", __func__);
+			pr_debug("%s regulator get failed\n", __func__);
 			continue;
 		}
 		regmap = regulator_get_regmap(regulator);
 		if ((regmap == NULL) ||  IS_ERR(regmap)) {
-			pr_info("%s regmap get failed\n", __func__);
+			pr_debug("%s regmap get failed\n", __func__);
 			continue;
 		}
 		generic_dump_pmic((*_pmic)->pwr_domain, i,
