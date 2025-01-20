@@ -120,7 +120,7 @@ tscpu_get_min_cpu_pwr(void)
 unsigned int __attribute__ ((weak))
 mt_ppm_get_leakage_mw(enum ppm_cluster_lkg cluster)
 {
-	pr_notice_ratelimited("%s not ready\n", __func__);
+	pr_debug_ratelimited("%s not ready\n", __func__);
 	return 0;
 }
 
@@ -150,7 +150,7 @@ mt_gpufreq_set_power_limit_by_pbm(unsigned int limited_power)
 u32 __attribute__ ((weak))
 spm_vcorefs_get_MD_status(void)
 {
-	pr_notice("%s not ready\n", __func__);
+	pr_debug("%s not ready\n", __func__);
 	return 0;
 }
 
@@ -170,14 +170,14 @@ static int get_battery_volt(void)
 
 	psy = power_supply_get_by_name("battery");
 	if (psy == NULL) {
-		pr_notice("%s can't get battery node\n", __func__);
+		pr_debug("%s can't get battery node\n", __func__);
 		return -ENODEV;
 	}
 
 	ret = power_supply_get_property(psy,
 		POWER_SUPPLY_PROP_VOLTAGE_NOW, &prop);
 	if (ret || prop.intval < 0) {
-		pr_info("%s: POWER_SUPPLY_PROP_VOLTAGE_NOW fail\n", __func__);
+		pr_debug("%s: POWER_SUPPLY_PROP_VOLTAGE_NOW fail\n", __func__);
 		return -EINVAL;
 	}
 
@@ -191,13 +191,13 @@ unsigned int ma_to_mw(unsigned int val)
 
 	bat_vol = get_battery_volt();	/* return mV */
 	if (bat_vol <= 0) {
-		pr_notice_ratelimited("[%s] wrong volt=%d, set 4V\n",
+		pr_debug_ratelimited("[%s] wrong volt=%d, set 4V\n",
 			bat_vol);
 		bat_vol = 4000;
 	}
 
 	ret_val = (bat_vol * val) / 1000;	/* mW = (mV * mA)/1000 */
-	pr_info("[%s] %d(mV) * %d(mA) = %d(mW)\n",
+	pr_debug("[%s] %d(mV) * %d(mA) = %d(mW)\n",
 		__func__, bat_vol, val, ret_val);
 
 	return ret_val;
@@ -208,7 +208,7 @@ void dump_kicker_info(void)
 	struct hpf *hpfmgr = &hpf_ctrl;
 
 	if (mt_pbm_debug)
-		pr_info("(M1/F/G)=%d,%d,%d;(C/G)=%ld,%ld\n",
+		pr_debug("(M1/F/G)=%d,%d,%d;(C/G)=%ld,%ld\n",
 			hpfmgr->switch_md1, hpfmgr->switch_flash,
 			hpfmgr->switch_gpu, hpfmgr->loading_cpu,
 			hpfmgr->loading_gpu);
@@ -224,7 +224,7 @@ int hpf_get_power_leakage(void)
 	hpfmgr->loading_leakage = leakage_cpu + leakage_gpu;
 
 	if (mt_pbm_debug)
-		pr_info("[%s] %ld=%d+%d\n", __func__,
+		pr_debug("[%s] %ld=%d+%d\n", __func__,
 			hpfmgr->loading_leakage, leakage_cpu, leakage_gpu);
 
 	return hpfmgr->loading_leakage;
@@ -317,7 +317,7 @@ static void pbm_allocate_budget_manager(void)
 	/* no any resource can allocate */
 	if (dlpt == 0) {
 		if (mt_pbm_debug)
-			pr_info("DLPT=0\n");
+			pr_debug("DLPT=0\n");
 
 		return;
 	}
@@ -371,7 +371,7 @@ static void pbm_allocate_budget_manager(void)
 	hpf_ctrl.to_gpu_budget = togpu;
 
 	if (mt_pbm_debug) {
-		pr_info("(C/G)=%d,%d=>(D/L/M1/F/C/G)=%d,%d,%d,%d,%d,%d(Multi:%d),%d\n",
+		pr_debug("(C/G)=%d,%d=>(D/L/M1/F/C/G)=%d,%d,%d,%d,%d,%d(Multi:%d),%d\n",
 			cpu, gpu, dlpt, leakage, md1, flash, tocpu, togpu,
 			multiple, cpu_lower_bound);
 	} else {
@@ -385,7 +385,7 @@ static void pbm_allocate_budget_manager(void)
 		if (((abs(pre_tocpu - tocpu) >= 10) && cpu > tocpu) ||
 			((abs(pre_togpu - togpu) >= 10) && gpu > togpu)) {
 	#endif
-			pr_info_ratelimited
+			pr_debug_ratelimited
 			("(C/G)=%d,%d=>(D/L/M1/F/C/G)=%d,%d,%d,%d,%d,%d(Multi:%d),%d\n",
 				cpu, gpu, dlpt, leakage, md1, flash, tocpu, togpu,
 				multiple, cpu_lower_bound);
@@ -409,7 +409,7 @@ static bool pbm_func_enable_check(void)
 	struct pbm *pwrctrl = &pbm_ctrl;
 
 	if (!pwrctrl->feature_en || !pwrctrl->pbm_drv_done) {
-		pr_info("feature_en: %d, pbm_drv_done: %d\n",
+		pr_debug("feature_en: %d, pbm_drv_done: %d\n",
 		pwrctrl->feature_en, pwrctrl->pbm_drv_done);
 		return false;
 	}
@@ -613,13 +613,13 @@ static int pbm_thread_handle(void *data)
 				pbm_allocate_budget_manager();
 				g_dlpt_state_sync = 0;
 			} else {
-				pr_notice("DISABLE PBM\n");
+				pr_debug("DISABLE PBM\n");
 
 				if (g_dlpt_state_sync == 0) {
 					mt_ppm_dlpt_set_limit_by_pbm(0);
 					mt_gpufreq_set_power_limit_by_pbm(0);
 					g_dlpt_state_sync = 1;
-					pr_info("Release DLPT limit\n");
+					pr_debug("Release DLPT limit\n");
 				}
 			}
 		}
@@ -653,13 +653,13 @@ _mt_pbm_pm_callback(struct notifier_block *nb,
 
 	case PM_SUSPEND_PREPARE:
 		if (mt_pbm_debug)
-			pr_info("PM_SUSPEND_PREPARE:start\n");
+			pr_debug("PM_SUSPEND_PREPARE:start\n");
 
 		mutex_lock(&pbm_mutex);
 		g_dlpt_need_do = 0;
 		mutex_unlock(&pbm_mutex);
 		if (mt_pbm_debug)
-			pr_info("PM_SUSPEND_PREPARE:end\n");
+			pr_debug("PM_SUSPEND_PREPARE:end\n");
 
 		break;
 
@@ -668,13 +668,13 @@ _mt_pbm_pm_callback(struct notifier_block *nb,
 
 	case PM_POST_SUSPEND:
 		if (mt_pbm_debug)
-			pr_info("PM_POST_SUSPEND:start\n");
+			pr_debug("PM_POST_SUSPEND:start\n");
 
 		mutex_lock(&pbm_mutex);
 		g_dlpt_need_do = 1;
 		mutex_unlock(&pbm_mutex);
 		if (mt_pbm_debug)
-			pr_info("PM_POST_SUSPEND:end\n");
+			pr_debug("PM_POST_SUSPEND:end\n");
 
 		break;
 
@@ -745,9 +745,9 @@ static ssize_t mt_pbm_debug_proc_write
 		else if (debug == 1)
 			mt_pbm_debug = 1;
 		else
-			pr_notice("should be [0:disable,1:enable]\n");
+			pr_debug("should be [0:disable,1:enable]\n");
 	} else
-		pr_notice("should be [0:disable,1:enable]\n");
+		pr_debug("should be [0:disable,1:enable]\n");
 
 	return count;
 }
@@ -790,10 +790,10 @@ static ssize_t mt_pbm_debug_log_reduc_proc_write
 			mt_pbm_debug = 1;
 			mt_pbm_log_counter = 0;
 		} else {
-			pr_notice("Should be >=0 [0:disable,other:enable]\n");
+			pr_debug("Should be >=0 [0:disable,other:enable]\n");
 		}
 	} else
-		pr_notice("Should be >=0 [0:disable,other:enable]\n");
+		pr_debug("Should be >=0 [0:disable,other:enable]\n");
 
 	return count;
 }
@@ -836,9 +836,9 @@ static ssize_t mt_pbm_stop_proc_write
 			g_pbm_stop = 1;
 
 		else
-			pr_notice("Should be [0:enable pbm, 1:stop pbm]\n");
+			pr_debug("Should be [0:enable pbm, 1:stop pbm]\n");
 	} else
-		pr_notice("Should be [0:enable pbm, 1:stop pbm]\n");
+		pr_debug("Should be [0:enable pbm, 1:stop pbm]\n");
 
 	return count;
 }
@@ -871,7 +871,7 @@ static ssize_t mt_pbm_manual_mode_proc_write
 	if (sscanf(desc, "%d %d %d %d %d %d %d", &manual_mode, &loading_dlpt,
 		&loading_leakage, &loading_md1, &loading_cpu, &loading_gpu,
 		&loading_flash) != 7) {
-		pr_notice("parameter number not correct\n");
+		pr_debug("parameter number not correct\n");
 		return -EPERM;
 	}
 
@@ -887,7 +887,7 @@ static ssize_t mt_pbm_manual_mode_proc_write
 	} else if (manual_mode == 0)
 		pbm_ctrl.manual_mode = 0;
 	else
-		pr_notice("pbm manual setting should be 0 or 1 or 2\n");
+		pr_debug("pbm manual setting should be 0 or 1 or 2\n");
 
 	return count;
 }
@@ -984,17 +984,17 @@ static int __init pbm_module_init(void)
 	register_dlpt_notify(&kicker_pbm_by_dlpt, DLPT_PRIO_PBM);
 	ret = create_pbm_kthread();
 	if (ret) {
-		pr_notice("FAILED TO CREATE PBM KTHREAD\n");
+		pr_debug("FAILED TO CREATE PBM KTHREAD\n");
 		return ret;
 	}
 
 	#ifdef MD_POWER_UT
-	/* pr_info("share_reg: %x", spm_vcorefs_get_MD_status());*/
+	/* pr_debug("share_reg: %x", spm_vcorefs_get_MD_status());*/
 	mt_pbm_debug = 1;
 	md_power_meter_ut();
 	#endif
 
-	pr_info("%s : Done\n", __func__);
+	pr_debug("%s : Done\n", __func__);
 
 	return ret;
 }
@@ -1023,7 +1023,7 @@ void kicker_pbm_by_flash(bool status)
 
 static int __init pbm_module_init(void)
 {
-	pr_notice("DISABLE_PBM_FEATURE is defined.\n");
+	pr_debug("DISABLE_PBM_FEATURE is defined.\n");
 	return 0;
 }
 

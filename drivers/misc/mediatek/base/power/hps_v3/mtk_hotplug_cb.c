@@ -206,7 +206,7 @@ static int cpu_hotplug_cb_notifier(unsigned long action, int cpu)
 			0, 0);
 #if defined(CONFIG_MACH_MT6799) || defined(CONFIG_MACH_MT6759) \
 || defined(CONFIG_MACH_MT6763) || defined(CONFIG_MACH_MT6758)
-			/*pr_info("End of power off cluster %d\n", cpu/4);*/
+			/*pr_debug("End of power off cluster %d\n", cpu/4);*/
 			switch (cpu/4) {/*Turn off ARM PLL*/
 			case 0:
 				/*1. Switch to SW mode*/
@@ -286,7 +286,7 @@ static int hps_pm_event(struct notifier_block *notifier,
 		hps_ctxt.enabled_backup = hps_ctxt.enabled;
 		hps_ctxt.enabled = 0;
 		mutex_unlock(&hps_ctxt.lock);
-		pr_info
+		pr_debug
 	("[HPS]PM_SUSPEND_PREPARE hps_enabled %d, hps_enabled_backup %d\n",
 			hps_ctxt.enabled, hps_ctxt.enabled_backup);
 		break;
@@ -294,7 +294,7 @@ static int hps_pm_event(struct notifier_block *notifier,
 		mutex_lock(&hps_ctxt.lock);
 		hps_ctxt.enabled = hps_ctxt.enabled_backup;
 		mutex_unlock(&hps_ctxt.lock);
-		pr_info
+		pr_debug
 	("[HPS]PM_POST_SUSPEND hps_enabled %d, hps_enabled_backup %d\n",
 			hps_ctxt.enabled, hps_ctxt.enabled_backup);
 		break;
@@ -332,7 +332,7 @@ static __init int hotplug_cb_init(void)
 	for (i = 0; i < num_possible_cpus(); i++)
 		set_cpu_present(i, true);
 
-	pr_info("CPU Hotplug Low Power Notification\n");
+	pr_debug("CPU Hotplug Low Power Notification\n");
 #if defined(CONFIG_MACH_MT6799) || defined(CONFIG_MACH_MT6759)
 	hps_pm_notifier_func = (struct notifier_block){
 		.notifier_call = hps_pm_event,
@@ -344,7 +344,7 @@ static __init int hotplug_cb_init(void)
 		pr_debug("Failed to register HPS PM notifier.\n");
 		return ret;
 	}
-	pr_info("HPS PM Notification\n");
+	pr_debug("HPS PM Notification\n");
 #endif
 
 	cpuhp_setup_state_nocalls(CPUHP_BP_PREPARE_DYN,

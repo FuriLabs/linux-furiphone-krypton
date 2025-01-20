@@ -41,7 +41,7 @@ static bool md1_ccci_ready;
 u32 __attribute__ ((weak))
 spm_vcorefs_get_MD_status(void)
 {
-	pr_notice_ratelimited("%s not ready\n", __func__);
+	pr_debug_ratelimited("%s not ready\n", __func__);
 	return 0;
 }
 
@@ -53,7 +53,7 @@ void init_md_section_level(enum pbm_kicker kicker)
 	share_mem =
 		(u32 *)get_smem_start_addr(MD_SYS1, SMEM_USER_RAW_DBM, NULL);
 	if (share_mem == NULL) {
-		pr_notice("ERROR: can't get SMEM_USER_RAW_DBM address");
+		pr_debug("ERROR: can't get SMEM_USER_RAW_DBM address");
 		return;
 	}
 #else
@@ -79,7 +79,7 @@ int get_md1_power(enum mdpm_power_type power_type, bool need_update)
 
 	if (power_type >= POWER_TYPE_NUM ||
 		power_type < 0) {
-		pr_notice("[md1_power] invalid power_type=%d\n",
+		pr_debug("[md1_power] invalid power_type=%d\n",
 			power_type);
 		return 0;
 	}
@@ -109,7 +109,7 @@ int get_md1_power(enum mdpm_power_type power_type, bool need_update)
 	g_dbm_power[power_type] = dbm_power;
 
 	if (mt_mdpm_debug)
-		pr_info("[md1_power] scenario_power=%d dbm_power=%d total=%d\n",
+		pr_debug("[md1_power] scenario_power=%d dbm_power=%d total=%d\n",
 			scenario_power, dbm_power, scenario_power + dbm_power);
 
 	return scenario_power + dbm_power;
@@ -150,9 +150,9 @@ static ssize_t mt_mdpm_debug_proc_write
 		else if (debug == 1)
 			mt_mdpm_debug = 1;
 		else
-			pr_notice("should be [0:disable,1:enable]\n");
+			pr_debug("should be [0:disable,1:enable]\n");
 	} else
-		pr_notice("should be [0:disable,1:enable]\n");
+		pr_debug("should be [0:disable,1:enable]\n");
 
 	return count;
 }
@@ -233,7 +233,7 @@ static int mt_mdpm_create_procfs(void)
 #else /* MD_POWER_METER_ENABLE */
 void init_md_section_level(enum pbm_kicker kicker)
 {
-	pr_notice("MD_POWER_METER_ENABLE:0\n");
+	pr_debug("MD_POWER_METER_ENABLE:0\n");
 }
 
 int get_md1_power(enum mdpm_power_type power_type, bool need_update)

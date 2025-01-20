@@ -452,7 +452,7 @@ int spower_procfs_init(void)
 	dir = proc_mkdir("leakage", NULL);
 
 	if (!dir) {
-		pr_notice("fail to create /proc/leakage @ %s()\n",
+		pr_debug("fail to create /proc/leakage @ %s()\n",
 								__func__);
 		return -ENOMEM;
 	}
@@ -460,7 +460,7 @@ int spower_procfs_init(void)
 	for (i = 0; i < ARRAY_SIZE(entries); i++) {
 		if (!proc_create
 		    (entries[i].name, 0664, dir, entries[i].fops))
-			pr_notice("%s(), create /proc/leakage/%s failed\n",
+			pr_debug("%s(), create /proc/leakage/%s failed\n",
 				__func__, entries[i].name);
 	}
 	return 0;
@@ -495,25 +495,25 @@ int mt_spower_init(void)
 
 	node = of_find_node_by_name(NULL, "eem_fsm");
 	if (node == NULL) {
-		pr_notice("%s fail to get device node (eem_fsm)\n", __func__);
+		pr_debug("%s fail to get device node (eem_fsm)\n", __func__);
 		err_flag = 1;
 		goto efuse_end;
 	}
 	pdev = of_device_alloc(node, NULL, NULL);
 	if (pdev == NULL) {
-		pr_notice("%s fail to create pdev 1 (eem_fsm)\n", __func__);
+		pr_debug("%s fail to create pdev 1 (eem_fsm)\n", __func__);
 		node = of_find_node_by_name(NULL, "lkg");
 		if (node == NULL) {
-			pr_notice("%s fail to get device node (lkg)\n", __func__);
+			pr_debug("%s fail to get device node (lkg)\n", __func__);
 			err_flag = 1;
 			goto efuse_end;
 		}
 		pdev = of_device_alloc(node, NULL, NULL);
 		if (pdev == NULL) {
-			pr_notice("%s fail to create pdev 1 (lkg)\n", __func__);
+			pr_debug("%s fail to create pdev 1 (lkg)\n", __func__);
 			pdev = of_find_device_by_node(node);
 			if (pdev == NULL) {
-				pr_notice("%s fail to create pdev 2 (lkg)\n", __func__);
+				pr_debug("%s fail to create pdev 2 (lkg)\n", __func__);
 				err_flag = 2;
 				goto efuse_end;
 			}
@@ -522,7 +522,7 @@ int mt_spower_init(void)
 
 	nvmem_dev = nvmem_device_get(&pdev->dev, "mtk_efuse");
 	if (IS_ERR(nvmem_dev)) {
-		pr_notice("%s failed to get mtk_efuse device\n",
+		pr_debug("%s failed to get mtk_efuse device\n",
 			__func__);
 		err_flag = 3;
 		goto efuse_end;
@@ -545,7 +545,7 @@ efuse_end:
 				&devinfo);
 		temp_lkg =
 			(devinfo >> spower_lkg_info[i].devinfo_offset) & 0xff;
-		pr_notice("[Efuse] %s => 0x%x\n", spower_lkg_info[i].name,
+		pr_debug("[Efuse] %s => 0x%x\n", spower_lkg_info[i].name,
 				temp_lkg);
 		/*
 		 * if has leakage info in efuse, get the final leakage
@@ -655,7 +655,7 @@ int mt_spower_get_efuse_lkg(int dev)
 	id = spower_raw[dev].leakage_id;
 
 	if (id < 0) {
-		pr_notice("%s get error lkg id\n", __func__);
+		pr_debug("%s get error lkg id\n", __func__);
 		return 0;
 	}
 

@@ -18,45 +18,45 @@ bool is_srclken_initiated;
 
 void __attribute__((weak)) srclken_stage_init(void)
 {
-	pr_info("%s: dummy func\n", __func__);
+	pr_debug("%s: dummy func\n", __func__);
 }
 
 enum srclken_config __attribute__((weak)) srclken_get_stage(void)
 {
-	pr_info("%s: dummy func\n", __func__);
+	pr_debug("%s: dummy func\n", __func__);
 	return SRCLKEN_NOT_SUPPORT;
 }
 
 int __attribute__((weak)) srclken_dts_map(void)
 {
-	pr_info("%s: dummy func\n", __func__);
+	pr_debug("%s: dummy func\n", __func__);
 	return 0;
 }
 
 bool __attribute__((weak)) srclken_get_debug_cfg(void)
 {
-	pr_info("%s: dummy func\n", __func__);
+	pr_debug("%s: dummy func\n", __func__);
 	return false;
 }
 
 void __attribute__((weak)) srclken_dump_cfg_log(void)
 {
-	pr_info("%s: dummy func\n", __func__);
+	pr_debug("%s: dummy func\n", __func__);
 }
 
 void __attribute__((weak)) srclken_dump_sta_log(void)
 {
-	pr_info("%s: dummy func\n", __func__);
+	pr_debug("%s: dummy func\n", __func__);
 }
 
 void __attribute__((weak)) srclken_dump_last_sta_log(void)
 {
-	pr_info("%s: dummy func\n", __func__);
+	pr_debug("%s: dummy func\n", __func__);
 }
 
 int __attribute__((weak)) srclken_fs_init(void)
 {
-	pr_info("%s: dummy func\n", __func__);
+	pr_debug("%s: dummy func\n", __func__);
 	return 0;
 }
 
@@ -87,7 +87,7 @@ static struct syscore_ops srclken_chk_syscore_ops = {
 int srclken_init(void)
 {
 	if (srclken_dts_map()) {
-		pr_notice("%s: failed due to DTS failed\n", __func__);
+		pr_debug("%s: failed due to DTS failed\n", __func__);
 		return -1;
 	}
 

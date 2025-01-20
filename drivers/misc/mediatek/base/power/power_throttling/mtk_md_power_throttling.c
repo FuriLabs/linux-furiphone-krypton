@@ -31,7 +31,7 @@ static void md_pt_low_battery_cb(enum LOW_BATTERY_LEVEL_TAG level)
 	}
 
 	if (ret || !md_throttle_cmd)
-		pr_notice("%s: error, ret=%d, cmd=0x%x l=%d\n", __func__, ret,
+		pr_debug("%s: error, ret=%d, cmd=0x%x l=%d\n", __func__, ret,
 			md_throttle_cmd, level);
 }
 #endif
@@ -58,7 +58,7 @@ static void md_pt_over_current_cb(enum BATTERY_OC_LEVEL_TAG level)
 	}
 
 	if (ret || !md_throttle_cmd)
-		pr_notice("%s: error, ret=%d, cmd=0x%x l=%d\n", __func__, ret,
+		pr_debug("%s: error, ret=%d, cmd=0x%x l=%d\n", __func__, ret,
 			md_throttle_cmd, level);
 }
 #endif
@@ -87,7 +87,7 @@ static void md_pt_battery_percent_cb(enum BATTERY_PERCENT_LEVEL_TAG level)
 	}
 
 	if (ret || !md_throttle_cmd)
-		pr_notice("%s: error, ret=%d, cmd=0x%x l=%d\n", __func__, ret,
+		pr_debug("%s: error, ret=%d, cmd=0x%x l=%d\n", __func__, ret,
 			md_throttle_cmd, level);
 }
 #endif

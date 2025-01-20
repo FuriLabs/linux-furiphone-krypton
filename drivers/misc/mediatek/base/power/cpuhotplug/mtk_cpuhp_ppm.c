@@ -155,7 +155,7 @@ void ppm_notifier(void)
 		smp_method = of_get_property(dn, "smp-method", NULL);
 		if (smp_method != NULL) {
 			if (!strcmp("disabled", smp_method)) {
-				pr_info("[ENTER Hotplug DEBUG MODE!!!]\n");
+				pr_debug("[ENTER Hotplug DEBUG MODE!!!]\n");
 				return;
 			}
 		}
@@ -164,7 +164,7 @@ void ppm_notifier(void)
 	/* create a kthread to serve the requests from PPM */
 	ppm_kthread = kthread_create(ppm_thread_fn, NULL, "cpuhp-ppm");
 	if (IS_ERR(ppm_kthread)) {
-		pr_notice("error creating ppm kthread (%ld)\n",
+		pr_debug("error creating ppm kthread (%ld)\n",
 		       PTR_ERR(ppm_kthread));
 		return;
 	}

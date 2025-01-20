@@ -37,7 +37,7 @@
  */
 #define EEM_TAG	 "[xxxxEEM] "
 #if 1
-	#define eem_error(fmt, args...)		pr_notice(EEM_TAG fmt, ##args)
+	#define eem_error(fmt, args...)		pr_debug(EEM_TAG fmt, ##args)
 	#define eem_warning(fmt, args...)
 	#define eem_notice(fmt, args...)
 	#define eem_info(fmt, args...)

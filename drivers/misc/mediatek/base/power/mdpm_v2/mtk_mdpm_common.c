@@ -50,7 +50,7 @@ void init_md_section_level(enum pbm_kicker kicker)
 	share_mem =
 		(u32 *)get_smem_start_addr(MD_SYS1, SMEM_USER_RAW_DBM, NULL);
 	if (share_mem == NULL) {
-		pr_info_ratelimited("can't get dbm share memory\n");
+		pr_debug_ratelimited("can't get dbm share memory\n");
 		return;
 	}
 
@@ -63,7 +63,7 @@ void init_md_section_level(enum pbm_kicker kicker)
 		init_version_check(share_mem);
 		md1_ccci_ready = 1;
 	} else
-		pr_notice("unknown MD kicker: %d\n", kicker);
+		pr_debug("unknown MD kicker: %d\n", kicker);
 #else
 	return;
 #endif
@@ -81,7 +81,7 @@ int get_md1_power(enum mdpm_power_type power_type, bool need_update)
 
 	if (power_type >= POWER_TYPE_NUM ||
 		power_type < 0) {
-		pr_notice("[md1_power] invalid power_type=%d\n",
+		pr_debug("[md1_power] invalid power_type=%d\n",
 			power_type);
 		return 0;
 	}
@@ -102,7 +102,7 @@ int get_md1_power(enum mdpm_power_type power_type, bool need_update)
 	share_mem = (u32 *)get_smem_start_addr(MD_SYS1, SMEM_USER_RAW_DBM,
 		NULL);
 	if (share_mem == NULL) {
-		pr_info_ratelimited("can't get dbm share memory\n");
+		pr_debug_ratelimited("can't get dbm share memory\n");
 		return MAX_MD1_POWER;
 	}
 #ifdef DBM_RESERVE_OFFSET
@@ -123,7 +123,7 @@ int get_md1_power(enum mdpm_power_type power_type, bool need_update)
 		&mdpm_power_sta);
 
 	if (mt_mdpm_debug)
-		pr_info("[md1_power] scenario_power=%d tx_power=%d total=%d\n",
+		pr_debug("[md1_power] scenario_power=%d tx_power=%d total=%d\n",
 			scenario_power, tx_power, scenario_power + tx_power);
 
 	return scenario_power + tx_power;
@@ -165,9 +165,9 @@ static ssize_t mt_mdpm_debug_proc_write
 		if (debug >= 0 && debug <= 2)
 			mt_mdpm_debug = debug;
 		else
-			pr_notice("should be [0:disable, 1,2:enable level]\n");
+			pr_debug("should be [0:disable, 1,2:enable level]\n");
 	} else
-		pr_notice("should be [0:disable, 1,2:enable level]\n");
+		pr_debug("should be [0:disable, 1,2:enable level]\n");
 
 	return count;
 }
@@ -234,14 +234,14 @@ static int mt_mdpm_create_procfs(void)
 	dir = proc_mkdir("mdpm", NULL);
 
 	if (!dir) {
-		pr_info("fail to create /proc/mdpm @ %s()\n", __func__);
+		pr_debug("fail to create /proc/mdpm @ %s()\n", __func__);
 		return -ENOMEM;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(entries); i++) {
 		if (!proc_create
 		    (entries[i].name, 0664, dir, entries[i].fops))
-			pr_info("@%s: create /proc/mdpm/%s failed\n", __func__,
+			pr_debug("@%s: create /proc/mdpm/%s failed\n", __func__,
 				    entries[i].name);
 	}
 
@@ -251,7 +251,7 @@ static int mt_mdpm_create_procfs(void)
 #else /* MD_POWER_METER_ENABLE */
 void init_md_section_level(enum pbm_kicker kicker)
 {
-	pr_notice("MD_POWER_METER_ENABLE:0\n");
+	pr_debug("MD_POWER_METER_ENABLE:0\n");
 }
 
 int get_md1_power(enum mdpm_power_type power_type, bool need_update)

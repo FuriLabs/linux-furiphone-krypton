@@ -44,7 +44,7 @@
 #undef TAG
 #define TAG     "[Picachu] "
 
-#define picachu_pr_notice(fmt, args...)	pr_notice(TAG fmt, ##args)
+#define picachu_pr_debug(fmt, args...)	pr_debug(TAG fmt, ##args)
 
 #define picachu_read(addr)		__raw_readl((void __iomem *)(addr))
 #define picachu_write(addr, val)	mt_reg_sync_writel(val, addr)
@@ -156,7 +156,7 @@ static void get_picachu_mem_addr(void)
 			picachu_mem_base_phys,
 			picachu_mem_size);
 	}
-	picachu_pr_notice("[PICACHU] phys:0x%llx, size:0x%llx, virt:0x%llx\n",
+	picachu_pr_debug("[PICACHU] phys:0x%llx, size:0x%llx, virt:0x%llx\n",
 		(unsigned long long)picachu_mem_base_phys,
 		(unsigned long long)picachu_mem_size,
 		(unsigned long long)picachu_mem_base_virt);
@@ -215,7 +215,7 @@ static int create_procfs_entries(struct proc_dir_entry *dir,
 		if (!proc_create_data(entries[i].name, proc->mode, dir,
 				entries[i].fops,
 				(void *) &picachu_data[proc->vproc_id])) {
-			picachu_pr_notice("create /proc/picachu/%s failed\n",
+			picachu_pr_debug("create /proc/picachu/%s failed\n",
 					entries[i].name);
 			return -ENOMEM;
 		}
@@ -232,14 +232,14 @@ static int create_procfs(void)
 
 	root = proc_mkdir("picachu", NULL);
 	if (!root) {
-		picachu_pr_notice("mkdir /proc/picachu failed\n");
+		picachu_pr_debug("mkdir /proc/picachu failed\n");
 		return -ENOMEM;
 	}
 
 	for (proc = picachu_proc_list; proc->name; proc++) {
 		dir = proc_mkdir(proc->name, root);
 		if (!dir) {
-			picachu_pr_notice("mkdir /proc/picachu/%s failed\n",
+			picachu_pr_debug("mkdir /proc/picachu/%s failed\n",
 							proc->name);
 			return -ENOMEM;
 		}

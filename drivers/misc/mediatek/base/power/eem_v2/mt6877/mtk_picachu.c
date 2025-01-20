@@ -54,7 +54,7 @@
 #undef TAG
 #define TAG     "[Picachu] "
 
-#define picachu_pr_notice(fmt, args...)	pr_notice(TAG fmt, ##args)
+#define picachu_pr_debug(fmt, args...)	pr_debug(TAG fmt, ##args)
 
 #define picachu_read(addr)		__raw_readl((void __iomem *)(addr))
 #define picachu_write(addr, val)	mt_reg_sync_writel(val, addr)
@@ -227,7 +227,7 @@ static int create_procfs_entries(struct proc_dir_entry *dir,
 		if (!proc_create_data(entries[i].name, proc->mode, dir,
 				entries[i].fops,
 				(void *) &picachu_data[proc->vproc_id])) {
-			picachu_pr_notice("create /proc/picachu/%s failed\n",
+			picachu_pr_debug("create /proc/picachu/%s failed\n",
 					entries[i].name);
 			return -ENOMEM;
 		}
@@ -245,14 +245,14 @@ static int create_procfs(void)
 
 	root = proc_mkdir("picachu", NULL);
 	if (!root) {
-		picachu_pr_notice("mkdir /proc/picachu failed\n");
+		picachu_pr_debug("mkdir /proc/picachu failed\n");
 		return -ENOMEM;
 	}
 
 	for (proc = picachu_proc_list; proc->name; proc++) {
 		dir = proc_mkdir(proc->name, root);
 		if (!dir) {
-			picachu_pr_notice("mkdir /proc/picachu/%s failed\n",
+			picachu_pr_debug("mkdir /proc/picachu/%s failed\n",
 							proc->name);
 			return -ENOMEM;
 		}
@@ -268,7 +268,7 @@ static int create_procfs(void)
 phys_addr_t picachu_reserve_mem_get_phys(unsigned int id)
 {
 	if (id >= NUMS_MEM_ID) {
-		pr_info("[picachu] no reserve memory for 0x%x", id);
+		pr_debug("[picachu] no reserve memory for 0x%x", id);
 		return 0;
 	} else
 		return picachu_reserve_mblock[id].start_phys;
@@ -279,7 +279,7 @@ EXPORT_SYMBOL_GPL(picachu_reserve_mem_get_phys);
 phys_addr_t picachu_reserve_mem_get_virt(unsigned int id)
 {
 	if (id >= NUMS_MEM_ID) {
-		pr_info("[picachu] no reserve memory for 0x%x", id);
+		pr_debug("[picachu] no reserve memory for 0x%x", id);
 		return 0;
 	} else
 		return picachu_reserve_mblock[id].start_virt;
@@ -290,7 +290,7 @@ EXPORT_SYMBOL_GPL(picachu_reserve_mem_get_virt);
 phys_addr_t picachu_reserve_mem_get_size(unsigned int id)
 {
 	if (id >= NUMS_MEM_ID) {
-		pr_info("[picachu] no reserve memory for 0x%x", id);
+		pr_debug("[picachu] no reserve memory for 0x%x", id);
 		return 0;
 	} else
 		return picachu_reserve_mblock[id].size;
@@ -305,12 +305,12 @@ static int _picachu_reserve_memory_init(void)
 	phys_addr_t accumlate_memory_size;
 
 	if (NUMS_MEM_ID == 0) {
-		pr_info("[picachu] NUMS_MEM_ID is NULL\n");
+		pr_debug("[picachu] NUMS_MEM_ID is NULL\n");
 		return 0;
 	}
 
 	if (picachu_mem_base_phys == 0) {
-		pr_info("[picachu] picachu_mem_base_phys is NULL\n");
+		pr_debug("[picachu] picachu_mem_base_phys is NULL\n");
 		return -1;
 	}
 
@@ -318,7 +318,7 @@ static int _picachu_reserve_memory_init(void)
 	picachu_mem_base_virt = (phys_addr_t)(uintptr_t)
 			ioremap_wc(picachu_mem_base_phys, picachu_mem_size);
 
-	pr_info("[picachu]reserve mem: virt:0x%llx - 0x%llx (0x%llx)\n",
+	pr_debug("[picachu]reserve mem: virt:0x%llx - 0x%llx (0x%llx)\n",
 			(unsigned long long)picachu_mem_base_virt,
 			(unsigned long long)picachu_mem_base_virt +
 			(unsigned long long)picachu_mem_size,
@@ -337,8 +337,8 @@ static int _picachu_reserve_memory_init(void)
 
 #ifdef DEBUG
 	for (id = 0; id < NUMS_MEM_ID; id++) {
-		pr_info("[picachu][mem_reserve-%d] ", id);
-		pr_info("phys:0x%llx,virt:0x%llx,size:0x%llx\n",
+		pr_debug("[picachu][mem_reserve-%d] ", id);
+		pr_debug("phys:0x%llx,virt:0x%llx,size:0x%llx\n",
 			(unsigned long long)picachu_reserve_mem_get_phys(id),
 			(unsigned long long)picachu_reserve_mem_get_virt(id),
 			(unsigned long long)picachu_reserve_mem_get_size(id));
@@ -356,7 +356,7 @@ static int __init picachu_reserve_mem_of_init(struct reserved_mem *rmem)
 	picachu_mem_base_phys = (phys_addr_t) rmem->base;
 	picachu_mem_size = (phys_addr_t) rmem->size;
 
-	pr_info("[picachu] phys:0x%llx - 0x%llx (0x%llx)\n",
+	pr_debug("[picachu] phys:0x%llx - 0x%llx (0x%llx)\n",
 		(unsigned long long)rmem->base,
 		(unsigned long long)rmem->base + (unsigned long long)rmem->size,
 		(unsigned long long)rmem->size);
@@ -366,8 +366,8 @@ static int __init picachu_reserve_mem_of_init(struct reserved_mem *rmem)
 							accumlate_memory_size;
 		accumlate_memory_size += picachu_reserve_mblock[id].size;
 
-		pr_info("[picachu][reserve_mem:%d]: ", id);
-		pr_info("phys:0x%llx - 0x%llx (0x%llx)\n",
+		pr_debug("[picachu][reserve_mem:%d]: ", id);
+		pr_debug("phys:0x%llx - 0x%llx (0x%llx)\n",
 			picachu_reserve_mblock[id].start_phys,
 			picachu_reserve_mblock[id].start_phys +
 				picachu_reserve_mblock[id].size,
@@ -402,20 +402,20 @@ static void _cheak_aee_parameter(void)
 			if (val & (0x1 << 0)) {
 				aee_kernel_exception("PICACHU",
 					"Error: picachu is disable via DOE");
-				pr_info("[PICACHU] Error: picachu is disable via DOE");
+				pr_debug("[PICACHU] Error: picachu is disable via DOE");
 			}
 			if (val & (0x1 << 1)) {
 				aee_kernel_exception("PICACHU",
 					"Error: picachu para image not found");
-				pr_info("[PICACHU] Error: picachu para image not found");
+				pr_debug("[PICACHU] Error: picachu para image not found");
 			}
 			if (val & (0x1 << 2)) {
 				aee_kernel_exception("PICACHU", "Error: use safe efuse");
-				pr_info("[PICACHU] Error: use safe efuse");
+				pr_debug("[PICACHU] Error: use safe efuse");
 			}
 		} else {
 			aee_kernel_exception("PICACHU", "Error: sig = %d", sig);
-			pr_info("[PICACHU] Error: sig = %d", sig);
+			pr_debug("[PICACHU] Error: sig = %d", sig);
 		}
 
 		val = picachu_read(addr_ptr + 0x4);
@@ -424,7 +424,7 @@ static void _cheak_aee_parameter(void)
 		db_major_ver = (val & 0x00FF0000) >> 16;
 		db_mirror_ver = (val & 0xFF000000) >> 24;
 
-		pr_info("[PICACHU]fuse_major_ver=%d, efuse_mirror_ver=%d, db_major_ver=%d, db_mirror_ver=%d\n",
+		pr_debug("[PICACHU]fuse_major_ver=%d, efuse_mirror_ver=%d, db_major_ver=%d, db_mirror_ver=%d\n",
 			efuse_major_ver,
 			efuse_mirror_ver,
 			db_major_ver,
@@ -435,7 +435,7 @@ static void _cheak_aee_parameter(void)
 			"Error:efuse_major_ver=%d > db_major_ver=%d, need to update DB",
 			efuse_major_ver,
 			db_major_ver);
-			pr_info("[PICACHU] Error:efuse_major_ver=%d > db_major_ver=%d, need to update DB",
+			pr_debug("[PICACHU] Error:efuse_major_ver=%d > db_major_ver=%d, need to update DB",
 			efuse_major_ver,
 			db_major_ver);
 		}
@@ -445,7 +445,7 @@ static void _cheak_aee_parameter(void)
 			"Warning:efuse_mirror_ver=%d > db_mirror_ver=%d",
 			efuse_mirror_ver,
 			db_mirror_ver);
-			pr_info("PICACHU Warning:efuse_mirror_ver=%d > db_mirror_ver=%d",
+			pr_debug("PICACHU Warning:efuse_mirror_ver=%d > db_mirror_ver=%d",
 			efuse_mirror_ver,
 			db_mirror_ver);
 		}

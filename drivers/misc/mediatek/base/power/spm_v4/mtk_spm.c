@@ -619,7 +619,7 @@ int __init spm_module_init(void)
 	else {
 		sleep_node = of_find_compatible_node(NULL, NULL, "mediatek,sleep");
 
-		pr_info("success to request spm_wakelock\n");
+		pr_debug("success to request spm_wakelock\n");
 
 		if (sleep_node) {
 			of_property_read_string(sleep_node, "suspend-method", &pMethod);
