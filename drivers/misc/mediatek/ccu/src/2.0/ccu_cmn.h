@@ -217,11 +217,11 @@ void ccu_clock_disable(void);
 #define LOG_DBG(format, args...)
 #define LOG_INF(format, args...)
 #define LOG_WARN(format, args...) \
-	pr##_##warn(CCU_TAG "[%s] " format, __func__, ##args)
+	pr_debug(CCU_TAG "[%s] " format, __func__, ##args)
 #define LOG_ERR(format, args...) \
-	pr##_##err(CCU_TAG "[%s] " format, __func__, ##args)
+	pr_debug(CCU_TAG "[%s] " format, __func__, ##args)
 #define LOG_DERR(device, format, args...) \
-	dev##_##err(device, CCU_TAG "[%s] " format, __func__, ##args)
+	dev_dbg(device, CCU_TAG "[%s] " format, __func__, ##args)
 
 #define ccu_print_seq(seq_file, fmt, args...) \
 		do {\
