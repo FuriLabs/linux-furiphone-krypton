@@ -42,6 +42,12 @@ config PINCTRL_MTK_PARIS
 	select OF_GPIO
 	select PINCTRL_MTK_V2
 
+config PINCTRL_MTK_DEBUG
+        bool
+        depends on OF
+        select PINCTRL_MTK_PARIS
+	default n
+
 # For ARMv7 SoCs
 config PINCTRL_MT2701
 	bool "Mediatek MT2701 pin control"
