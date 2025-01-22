@@ -1305,7 +1305,7 @@ struct platform_device *vcu_get_plat_device(struct platform_device *pdev)
 
 	vcu_node = of_parse_phandle(dev->of_node, "mediatek,vcu", 0);
 	if (vcu_node == NULL) {
-		dev_err(dev, "[VCU] can't get vcu node\n");
+		dev_dbg(dev, "[VCU] can't get vcu node\n");
 		return NULL;
 	}
 
