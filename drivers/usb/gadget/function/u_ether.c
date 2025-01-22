@@ -535,9 +535,9 @@ static void set_rps_map_work(struct work_struct *work)
 	if (!dev->port_usb)
 		return;
 
-	/* pr_info("%s - set rps to 0xff\n", __func__); */
+	/* pr_debug("%s - set rps to 0xff\n", __func__); */
 	/* set_rps_map(dev->net->_rx, 0xff); */
-	pr_info("%s - NOT implement RPS patch yet\n", __func__);
+	pr_debug("%s - NOT implement RPS patch yet\n", __func__);
 }
 
 static void tx_complete(struct usb_ep *ep, struct usb_request *req)
@@ -1002,7 +1002,7 @@ success:
 static void eth_start(struct eth_dev *dev, gfp_t gfp_flags)
 {
 	U_ETHER_DBG("\n");
-	pr_info("%s - queue_work set_rps_map\n", __func__);
+	pr_debug("%s - queue_work set_rps_map\n", __func__);
 	queue_work(uether_rps_wq, &dev->rps_map_work);
 
 	/* fill the rx queue */
@@ -1037,7 +1037,7 @@ static int eth_stop(struct net_device *net)
 	unsigned long	flags;
 
 	U_ETHER_DBG("\n");
-	pr_info("%s, START !!!!\n", __func__);
+	pr_debug("%s, START !!!!\n", __func__);
 	netif_stop_queue(net);
 
 	DBG(dev, "stop stats: rx/tx %ld/%ld, errs %ld/%ld\n",
@@ -1077,7 +1077,7 @@ static int eth_stop(struct net_device *net)
 		}
 	}
 	spin_unlock_irqrestore(&dev->lock, flags);
-	pr_info("%s, END !!!!\n", __func__);
+	pr_debug("%s, END !!!!\n", __func__);
 
 	return 0;
 }
@@ -1633,18 +1633,18 @@ static int __init gether_init(void)
 {
 	uether_wq  = create_singlethread_workqueue("uether");
 	if (!uether_wq) {
-		pr_info("%s: create workqueue fail: uether\n", __func__);
+		pr_debug("%s: create workqueue fail: uether\n", __func__);
 		return -ENOMEM;
 	}
 	uether_wq1  = create_singlethread_workqueue("uether_rx1");
 	if (!uether_wq1) {
 		destroy_workqueue(uether_wq);
-		pr_info("%s: create workqueue fail: uether_rx1\n", __func__);
+		pr_debug("%s: create workqueue fail: uether_rx1\n", __func__);
 		return -ENOMEM;
 	}
 	uether_rps_wq  = create_singlethread_workqueue("uether_rps");
 	if (!uether_rps_wq)
-		pr_info("%s: create workqueue fail: uether_rps\n", __func__);
+		pr_debug("%s: create workqueue fail: uether_rps\n", __func__);
 	return 0;
 }
 module_init(gether_init);
