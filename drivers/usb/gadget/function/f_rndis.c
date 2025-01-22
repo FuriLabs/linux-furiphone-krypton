@@ -80,7 +80,7 @@ module_param(f_rndis_debug, uint, 0644);
 MODULE_PARM_DESC(f_rndis_debug,
 		"f_rndis debug flag");
 #define F_RNDIS_DBG(fmt, args...) \
-	pr_notice("F_RNDIS,%s, " fmt, __func__, ## args)
+	pr_debug("F_RNDIS,%s, " fmt, __func__, ## args)
 static struct f_rndis *_rndis;
 static spinlock_t rndis_lock;
 struct f_rndis {
