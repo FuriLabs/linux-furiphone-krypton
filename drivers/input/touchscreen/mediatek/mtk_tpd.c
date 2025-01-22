@@ -543,7 +543,6 @@ static int tpd_probe(struct platform_device *pdev)
 #endif
 
 	TPD_DMESG("enter %s, %d\n", __func__, __LINE__);
-	pr_info("enter %s, %d\n", __func__, __LINE__);
 
 	if (misc_register(&tpd_misc_device))
 		pr_info("mtk_tpd: tpd_misc_device register failed\n");
@@ -730,7 +729,6 @@ static void tpd_init_work_callback(struct work_struct *work)
 static int __init tpd_device_init(void)
 {
 	int res = 0;
-	pr_info("[%s-%s-%d]\n", __FILE__, __func__, __LINE__);
 	tpd_init_workqueue = create_singlethread_workqueue("mtk-tpd");
 	INIT_WORK(&tpd_init_work, tpd_init_work_callback);
 
