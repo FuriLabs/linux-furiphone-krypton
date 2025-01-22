@@ -78,16 +78,19 @@
 #define HOST_CMD_TEST_PACKET        0x4
 #define PMSC_PORT_TEST_CTRL_OFFSET  28
 
+#ifdef CONFIG_TRACING
 /*procfs node*/
 #define PROC_FILES_NUM 1
 static struct proc_dir_entry *proc_files[PROC_FILES_NUM] = {
 	NULL};
+#endif
 
 enum ssusb_uwk_vers {
 	SSUSB_UWK_V1 = 1,
 	SSUSB_UWK_V2,
 };
 
+#ifdef CONFIG_TRACING
 static int xhci_testmode_show(struct seq_file *s, void *unused)
 {
 	struct xhci_hcd_mtk *mtk = s->private;
@@ -210,6 +213,7 @@ static void xhci_mtk_dbg_exit(struct xhci_hcd_mtk *mtk)
 			proc_remove(proc_files[idx]);
 	}
 }
+#endif
 
 static int xhci_mtk_host_enable(struct xhci_hcd_mtk *mtk)
 {
@@ -695,8 +699,9 @@ static int xhci_mtk_probe(struct platform_device *pdev)
 	if (ret)
 		goto dealloc_usb2_hcd;
 
+#ifdef CONFIG_TRACING
 	xhci_mtk_dbg_init(mtk);
-
+#endif
 	return 0;
 
 dealloc_usb2_hcd:
@@ -746,8 +751,9 @@ static int xhci_mtk_remove(struct platform_device *dev)
 	xhci_mtk_sch_exit(mtk);
 	xhci_mtk_clks_disable(mtk);
 	xhci_mtk_ldos_disable(mtk);
+#ifdef CONFIG_TRACING
 	xhci_mtk_dbg_exit(mtk);
-
+#endif
 	return 0;
 }
 
