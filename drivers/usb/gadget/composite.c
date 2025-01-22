@@ -2211,7 +2211,7 @@ void composite_disconnect(struct usb_gadget *gadget)
 	unsigned long			flags;
 
 	if (!cdev) {
-		pr_info("%s: cdev freed\n", __func__);
+		pr_debug("%s: cdev freed\n", __func__);
 		return;
 	}
 
@@ -2329,7 +2329,7 @@ int composite_dev_prepare(struct usb_composite_driver *composite,
 	if (!cdev->req->buf)
 		goto fail;
 
-	pr_info("%s %p\n", __func__, cdev->req);
+	pr_debug("%s %p\n", __func__, cdev->req);
 
 	ret = device_create_file(&gadget->dev, &dev_attr_suspended);
 	if (ret)
@@ -2374,7 +2374,7 @@ int composite_os_desc_req_prepare(struct usb_composite_dev *cdev,
 		goto end;
 	}
 
-	pr_info("%s %p\n", __func__, cdev->os_desc_req);
+	pr_debug("%s %p\n", __func__, cdev->os_desc_req);
 
 	cdev->os_desc_req->buf = kmalloc(USB_COMP_EP0_OS_DESC_BUFSIZ,
 					 GFP_KERNEL);
@@ -2399,7 +2399,7 @@ void composite_dev_cleanup(struct usb_composite_dev *cdev)
 		kfree(uc);
 	}
 
-	pr_info("%s os_desc_req[%d]=%p cdev->req[%d]=%p\n",
+	pr_debug("%s os_desc_req[%d]=%p cdev->req[%d]=%p\n",
 			__func__,
 			cdev->os_desc_pending, cdev->os_desc_req,
 			cdev->setup_pending, cdev->req);
@@ -2591,7 +2591,7 @@ int usb_composite_probe(struct usb_composite_driver *driver)
 	if (!driver || !driver->dev || !driver->bind)
 		return -EINVAL;
 
-	pr_info("%s: driver->name = %s", __func__, driver->name);
+	pr_debug("%s: driver->name = %s", __func__, driver->name);
 
 	if (!driver->name)
 		driver->name = "composite";
