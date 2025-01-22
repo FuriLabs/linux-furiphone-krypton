@@ -228,35 +228,6 @@ int update_prefer_idle_value(int kicker, int cgroup_idx, int value)
 EXPORT_SYMBOL(update_prefer_idle_value);
 
 /************************************************/
-static ssize_t perfmgr_boot_boost_proc_write(
-		struct file *filp, const char *ubuf,
-		size_t cnt, loff_t *pos)
-{
-	int cgroup = 0, data = 0;
-
-	int rv = check_group_proc_write(&cgroup, &data, ubuf, cnt);
-
-	if (rv != 0)
-		return rv;
-
-	data = check_uclamp_value(data);
-
-	if (cgroup >= 0 && cgroup < NR_CGROUP)
-		update_eas_uclamp_min(EAS_UCLAMP_KIR_BOOT, cgroup, data);
-
-	return cnt;
-}
-
-static int perfmgr_boot_boost_proc_show(struct seq_file *m, void *v)
-{
-	int i;
-
-	for (i = 0; i < NR_CGROUP; i++)
-		seq_printf(m, "%d\n", uclamp_min[i][EAS_UCLAMP_KIR_BOOT]);
-
-	return 0;
-}
-
 /****************/
 /* uclamp min   */
 /****************/
@@ -1180,7 +1151,6 @@ static int perfmgr_current_prefer_idle_proc_show(struct seq_file *m, void *v)
 #endif
 
 /* uclamp */
-PROC_FOPS_RW(boot_boost);
 PROC_FOPS_RW(perf_uclamp_min);
 PROC_FOPS_RW(debug_uclamp_min);
 PROC_FOPS_RO(cur_uclamp_min);
@@ -1236,7 +1206,6 @@ int uclamp_ctrl_init(struct proc_dir_entry *parent)
 
 	const struct pentry entries[] = {
 		/* uclamp */
-		PROC_ENTRY(boot_boost),
 		PROC_ENTRY(perf_uclamp_min),
 		PROC_ENTRY(debug_uclamp_min),
 		PROC_ENTRY(cur_uclamp_min),
