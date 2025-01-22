@@ -331,7 +331,7 @@ static void acm_complete_set_line_coding(struct usb_ep *ep,
 		 * nothing unless we control a real RS232 line.
 		 */
 		acm->port_line_coding = *value;
-		pr_notice("[XLOG_INFO][USB_ACM] %s: rate=%d, stop=%d, parity=%d, data=%d\n",
+		pr_debug("[XLOG_INFO][USB_ACM] %s: rate=%d, stop=%d, parity=%d, data=%d\n",
 				__func__, acm->port_line_coding.dwDTERate,
 				acm->port_line_coding.bCharFormat,
 				acm->port_line_coding.bParityType,
@@ -362,7 +362,7 @@ static int acm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 		static int skip_cnt;
 
 		if (__ratelimit(&ratelimit)) {
-			pr_notice("[USB_ACM]%s:ttyGS%d req%x.%x v%x i%x len=%d,skip:%d\n",
+			pr_debug("[USB_ACM]%s:ttyGS%d req%x.%x v%x i%x len=%d,skip:%d\n",
 					__func__,
 					acm->port_num,
 					ctrl->bRequestType, ctrl->bRequest,
@@ -405,7 +405,7 @@ static int acm_setup(struct usb_function *f, const struct usb_ctrlrequest *ctrl)
 			data = acm->port_line_coding.bDataBits;
 
 			if (__ratelimit(&ratelimit)) {
-				pr_notice("[USB_ACM]%s:rate=%d,stop=%d,parity=%d,data=%d,skip:%d\n",
+				pr_debug("[USB_ACM]%s:rate=%d,stop=%d,parity=%d,data=%d,skip:%d\n",
 						__func__,
 						rate,
 						stop,
@@ -731,7 +731,7 @@ acm_bind(struct usb_configuration *c, struct usb_function *f)
 	if (status)
 		goto fail;
 
-	pr_notice("[XLOG_INFO][USB_ACM]%s: ttyGS%d: %s speed IN/%s OUT/%s NOTIFY/%s\n",
+	pr_debug("[XLOG_INFO][USB_ACM]%s: ttyGS%d: %s speed IN/%s OUT/%s NOTIFY/%s\n",
 			__func__, acm->port_num,
 			gadget_is_superspeed(c->cdev->gadget) ? "super" :
 			gadget_is_dualspeed(c->cdev->gadget) ? "dual" : "full",
