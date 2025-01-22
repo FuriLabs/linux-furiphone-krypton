@@ -182,7 +182,7 @@ static void ssusb_set_mailbox(struct otg_switch_mtk *otg_sx,
 	struct mtu3 *mtu = ssusb->u3d;
 	unsigned long flags;
 
-	dev_info(ssusb->dev, "mailbox %s\n", mailbox_state_string(status));
+	dev_dbg(ssusb->dev, "mailbox %s\n", mailbox_state_string(status));
 	mtu3_dbg_trace(ssusb->dev, "mailbox %s", mailbox_state_string(status));
 
 	switch (status) {
@@ -391,7 +391,7 @@ static void ssusb_ip_sleep(struct ssusb_mtk *ssusb)
 	ret = readl_poll_timeout(ibase + U3D_SSUSB_IP_PW_STS1, value,
 			  (value & SSUSB_IP_SLEEP_STS), 100, 100000);
 	if (ret)
-		dev_info(ssusb->dev, "ip sleep failed!!!\n");
+		dev_dbg(ssusb->dev, "ip sleep failed!!!\n");
 }
 
 static void ssusb_phy_set_mode(struct ssusb_mtk *ssusb, enum phy_mode mode)
@@ -402,7 +402,7 @@ static void ssusb_phy_set_mode(struct ssusb_mtk *ssusb, enum phy_mode mode)
 	for (i = 0; i < ssusb->num_phys; i++) {
 		ret = phy_set_mode_ext(ssusb->phys[i], mode, 0);
 		if (ret)
-			dev_info(ssusb->dev, "in %s, phy_set_mode_ext fail\n",
+			dev_dbg(ssusb->dev, "in %s, phy_set_mode_ext fail\n",
 				__func__);
 	}
 }
@@ -412,12 +412,12 @@ static void ssusb_set_vcore(bool enable)
 {
 	if (enable) {
 		mtk_pm_qos_update_request(&vcore_pm_qos, VCORE_OPP);
-		pr_info("%s: Vcore Qos update %d\n", __func__,
+		pr_debug("%s: Vcore Qos update %d\n", __func__,
 				VCORE_OPP);
 	} else {
 		mtk_pm_qos_update_request(&vcore_pm_qos,
 				MTK_PM_QOS_VCORE_OPP_DEFAULT_VALUE);
-		pr_info("%s: Vcore QOS update default\n", __func__);
+		pr_debug("%s: Vcore QOS update default\n", __func__);
 	}
 }
 #endif
@@ -430,12 +430,12 @@ static int ssusb_role_sw_set(struct device *dev, enum usb_role role)
 	bool id_event, vbus_event;
 	static bool first_init = true;
 
-	dev_info(dev, "role_sw_set role %d\n", role);
+	dev_dbg(dev, "role_sw_set role %d\n", role);
 
 	otg_sx->latest_role = role;
 
 	if (otg_sx->op_mode != MTU3_DR_OPERATION_NORMAL) {
-		dev_info(dev, "op_mode %d, skip set role\n", otg_sx->op_mode);
+		dev_dbg(dev, "op_mode %d, skip set role\n", otg_sx->op_mode);
 		return 0;
 	}
 
@@ -566,7 +566,7 @@ static ssize_t mode_store(struct device *dev,
 	if (kstrtoint(buf, 10, &mode))
 		return -EINVAL;
 
-	dev_info(dev, "store cmode %d op_mode %d\n", mode, otg_sx->op_mode);
+	dev_dbg(dev, "store cmode %d op_mode %d\n", mode, otg_sx->op_mode);
 
 	if (otg_sx->op_mode != mode) {
 		/* set switch role */
@@ -629,7 +629,7 @@ static ssize_t max_speed_store(struct device *dev,
 	else
 		return -EFAULT;
 
-	dev_info(dev, "store speed %s\n", buf);
+	dev_dbg(dev, "store speed %s\n", buf);
 
 	mtu->max_speed = speed;
 	mtu->g.max_speed = speed;
@@ -664,7 +664,7 @@ static ssize_t saving_store(struct device *dev,
 
 	mtu->ep_slot_mode = mode;
 
-	dev_info(dev, "slot mode %d\n", mtu->ep_slot_mode);
+	dev_dbg(dev, "slot mode %d\n", mtu->ep_slot_mode);
 
 	return count;
 }
@@ -708,13 +708,13 @@ int ssusb_otg_switch_init(struct ssusb_mtk *ssusb)
 
 	ret = sysfs_create_group(&ssusb->dev->kobj, &ssusb_dr_group);
 	if (ret)
-		dev_info(ssusb->dev, "error creating sysfs attributes\n");
+		dev_dbg(ssusb->dev, "error creating sysfs attributes\n");
 
 	#if defined(CONFIG_MACH_MT6779)
 	/* add vcore quest */
 	mtk_pm_qos_add_request(&vcore_pm_qos, MTK_PM_QOS_VCORE_OPP,
 			MTK_PM_QOS_VCORE_OPP_DEFAULT_VALUE);
-	pr_info("%s: add default Vcore QOS request\n", __func__);
+	pr_debug("%s: add default Vcore QOS request\n", __func__);
 	#endif
 
 	if (otg_sx->manual_drd_enabled)
