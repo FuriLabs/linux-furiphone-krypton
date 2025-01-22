@@ -543,10 +543,6 @@ static void rndis_command_complete(struct usb_ep *ep, struct usb_request *req)
 					rndis->port.dl_max_transfer_len);
 		} else
 			rndis->port.multi_pkt_xfer = 0;
-		pr_info("%s: MaxTransferSize: %d : Multi_pkt_txr: %s\n",
-				__func__, buf->MaxTransferSize,
-				rndis->port.multi_pkt_xfer ? "enabled" :
-							    "disabled");
 		if (rndis_dl_max_pkt_per_xfer <= 1)
 			rndis->port.multi_pkt_xfer = 0;
 	}
@@ -651,12 +647,10 @@ static int rndis_set_alt(struct usb_function *f, unsigned intf, unsigned alt)
 	/* we know alt == 0 */
 
 	if (intf == rndis->ctrl_id) {
-		VDBG(cdev, "reset rndis control %d\n", intf);
 		usb_ep_disable(rndis->notify);
 
 		if (!rndis->notify->desc) {
 			F_RNDIS_DBG("init rndis ctrl %d\n", intf);
-			VDBG(cdev, "init rndis ctrl %d\n", intf);
 			if (config_ep_by_speed(cdev->gadget, f, rndis->notify))
 				goto fail;
 		}
