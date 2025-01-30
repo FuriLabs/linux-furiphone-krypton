@@ -21,6 +21,10 @@ if [ -r $TARGET -a ! -O include/generated/autoconf.h ]; then
   exit 0
 fi
 
+DISTRIBUTOR=$(lsb_release -is 2>/dev/null)
+VERSION=$(lsb_release -rs 2>/dev/null)
+KBUILD_BUILD_VERSION_TIMESTAMP="${DISTRIBUTOR} ${VERSION} $(date)"
+
 # Do not expand names
 set -f
 
