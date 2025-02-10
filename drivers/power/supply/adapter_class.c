@@ -231,9 +231,9 @@ static void __exit adapter_class_exit(void)
 
 static int __init adapter_class_init(void)
 {
-	adapter_class = class_create(THIS_MODULE, "Charging Adapter");
+	adapter_class = class_create(THIS_MODULE, "charging_adapter");
 	if (IS_ERR(adapter_class)) {
-		pr_notice("Unable to create Charging Adapter class; errno = %ld\n",
+		pr_notice("Unable to create charging adapter class; errno = %ld\n",
 			PTR_ERR(adapter_class));
 		return PTR_ERR(adapter_class);
 	}
