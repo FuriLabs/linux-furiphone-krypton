@@ -92,12 +92,12 @@ static int get_pwm_src_base(struct device *dev, struct mtk_disp_pwm *mdp)
 
 	node = of_parse_phandle(dev->of_node, "pwm_src_base", 0);
 	if (!node) {
-		dev_info(dev, "find pwm_src node failed\n");
+		dev_dbg(dev, "find pwm_src node failed\n");
 		return -1;
 	}
 	pmw_src_base = of_iomap(node, 0);
 	if (!pmw_src_base) {
-		dev_info(dev, "find pwm_src address failed\n");
+		dev_dbg(dev, "find pwm_src address failed\n");
 		of_node_put(node);
 		return -1;
 	}
@@ -105,7 +105,7 @@ static int get_pwm_src_base(struct device *dev, struct mtk_disp_pwm *mdp)
 	if (ret >= 0)
 		mdp->pmw_src_addr = pmw_src_base + addr_offset;
 
-	dev_info(dev, "get pwm_src_addr=%x\n", addr_offset);
+	dev_dbg(dev, "get pwm_src_addr=%x\n", addr_offset);
 	of_node_put(node);
 	return ret;
 }
@@ -243,7 +243,7 @@ static int mtk_disp_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
 	struct mtk_disp_pwm *mdp = to_mtk_disp_pwm(chip);
 	int err;
 
-	dev_info(mdp->chip.dev, "%s\n", __func__);
+	dev_dbg(mdp->chip.dev, "%s\n", __func__);
 	err = clk_enable(mdp->clk_main);
 	if (err < 0)
 		return err;
@@ -259,8 +259,8 @@ static int mtk_disp_pwm_enable(struct pwm_chip *chip, struct pwm_device *pwm)
 		if (!IS_ERR(mdp->clk_source)) {
 			err = clk_set_parent(mdp->clk_mm, mdp->clk_source);
 				if (err < 0)
-					dev_info(mdp->chip.dev, "no pwm_src\n");
-			dev_info(mdp->chip.dev, "select clk_mm with pwm_src\n");
+					dev_dbg(mdp->chip.dev, "no pwm_src\n");
+			dev_dbg(mdp->chip.dev, "select clk_mm with pwm_src\n");
 		}
 		mdp->pwm_src_set = true;
 	}
@@ -334,7 +334,7 @@ static int mtk_disp_pwm_probe(struct platform_device *pdev)
 			clk_set_parent(mdp->clk_mm, pwm_src);
 			clk_disable(mdp->clk_mm);
 			mdp->pwm_src_set = true;
-			dev_info(&pdev->dev, "select clk_mm with pwm_src\n");
+			dev_dbg(&pdev->dev, "select clk_mm with pwm_src\n");
 		}
 	}
 
