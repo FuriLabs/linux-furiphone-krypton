@@ -2035,24 +2035,6 @@
 		reg = <0 0x10211000 0 0x1000>;
 	};
 
-	cqdma-controller@10212000 {
-		compatible = "mediatek,mt6877-cqdma";
-		reg = <0 0x10212000 0 0x80>,
-			<0 0x10212100 0 0x80>,
-			<0 0x10212200 0 0x80>,
-			<0 0x10212300 0 0x80>;
-		interrupts = <GIC_SPI 198 IRQ_TYPE_LEVEL_HIGH>,
-			<GIC_SPI 199 IRQ_TYPE_LEVEL_HIGH>,
-			<GIC_SPI 200 IRQ_TYPE_LEVEL_HIGH>,
-			<GIC_SPI 201 IRQ_TYPE_LEVEL_HIGH>;
-		clocks = <&infracfg_ao_clk CLK_IFRAO_CQ_DMA>;
-		clock-names = "cqdma";
-		dma-channel-mask = <63>;
-		dma-channels = <4>;
-		dma-requests = <10>;
-		#dma-cells = <1>;
-	};
-
 	md2md_md2_ccif0@10213000 {
 		compatible = "mediatek,md2md_md2_ccif0";
 		reg = <0 0x10213000 0 0x1000>;
