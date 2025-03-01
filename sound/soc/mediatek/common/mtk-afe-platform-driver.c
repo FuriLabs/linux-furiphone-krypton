@@ -111,6 +111,8 @@ static snd_pcm_uframes_t mtk_afe_pcm_pointer
 	afe = snd_soc_component_get_drvdata(component);
 	if (!afe) goto fail;
 
+	if (rtd->cpu_dai->id >= afe->memif_size) goto fail;
+
 	memif = &afe->memif[rtd->cpu_dai->id];
 	if (!memif) goto fail;
 
