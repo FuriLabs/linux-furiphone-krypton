@@ -199,12 +199,14 @@ static int default_write_copy(struct snd_pcm_substream *substream,
 
 /* default copy_user ops for read; used for both interleaved and non- modes */
 static int default_read_copy(struct snd_pcm_substream *substream,
-			     int channel, unsigned long hwoff,
-			     void *buf, unsigned long bytes)
+                             int channel, unsigned long hwoff,
+                             void *buf, unsigned long bytes)
 {
-	if (copy_to_user((void __user *)buf,
-			 get_dma_ptr(substream->runtime, channel, hwoff),
-			 bytes))
+	void *dma_addr = get_dma_ptr(substream->runtime, channel, hwoff);
+	if (!dma_addr)
+		return -EFAULT;
+
+	if (copy_to_user((void __user *)buf, dma_addr, bytes))
 		return -EFAULT;
 	return 0;
 }
