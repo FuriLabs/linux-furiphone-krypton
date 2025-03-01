@@ -102,6 +102,8 @@ static snd_pcm_uframes_t mtk_afe_pcm_pointer
 	unsigned int hw_ptr, hw_base;
 	int ret, pcm_ptr_bytes;
 
+	if (!substream || !substream->runtime) goto fail;
+
 	rtd = substream->private_data;
 	if (!rtd || !rtd->cpu_dai) goto fail;
 
