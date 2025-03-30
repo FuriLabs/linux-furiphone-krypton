@@ -1448,7 +1448,10 @@ static struct sg_table *ion_map_dma_buf(struct dma_buf_attachment *attachment,
 	struct ion_buffer *buffer;
 	ion_phys_addr_t addr = 0x0;
 	size_t len = 0;
-	int ret = 0, retry = 0;
+	int ret = 0;
+#if !defined(ION_NOT_SUPPORT_RETRY)
+	int retry = 0;
+#endif
 #ifdef MTK_ION_MAPPING_PERF_DEBUG
 	unsigned long long start = 0, end = 0;
 #endif
@@ -1480,7 +1483,9 @@ static struct sg_table *ion_map_dma_buf(struct dma_buf_attachment *attachment,
 		if (clone_sg_table(buffer->sg_table, table))
 			return ERR_PTR(-EINVAL);
 	} else {
+#if !defined(ION_NOT_SUPPORT_RETRY)
 retry:
+#endif
 		mutex_lock(&buffer->lock);
 #ifdef MTK_ION_MAPPING_PERF_DEBUG
 		start = sched_clock();
