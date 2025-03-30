@@ -354,6 +354,7 @@ static int sc8551_enable_charge(struct sc8551 *sc, bool enable)
 }
 EXPORT_SYMBOL_GPL(sc8551_enable_charge);
 
+#if defined(SC8551_CUSTOMER_SUPPORT)
 static int sc8551_check_charge_enabled(struct sc8551 *sc, bool *enabled)
 {
 	int ret;
@@ -365,6 +366,7 @@ static int sc8551_check_charge_enabled(struct sc8551 *sc, bool *enabled)
 		*enabled = !!(val & SC8551_CHG_EN_MASK);
 	return ret;
 }
+#endif
 
 static int sc8551_enable_wdt(struct sc8551 *sc, bool enable)
 {
@@ -1197,6 +1199,7 @@ static int sc8551_get_work_mode(struct sc8551 *sc, int *mode)
 	return ret;
 }
 
+#if defined(SC8551_CUSTOMER_SUPPORT)
 static int sc8551_check_vbus_error_status(struct sc8551 *sc)
 {
 	int ret;
@@ -1210,6 +1213,7 @@ static int sc8551_check_vbus_error_status(struct sc8551 *sc)
 
 	return ret;
 }
+#endif
 
 static int sc8551_detect_device(struct sc8551 *sc)
 {
@@ -1545,6 +1549,7 @@ static int sc8551_init_device(struct sc8551 *sc)
 }
 
 
+#if defined(SC8551_CUSTOMER_SUPPORT)
 static int sc8551_set_present(struct sc8551 *sc, bool present)
 {
 	sc->usb_present = present;
@@ -1554,12 +1559,10 @@ static int sc8551_set_present(struct sc8551 *sc, bool present)
 	return 0;
 }
 
-#if defined(SC8551_CUSTOMER_SUPPORT)
 static void sc8551_create_device_node(struct device *dev)
 {
 	device_create_file(dev, &dev_attr_registers);
 }
-#endif
 
 static enum power_supply_property sc8551_charger_props[] = {
 	POWER_SUPPLY_PROP_PRESENT,
@@ -1761,7 +1764,9 @@ static int sc8551_charger_is_writeable(struct power_supply *psy,
 	}
 	return ret;
 }
+#endif
 
+#if defined(SC8551_CUSTOMER_SUPPORT)
 static int sc8551_psy_register(struct sc8551 *sc)
 {
 	int ret;
@@ -1943,7 +1948,6 @@ static void sc8551_check_fault_status(struct sc8551 *sc)
 	mutex_unlock(&sc->data_lock);
 }
 
-#if defined(SC8551_CUSTOMER_SUPPORT)
 static int sc8551_check_reg_status(struct sc8551 *sc)
 {
 	int ret;
@@ -2000,12 +2004,13 @@ static irqreturn_t sc8551_charger_interrupt(int irq, void *dev_id)
 	return IRQ_HANDLED;
 }
 
+#if defined(SC8551_CUSTOMER_SUPPORT)
 static void determine_initial_status(struct sc8551 *sc)
 {
 	if (sc->client->irq)
 		sc8551_charger_interrupt(sc->client->irq, sc);
 }
-
+#endif
 
 static const struct of_device_id sc8551_charger_match_table[] = {
 	{
@@ -2094,9 +2099,11 @@ static int sc8551_charger_probe(struct i2c_client *client,
 
 	return 0;
 
+#if defined(SC8551_CUSTOMER_SUPPORT)
 err_1:
 	power_supply_unregister(sc->fc2_psy);
 	return ret;
+#endif
 }
 
 static inline bool is_device_suspended(struct sc8551 *sc)
