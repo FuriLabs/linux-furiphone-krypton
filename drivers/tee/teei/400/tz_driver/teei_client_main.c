@@ -144,7 +144,9 @@ char *teei_boot_error_to_string(uint32_t id)
 
 struct workqueue_struct *secure_wq;
 
+#ifndef CONFIG_MICROTRUST_DYNAMIC_CORE
 static int current_cpu_id;
+#endif
 
 unsigned long teei_config_flag;
 unsigned int soter_error_flag;
@@ -169,7 +171,9 @@ struct timeval etime;
 struct task_struct *teei_switch_task;
 struct task_struct *teei_bdrv_task;
 struct task_struct *teei_log_task;
+#ifndef CONFIG_MICROTRUST_DYNAMIC_CORE
 static struct cpumask mask = { CPU_BITS_NONE };
+#endif
 static struct class *driver_class;
 static dev_t teei_client_device_no;
 static struct cdev teei_client_cdev;
