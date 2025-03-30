@@ -191,4 +191,6 @@ static struct phy_driver marvell_88q_driver[] = {
 	}
 };
 
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Marvell");
 module_phy_driver(marvell_88q_driver);
