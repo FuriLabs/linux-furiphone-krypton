@@ -119,17 +119,6 @@ config MICROTRUST_DEBUG
 	  Say Y if you would like to enable more debug outputs.
 	  If unsure, say N.
 
-config MICROTRUST_UNITTEST_SUPPORT
-	tristate "Microtrust Unittest Trigger Support"
-	depends on MICROTRUST_TEE_SUPPORT
-	default n
-	help
-	  Enable Microtrust unittest trigger driver.
-	  This driver will can be trigger from Linux userspace and
-	  send a start_test message to TEE unittest service.
-	  Say Y if you would like to enable secure world log support.
-	  If unsure, say N.
-
 config MICROTRUST_TZ_LOG
 	bool "Enable Microtrust TrustZone logger"
 	depends on MICROTRUST_TEE_SUPPORT
@@ -140,16 +129,6 @@ config MICROTRUST_TZ_LOG
 	  time a smc call is returned from secure world.
 	  Say Y if you would like to enable secure world log support.
 	  If unsure, say Y.
-
-config MICROTRUST_TEST_DRIVERS
-	tristate "Microtrust Test Drivers"
-	depends on MICROTRUST_TEE_SUPPORT
-	default n
-	help
-	  Enables support of Microtrust test driver kernel framework.
-	  This framework supports DCIH and GP API test drivers.
-	  Say Y if you would like to enable the test framework.
-	  If unsure, say N.
 
 config MICROTRUST_TZDRIVER_DYNAMICAL_DEBUG
 	tristate "Microtrust tzdriver dynamical debug"
