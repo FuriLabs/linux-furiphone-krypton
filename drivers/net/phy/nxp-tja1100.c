@@ -56,4 +56,6 @@ static struct mdio_device_id __maybe_unused nxp_tbl[] = {
 	{ }
 };
 
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("NXP");
 MODULE_DEVICE_TABLE(mdio, nxp_tbl);
