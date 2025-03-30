@@ -1756,6 +1756,8 @@ void cmdq_pkt_err_dump_cb(struct cmdq_cb_data data)
 			mod, cmdq_util_hw_name(client->chan), thread_id);
 	}
 
+#if IS_ENABLED(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT) || \
+        IS_ENABLED(CONFIG_MTK_CAM_SECURITY_SUPPORT)
 done:
 	cmdq_util_user_err(client->chan, "End of Error %u", err_num);
 	if (err_num == 0) {
@@ -1765,7 +1767,7 @@ done:
 	err_num++;
 
 	cmdq_util_dump_unlock();
-
+#endif
 #else
 	cmdq_err("cmdq error:%d", data.err);
 #endif
