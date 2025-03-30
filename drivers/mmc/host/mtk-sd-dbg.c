@@ -310,8 +310,6 @@ void mmc_cmd_dump(char **buff, unsigned long *size, struct seq_file *m,
 void msdc_dump_host_state(char **buff, unsigned long *size,
 	struct seq_file *m, struct msdc_host *host)
 {
-	void __iomem *base = host->base;
-
 	SPREAD_PRINTF(buff, size, m,
 		"enable_msdc_debug : %d\n", enable_msdc_debug);
 	/* add log description*/
@@ -378,31 +376,8 @@ int g_count;
 /* ========== driver proc interface =========== */
 static int msdc_debug_proc_show(struct seq_file *m, void *v)
 {
-	int cmd = -1;
-	int sscanf_num;
-	int p1, p2, p3, p4, p5, p6, p7, p8;
-	int id, zone;
-	int mode;
-	int thread_num, compare_count, multi_address;
-	void __iomem *base = NULL;
-	ulong data_for_wr;
-	unsigned int offset = 0;
-	unsigned int reg_value;
-	int spd_mode = MMC_TIMING_LEGACY;
-	struct msdc_host *host = NULL;
-#ifdef MSDC_DMA_ADDR_DEBUG
-	struct dma_addr *dma_address, *p_dma_address;
-#endif
-	int dma_status;
-#ifdef MTK_MMC_SDIO_DEBUG
-	u8 *res;
-	int vcore;
-#endif
-
-		/* default dump info for aee */
-		seq_puts(m, "==== msdc debug info for aee ====\n");
-		msdc_proc_dump(m, 0);
-
+	seq_puts(m, "==== msdc debug info for aee ====\n");
+	msdc_proc_dump(m, 0);
 	return 0;
 }
 
