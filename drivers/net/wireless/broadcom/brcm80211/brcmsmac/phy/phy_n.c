@@ -25458,7 +25458,7 @@ void wlc_phy_cal_perical_nphy_run(struct brcms_phy *pi, u8 caltype)
 			wlc_phy_cal_perical_mphase_restart(pi);
 	}
 
-	if ((pi->mphase_cal_phase_id == MPHASE_CAL_STATE_RXCAL))
+	if (pi->mphase_cal_phase_id == MPHASE_CAL_STATE_RXCAL)
 		wlapi_bmac_write_shm(pi->sh->physhim, M_CTS_DURATION, 10000);
 
 	wlapi_suspend_mac_and_wait(pi->sh->physhim);
