@@ -2722,9 +2722,18 @@ p2pFuncAssocRespUpdate(IN struct ADAPTER *prAdapter,
 		    IN struct BSS_INFO *prP2pBssInfo,
 		    IN uint8_t *AssocRespIE, IN uint32_t u4AssocRespLen)
 {
-	kalP2PUpdateWSC_IE(prAdapter->prGlueInfo, 3,
-		(uint8_t *)AssocRespIE, IE_SIZE(AssocRespIE),
-		(uint8_t) (prP2pBssInfo->u4PrivateData));
+	uint8_t ucOuiType = 0;
+	uint16_t u2SubTypeVersion = 0;
+
+	if (!rsnParseCheckForWFAInfoElem(prAdapter,
+		AssocRespIE, &ucOuiType, &u2SubTypeVersion))
+		return WLAN_STATUS_FAILURE;
+
+	if (ucOuiType == VENDOR_OUI_TYPE_WPS) {
+		kalP2PUpdateWSC_IE(prAdapter->prGlueInfo, 3,
+			(uint8_t *)AssocRespIE, IE_SIZE(AssocRespIE),
+			(uint8_t) (prP2pBssInfo->u4PrivateData));
+	}
 
 	return WLAN_STATUS_SUCCESS;
 }

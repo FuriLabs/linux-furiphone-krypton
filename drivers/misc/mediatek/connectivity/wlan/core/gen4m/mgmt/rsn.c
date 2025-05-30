@@ -1800,17 +1800,6 @@ void rsnGenerateRSNIE(IN struct ADAPTER *prAdapter,
 
 			RSN_IE(pucBuffer)->ucLength +=
 				(prP2pSpecBssInfo->u4KeyMgtSuiteCount - 1) * 4;
-		} else if (prBssInfo->eNetworkType == NETWORK_TYPE_P2P) {
-			WLAN_SET_FIELD_16(cp, 2);	/* AKM suite count */
-			cp += 2;
-			/* AKM suite */
-			WLAN_SET_FIELD_32(cp, GET_BSS_INFO_BY_INDEX(prAdapter,
-			    ucBssIndex)->u4RsnSelectedAKMSuite);
-			cp += 4;
-			/* jesus hack: add PSK SHA256 that networkmanager insists on using.
-			   we really should just use the IE provided by wpa_supplicant... */
-			WLAN_SET_FIELD_32(cp, RSN_AKM_SUITE_PSK_SHA256);
-			cp += 4;
 		} else {
 			WLAN_SET_FIELD_16(cp, 1);	/* AKM suite count */
 			cp += 2;
@@ -2096,8 +2085,6 @@ void rsnParserCheckForRSNCCMPPSK(struct ADAPTER *prAdapter,
 			&& (rRsnIe.au4AuthKeyMgtSuite[0] != RSN_AKM_SUITE_SAE)
 #endif
 			&& (rRsnIe.au4AuthKeyMgtSuite[0] != RSN_AKM_SUITE_OWE)
-			// jesus hack: allow "invalid AKMP" if peer did fallback to PSK_SHA256
-			&& (rRsnIe.au4AuthKeyMgtSuite[0] != RSN_AKM_SUITE_PSK_SHA256)
 			)) {
 			DBGLOG(RSN, WARN, "RSN with invalid AKMP\n");
 			*pu2StatusCode = STATUS_CODE_INVALID_AKMP;

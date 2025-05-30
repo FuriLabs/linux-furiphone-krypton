@@ -99,7 +99,7 @@
 /* Device Capability Definition. */
 #define P2P_MAXIMUM_NOA_COUNT                       8
 
-#define P2P_MAX_AKM_SUITES 5
+#define P2P_MAX_AKM_SUITES 2
 
 #define P2P_MAX_SUPPORTED_CHANNEL_LIST_SIZE 51	/* Contains 6 sub-band. */
 
