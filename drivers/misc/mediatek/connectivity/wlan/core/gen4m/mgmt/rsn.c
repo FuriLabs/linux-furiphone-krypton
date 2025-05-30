@@ -1250,6 +1250,10 @@ u_int8_t rsnPerformPolicySelection(
 			DBGLOG(RSN, TRACE,
 			       "[MFP] Skip RSN IE, No MFP Required Capability.\n");
 			return FALSE;
+		} else if (!(prBssRsnInfo->u2RsnCap & ELEM_WPA_CAP_MFPC)) {
+			DBGLOG(RSN, WARN,
+			       "[MFP] Skip RSN IE, No MFP Required\n");
+			return FALSE;
 		}
 		aisGetAisSpecBssInfo(prAdapter, ucBssIndex)
 			->fgMgmtProtection = TRUE;
@@ -1442,11 +1446,24 @@ uint32_t _addWPAIE_impl(IN struct ADAPTER *prAdapter,
 	ucBssIndex = prMsduInfo->ucBssIndex;
 	prBssInfo = GET_BSS_INFO_BY_INDEX(prAdapter, ucBssIndex);
 
+	if (!prAdapter->rWifiVar.fgReuseRSNIE)
+		return FALSE;
+
 	if (!prBssInfo)
 		return FALSE;
 
 	/* AP + GO */
 	if (!IS_BSS_APGO(prBssInfo))
+		return FALSE;
+
+	/* AP only */
+	if (!p2pFuncIsAPMode(
+		prAdapter->rWifiVar.
+		prP2PConnSettings[prBssInfo->u4PrivateData]))
+		return FALSE;
+
+	/* PMF only */
+	if (!prBssInfo->rApPmfCfg.fgMfpc)
 		return FALSE;
 
 	prP2pSpecBssInfo =
@@ -1792,7 +1809,6 @@ void rsnGenerateRSNIE(IN struct ADAPTER *prAdapter,
 			cp += 4;
 			/* jesus hack: add PSK SHA256 that networkmanager insists on using.
 			   we really should just use the IE provided by wpa_supplicant... */
-			RSN_IE(pucBuffer)->ucLength += 4;
 			WLAN_SET_FIELD_32(cp, RSN_AKM_SUITE_PSK_SHA256);
 			cp += 4;
 		} else {

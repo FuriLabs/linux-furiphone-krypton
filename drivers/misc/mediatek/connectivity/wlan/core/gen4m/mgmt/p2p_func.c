@@ -4427,6 +4427,13 @@ p2pFuncParseBeaconContent(IN struct ADAPTER *prAdapter,
 					== RSN_AKM_SUITE_802_1X_SHA256)) {
 						DBGLOG(RSN, INFO,
 							"SHA256 support\n");
+						/* over-write
+						 * u4RsnSelectedAKMSuite
+						 * by SHA256 AKM
+						 */
+						prP2pBssInfo
+						->u4RsnSelectedAKMSuite
+						= rRsnIe.au4AuthKeyMgtSuite[i];
 						prP2pBssInfo
 						->rApPmfCfg.fgSha256
 						= TRUE;

@@ -139,7 +139,7 @@
 #define WLAN_CIPHER_SUITE_NO_GROUP_ADDR 0x000fac07
 
 /* The RSN IE len for associate request */
-#define ELEM_ID_RSN_LEN_FIXED           20
+#define ELEM_ID_RSN_LEN_FIXED           24
 
 /* The WPA IE len for associate request */
 #define ELEM_ID_WPA_LEN_FIXED           22
