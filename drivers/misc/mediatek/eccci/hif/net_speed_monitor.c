@@ -32,6 +32,7 @@
 #include "ccci_platform.h"
 #include "ccci_core.h"
 #include "mtk_ppm_api.h"
+#ifdef MT6297
 #if !defined(CONFIG_MACH_MT6771)
 #include <linux/soc/mediatek/mtk-pm-qos.h>
 #endif
@@ -431,6 +432,7 @@ static int speed_monitor_thread(void *arg)
 
 			dl_speed = speed_caculate(delta, &s_dl_mon);
 			ul_speed = speed_caculate(delta, &s_ul_mon);
+			ccmni_set_cur_speed(dl_speed);
 			dvfs_cal_for_md_net(dl_speed, ul_speed);
 
 			if (!ul_speed && !dl_speed)
@@ -472,3 +474,4 @@ int mtk_ccci_speed_monitor_init(void)
 	return 0;
 }
 
+#endif

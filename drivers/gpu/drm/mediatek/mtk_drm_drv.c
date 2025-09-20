@@ -1148,6 +1148,8 @@ static int mtk_atomic_commit(struct drm_device *drm,
 	else
 		mtk_atomic_complete(private, state);
 
+	private->already_first_config = true;
+
 	mutex_nested_time_end = sched_clock();
 	mutex_nested_time_period =
 			mutex_nested_time_end - mutex_nested_time_start;
@@ -3177,6 +3179,12 @@ static const struct drm_ioctl_desc mtk_ioctls[] = {
 	DRM_IOCTL_DEF_DRV(MTK_SUPPORT_COLOR_TRANSFORM,
 				mtk_drm_ioctl_support_color_matrix,
 				DRM_UNLOCKED),
+	DRM_IOCTL_DEF_DRV(MTK_SUPPORT_SLD,
+				mtk_drm_ioctl_enable_sld,
+				DRM_UNLOCKED),
+	DRM_IOCTL_DEF_DRV(MTK_SET_SLD_PARAM,
+				mtk_drm_ioctl_set_sld_param,
+				DRM_UNLOCKED),
 	DRM_IOCTL_DEF_DRV(MTK_SET_GAMMALUT, mtk_drm_ioctl_set_gammalut,
 			  DRM_UNLOCKED),
 	DRM_IOCTL_DEF_DRV(MTK_SET_PQPARAM, mtk_drm_ioctl_set_pqparam,
@@ -3253,6 +3261,8 @@ static const struct drm_ioctl32_desc mtk_compat_ioctls[] = {
 	DRM_IOCTL32_DEF_DRV(MTK_CCORR_EVENTCTL, NULL),
 	DRM_IOCTL32_DEF_DRV(MTK_CCORR_GET_IRQ, NULL),
 	DRM_IOCTL32_DEF_DRV(MTK_SUPPORT_COLOR_TRANSFORM, NULL),
+	DRM_IOCTL32_DEF_DRV(MTK_SUPPORT_SLD, NULL),
+	DRM_IOCTL32_DEF_DRV(MTK_SET_SLD_PARAM, NULL),
 	DRM_IOCTL32_DEF_DRV(MTK_SET_GAMMALUT, NULL),
 	DRM_IOCTL32_DEF_DRV(MTK_SET_PQPARAM, NULL),
 	DRM_IOCTL32_DEF_DRV(MTK_SET_PQINDEX, NULL),

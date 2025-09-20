@@ -530,6 +530,11 @@ static s32 cmdq_mdp_handle_setup(struct mdp_submit *user_job,
 	handle->pkt->priority = user_job->priority;
 	handle->user_debug_str = NULL;
 
+	if (!handle->engineFlag) {
+		CMDQ_ERR("%s: engineFlag %#llx\n", __func__, handle->engineFlag);
+		return -EINVAL;
+	}
+
 	if (user_job->engine_flag & inorder_mask)
 		handle->force_inorder = true;
 
@@ -690,7 +695,8 @@ static int mdp_implement_read_v1(struct mdp_submit *user_job,
 			CMDQ_ERR("%s read:%d engine:%d offset:%#x addr:%#x\n",
 				__func__, i, hw_metas[i].engine,
 				hw_metas[i].offset, reg_addr);
-			continue;
+			status = -EINVAL;
+			break;
 		}
 		CMDQ_MSG("%s read:%d engine:%d offset:%#x addr:%#x\n",
 			__func__, i, hw_metas[i].engine,
@@ -945,10 +951,16 @@ s32 mdp_ioctl_async_wait(unsigned long param)
 		goto done;
 	}
 
+	#ifdef CONFIG_MTK_CMDQ_MBOX_EXT
+	/* prevent ioctl release when waiting for task done */
+	cmdq_remove_handle_from_handle_active(handle);
+	#endif
+
 	do {
 		/* wait for task done */
 		status = cmdq_mdp_wait(handle, NULL);
 		if (status < 0) {
+			handle = NULL;
 			CMDQ_ERR("wait task result failed:%d handle:0x%p\n",
 				status, handle);
 			break;
@@ -987,7 +999,7 @@ s32 mdp_ioctl_async_wait(unsigned long param)
 		mutex_unlock(&rb_slot_list_mutex);
 	} while (0);
 	exec_cost = div_u64(sched_clock() - exec_cost, 1000);
-	if (exec_cost > 150000)
+	if (exec_cost > 150000 && handle != NULL)
 		CMDQ_LOG("[warn]job wait and close cost:%lluus handle:0x%p\n",
 			exec_cost, handle);
 
@@ -997,8 +1009,10 @@ s32 mdp_ioctl_async_wait(unsigned long param)
 	kfree(mapping_job);
 	CMDQ_SYSTRACE_BEGIN("%s destroy\n", __func__);
 	/* task now can release */
-	cmdq_task_destroy(handle);
-	CMDQ_SYSTRACE_END();
+	if (handle) {
+		cmdq_task_destroy(handle);
+		CMDQ_SYSTRACE_END();
+	}
 
 done:
 	CMDQ_TRACE_FORCE_END();

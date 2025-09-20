@@ -1,8 +1,3 @@
-/* SPDX-License-Identifier: GPL-2.0 */
-/*
- * Copyright (c) 2019 MediaTek Inc.
- */
-
 /*****************************************************************************
  *
  * Filename:
@@ -22,7 +17,7 @@
 #define _GC2375HMIPI_SENSOR_H
 
 /* SENSOR MIRROR FLIP INFO */
-#define GC2375H_MIRROR_FLIP_ENABLE    0
+#define GC2375H_MIRROR_FLIP_ENABLE    1
 #if GC2375H_MIRROR_FLIP_ENABLE
 #define GC2375H_MIRROR         0xd7
 #define GC2375H_BLK_Select1_H  0x3c
@@ -79,6 +74,7 @@ struct imgsensor_struct {
 	enum MSDK_SCENARIO_ID_ENUM current_scenario_id;
 	kal_uint8  ihdr_en;
 	kal_uint8 i2c_write_id;
+	kal_uint16 frame_lines;
 };
 
 /* SENSOR PRIVATE STRUCT FOR CONSTANT */
@@ -102,6 +98,11 @@ struct imgsensor_info_struct {
 	kal_uint8  video_delay_frame;
 	kal_uint8  hs_video_delay_frame;
 	kal_uint8  slim_video_delay_frame;
+	kal_uint32 min_gain;
+	kal_uint32 max_gain;
+	kal_uint32 min_gain_iso;
+	kal_uint32 gain_step;
+	kal_uint8  gain_type;
 	kal_uint8  margin;
 	kal_uint32 min_shutter;
 	kal_uint32 max_frame_length;
@@ -113,11 +114,12 @@ struct imgsensor_info_struct {
 	kal_uint8  mclk;
 	kal_uint8  mipi_lane_num;
 	kal_uint8  i2c_addr_table[5];
+	kal_uint32 i2c_speed;
 };
 
-extern int iReadRegI2C(u8 *a_pSendData, u16 a_sizeSendData,
-	u8 *a_pRecvData, u16 a_sizeRecvData, u16 i2cId);
+extern int iReadRegI2C(u8 *a_pSendData, u16 a_sizeSendData, u8 *a_pRecvData, u16 a_sizeRecvData, u16 i2cId);
 extern int iWriteRegI2C(u8 *a_pSendData, u16 a_sizeSendData, u16 i2cId);
 extern int iWriteReg(u16 a_u2Addr, u32 a_u4Data, u32 a_u4Bytes, u16 i2cId);
+extern int iWriteRegI2CTiming(u8 *a_pSendData, u16 a_sizeSendData, u16 i2cId, u16 timing);
 
 #endif

@@ -1,0 +1,66 @@
+// SPDX-License-Identifier: GPL-2.0
+/*
+ * Copyright (c) 2025 Eli
+ * Device Tree for SGM38120 Camera LDO on MTK Android Platform
+ */
+
+&i2c5 {
+    sgm38120: sgm38120@35 {
+        status = "okay";
+        compatible = "sgmicro,sgm38120";
+        reg = <0x35>;
+        wakeup-source;
+		interrupt-parent = <&pio>;
+		interrupts = <163 IRQ_TYPE_EDGE_RISING>;
+        enable-gpio = <&pio 162 0x0>;
+        regulator_nb = "sgm38120-ldo1", "sgm38120-ldo2",
+                       "sgm38120-ldo3", "sgm38120-ldo4",
+                       "sgm38120-ldo5", "sgm38120-ldo6",
+                       "sgm38120-ldo7";
+
+        regulators {
+            sgm38120_ldo1: LDO1 {
+                regulator-name = "sgm38120-ldo1";
+                regulator-min-microvolt = <528000>;
+                regulator-max-microvolt = <1504000>;
+                soft_start_time_sel = <1>;
+            };
+            sgm38120_ldo2: LDO2 {
+                regulator-name = "sgm38120-ldo2";
+                regulator-min-microvolt = <528000>;
+                regulator-max-microvolt = <1504000>;
+                soft_start_time_sel = <1>;
+            };
+            sgm38120_ldo3: LDO3 {
+                regulator-name = "sgm38120-ldo3";
+                regulator-min-microvolt = <1504000>;
+                regulator-max-microvolt = <3544000>;
+                soft_start_time_sel = <1>;
+            };
+            sgm38120_ldo4: LDO4 {
+                regulator-name = "sgm38120-ldo4";
+                regulator-min-microvolt = <1504000>;
+                regulator-max-microvolt = <3544000>;
+                soft_start_time_sel = <1>;
+            };
+            sgm38120_ldo5: LDO5 {
+                regulator-name = "sgm38120-ldo5";
+                regulator-min-microvolt = <1200000>;
+                regulator-max-microvolt = <3544000>;
+                soft_start_time_sel = <1>;
+            };
+            sgm38120_ldo6: LDO6 {
+                regulator-name = "sgm38120-ldo6";
+                regulator-min-microvolt = <1504000>;
+                regulator-max-microvolt = <3544000>;
+                soft_start_time_sel = <1>;
+            };
+            sgm38120_ldo7: LDO7 {
+                regulator-name = "sgm38120-ldo7";
+                regulator-min-microvolt = <1200000>;
+                regulator-max-microvolt = <3544000>;
+                soft_start_time_sel = <1>;
+            };
+        };
+    };
+};

@@ -332,6 +332,9 @@ extern int tscpu_cur_fp_factor;
 
 #if !defined(CONFIG_MTK_CLKMGR)
 extern struct clk *therm_main;           /* main clock for Thermal*/
+#if !defined(CFG_THERM_NO_AUXADC)
+extern struct clk *auxadc_main;	/* auxac clock for Thermal */
+#endif
 #endif
 
 #if CPT_ADAPTIVE_AP_COOLER

@@ -11,6 +11,79 @@
 
 /* Legacy design */
 struct IMGSENSOR_HW_POWER_SEQ sensor_power_sequence[] = {
+#if defined(GC05A2_MIPI_RAW)
+    {
+        SENSOR_DRVNAME_GC05A2_MIPI_RAW,
+        {
+            {SensorMCLK, Vol_High, 0},
+            {PDN, Vol_Low, 1},
+            {RST, Vol_Low, 10},
+            {DOVDD, Vol_1800, 5},
+            {DVDD, Vol_High, 5},
+            {AVDD, Vol_High, 5},
+            {PDN, Vol_High, 5},
+            {RST, Vol_High, 5}
+        },
+    },
+#endif
+#if defined(GC2375H_MIPI_RAW)
+    {
+        SENSOR_DRVNAME_GC2375H_MIPI_RAW,
+        {
+            {SensorMCLK, Vol_High, 0},
+            {DOVDD, Vol_1800, 0},
+            {DVDD, Vol_High, 0},
+            {AVDD, Vol_High, 0},
+            {PDN, Vol_High, 5},
+            {PDN,Vol_Low , 0},
+            {RST, Vol_Low, 1},
+            {RST, Vol_High, 0}
+        },
+    },
+#endif
+
+#if defined(IMX135_MIPI_RAW)
+        {
+            SENSOR_DRVNAME_IMX135_MIPI_RAW,
+            {
+                {SensorMCLK, Vol_High, 0},
+                {DOVDD, Vol_1800, 0},
+                {AVDD, Vol_2800, 0},
+                {DVDD, Vol_1200, 0},
+//                {AFVDD, Vol_2800, 5},
+                {PDN,Vol_Low , 0},
+                {PDN, Vol_High, 4},
+                {RST, Vol_Low, 1},
+                {RST, Vol_High, 0}
+            },
+        },
+#endif
+#if defined(GC08A3REAR_MIPI_RAW)
+	{
+		SENSOR_DRVNAME_GC08A3REAR_MIPI_RAW,
+		{
+			{RST, Vol_Low, 1},
+			{DOVDD, Vol_1800, 0},
+			{AVDD, Vol_2800, 0},
+			{DVDD, Vol_1200, 1},
+			{SensorMCLK, Vol_High, 1},
+			{RST, Vol_High, 1},
+		},
+	},
+#endif
+#if defined(HI1339OFILM_MIPI_RAW)
+	{
+		SENSOR_DRVNAME_HI1339OFILM_MIPI_RAW,
+		{
+			{RST, Vol_Low, 1},
+			{DOVDD, Vol_1800, 0},
+			{AVDD, Vol_2800, 0},
+			{DVDD, Vol_1100, 1},
+			{SensorMCLK, Vol_High, 1},
+			{RST, Vol_High, 2}
+		},
+	},
+#endif
 #if defined(IMX766_MIPI_RAW)
 	{
 		SENSOR_DRVNAME_IMX766_MIPI_RAW,

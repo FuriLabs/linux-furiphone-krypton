@@ -182,7 +182,8 @@
 			     <INT_BAT_H IRQ_TYPE_LEVEL_HIGH>,
 			     <INT_BAT_L IRQ_TYPE_LEVEL_HIGH>,
 			     <INT_FG_CUR_H IRQ_TYPE_LEVEL_HIGH>,
-			     <INT_FG_CUR_L IRQ_TYPE_LEVEL_HIGH>;
+			     <INT_FG_CUR_L IRQ_TYPE_LEVEL_HIGH>,
+			     <INT_CHRDET_EDGE IRQ_TYPE_EDGE_BOTH>;
 		interrupt-names = "pwrkey",
 				  "pwrkey_r",
 				  "homekey",
@@ -190,7 +191,8 @@
 				  "bat_h",
 				  "bat_l",
 				  "fg_cur_h",
-				  "fg_cur_l";
+				  "fg_cur_l",
+				  "chrdet_edge";
 	};
 
 	pmic_auxadc: mt635x-auxadc {
@@ -516,6 +518,18 @@
 			regulator-max-microvolt = <900000>;
 			regulator-enable-ramp-delay = <264>;
 			regulator-boot-on;
+		};
+		mt6358_vmch_eint_high: VMCH_EINT_HIGH {
+				regulator-name = "mt6358_vmch_eint_high";
+				regulator-min-microvolt = <2900000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-enable-ramp-delay = <60>;
+		};
+		mt6358_vmch_eint_low: VMCH_EINT_LOW {
+				regulator-name = "mt6358_vmch_eint_low";
+				regulator-min-microvolt = <2900000>;
+				regulator-max-microvolt = <3300000>;
+				regulator-enable-ramp-delay = <60>;
 		};
 	};	/* End of mt6358regulator */
 	mt6358_rtc: mt6358_rtc {

@@ -734,6 +734,7 @@ struct mtk_drm_crtc {
 	struct cmdq_cb_data cb_data;
 	atomic_t cmdq_done;
 	wait_queue_head_t signal_fence_task_wq;
+	struct mutex state_lock;
 };
 
 struct mtk_crtc_state {
@@ -777,6 +778,8 @@ void mtk_crtc_vblank_irq(struct drm_crtc *crtc);
 int mtk_drm_crtc_create(struct drm_device *drm_dev,
 			const struct mtk_crtc_path_data *path_data);
 void mtk_drm_crtc_plane_update(struct drm_crtc *crtc, struct drm_plane *plane,
+			       struct mtk_plane_state *state);
+void mtk_drm_crtc_plane_disable(struct drm_crtc *crtc, struct drm_plane *plane,
 			       struct mtk_plane_state *state);
 
 void mtk_drm_crtc_dump(struct drm_crtc *crtc);

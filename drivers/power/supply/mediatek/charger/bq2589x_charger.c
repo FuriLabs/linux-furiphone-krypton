@@ -18,6 +18,8 @@
 #include "mtk_charger_intf.h"
 #include "bq2589x_reg.h"
 #include <mt-plat/upmu_common.h>
+#include <mt-plat/mtk_boot.h>
+
 enum bq2589x_vbus_type {
 	BQ2589X_VBUS_NONE = 0,
 	BQ2589X_VBUS_USB_SDP,
@@ -55,6 +57,12 @@ struct bq2589x_config {
 	bool	use_absolute_vindpm;
 };
 
+struct tag_bootmode {
+	u32 size;
+	u32 tag;
+	u32 bootmode;
+	u32 boottype;
+};
 
 struct bq2589x {
 	struct device *dev;
@@ -93,6 +101,7 @@ struct bq2589x {
 	struct power_supply *batt_psy;
 	struct power_supply *usb_psy;
 	struct power_supply_config usb_cfg;
+	int bootmode;
 };
 
 struct pe_ctrl {
@@ -1494,7 +1503,21 @@ static void bq2589x_psy_unregister(struct bq2589x *bq)
 static int bq2589x_parse_dt(struct device *dev, struct bq2589x *bq)
 {
 	int ret;
+	struct device_node *boot_node = NULL;
+	struct tag_bootmode *tag = NULL;
 	struct device_node *np = dev->of_node;
+
+	boot_node = of_parse_phandle(dev->of_node, "bootmode", 0);
+	if (!boot_node) {
+		dev_info(bq->dev, "%s: failed to get boot mode phandle\n", __func__);
+	} else {
+		tag = (struct tag_bootmode *)of_get_property(boot_node, "atag,boot", NULL);
+		if (!tag)
+			dev_info(bq->dev, "%s: failed to get atag,boot\n", __func__);
+		else
+			bq->bootmode = tag->bootmode;
+	}
+	dev_info(bq->dev, "%s: bq->bootmode = %d\n", __func__, bq->bootmode);
 
 	if (of_property_read_string(np, "charger_name", &bq->chg_dev_name) < 0) {
 		bq->chg_dev_name = "primary_chg";
@@ -1932,7 +1955,12 @@ static void bq2589x_charger_irq_workfunc(struct work_struct *work)
 	if (!(temp & BQ2589X_VBUS_GD_MASK) && (bq->status & BQ2589X_STATUS_PLUGIN)) {
 		dev_info(bq->dev, "%s:adapter removed\n", __func__);
 		bq->status &= ~BQ2589X_STATUS_PLUGIN;
-		schedule_work(&bq->adapter_out_work);
+		dev_info(bq->dev, "%s:bq->bootmode = %d\n", __func__, bq->bootmode);
+		if (bq->bootmode != KERNEL_POWER_OFF_CHARGING_BOOT &&
+			bq->bootmode != LOW_POWER_OFF_CHARGING_BOOT) {
+			schedule_work(&bq->adapter_out_work);
+			dev_info(bq->dev, "%s:adapter_out_work\n", __func__);
+		}
 	} else if ((temp & BQ2589X_VBUS_GD_MASK) && !(bq->status & BQ2589X_STATUS_PLUGIN)) {
 		dev_info(bq->dev, "%s:adapter plugged in\n", __func__);
 		bq->status |= BQ2589X_STATUS_PLUGIN;

@@ -264,7 +264,7 @@ enum IMGSENSOR_RETURN imgsensor_hw_power(
 	char *curr_sensor_name = psensor->inst.psensor_list->name;
 	char str_index[LENGTH_FOR_SNPRINTF];
 
-	PK_DBG("sensor_idx %d, power %d curr_sensor_name %s, enable list %s\n",
+	printk("sensor_idx %d, power %d curr_sensor_name %s, enable list %s\n",
 		sensor_idx,
 		pwr_status,
 		curr_sensor_name,

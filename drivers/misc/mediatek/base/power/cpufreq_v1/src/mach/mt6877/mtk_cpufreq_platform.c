@@ -627,6 +627,8 @@ unsigned int _mt_cpufreq_get_cpu_level(void)
 		lv = CPU_LEVEL_2;
 	else if (val == 3)
 		lv = CPU_LEVEL_0;
+	else if (val == 4)
+		lv = CPU_LEVEL_3;
 	else
 		lv = CPU_LEVEL_1;
 

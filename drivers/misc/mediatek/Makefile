@@ -19,6 +19,12 @@ else ifeq ($(CONFIG_MACH_MT6885),y)
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/v1
 else ifeq ($(CONFIG_MACH_MT6893),y)
 subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/v1
+else ifeq ($(CONFIG_MACH_MT6853),y)
+subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/v1
+else ifeq ($(CONFIG_MACH_MT6873),y)
+subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/v1
+else ifeq ($(CONFIG_MACH_MT6785),y)
+subdir-ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/v1
 else
 obj-$(CONFIG_MTK_POWER_THROTTLING_COMMON) += power_throttling/
 endif
@@ -88,8 +94,10 @@ obj-$(CONFIG_MTK_CLK_BUFFER) += clkbuf/
 obj-$(CONFIG_MTK_QOS_FRAMEWORK) += qos/
 obj-$(CONFIG_MTK_SLBC) += slbc/
 ifneq ($(CONFIG_MACH_MT6893), y)
+ifneq ($(CONFIG_MACH_MT6885), y)
 ifneq ($(CONFIG_MACH_MT6771), y)
 obj-$(CONFIG_MTK_CM_MGR) += cm_mgr/
+endif
 endif
 endif
 ifneq ($(CONFIG_MTK_BASE_POWER), y)
@@ -199,3 +207,4 @@ obj-$(CONFIG_MTK_MDDP_SUPPORT) += mddp/
 obj-$(CONFIG_MTK_GATE_IC) += gate_ic/
 obj-$(CONFIG_MTK_FREQ_HOPPING) += freqhopping/
 obj-$(CONFIG_MTK_TASK_TURBO) += task_turbo/
+obj-$(CONFIG_AW862xx_HAPTIC) += aw862xx_haptic/

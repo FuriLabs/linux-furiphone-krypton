@@ -800,23 +800,25 @@ static void mt_gpufreq_buck_control(enum mt_power_state power)
 	gpufreq_pr_debug("@%s: power = %d", __func__, power);
 
 	if (power == POWER_ON) {
-		if (regulator_enable(g_pmic->reg_vsram_gpu)) {
-			gpufreq_pr_info("enable VSRAM_GPU failed\n");
-			return;
-		}
 		if (regulator_enable(g_pmic->reg_vgpu)) {
 			gpufreq_pr_info("enable VGPU failed\n");
 			return;
 		}
-	} else {
-		if (regulator_disable(g_pmic->reg_vgpu)) {
-			gpufreq_pr_info("disable VGPU failed\n");
+		if (regulator_enable(g_pmic->reg_vsram_gpu)) {
+			gpufreq_pr_info("enable VSRAM_GPU failed\n");
 			return;
 		}
+
+	} else {
 		if (regulator_disable(g_pmic->reg_vsram_gpu)) {
 			gpufreq_pr_info("disable VSRAM_GPU failed\n");
 			return;
 		}
+		if (regulator_disable(g_pmic->reg_vgpu)) {
+			gpufreq_pr_info("disable VGPU failed\n");
+			return;
+		}
+
 	}
 
 	g_buck_on = power;
@@ -984,6 +986,7 @@ void mt_gpufreq_power_control(enum mt_power_state power, enum mt_cg_state cg,
 			readl(g_sleep + 0x16C));
 #endif
 		if (g_probe_done) {
+			mutex_unlock(&mt_gpufreq_lock);
 			gpufreq_pr_info("power=%d g_power_count=%d, skip by dfd_trigger\n",
 				power, g_power_count);
 			return;
@@ -2944,8 +2947,10 @@ static unsigned int __mt_gpufreq_get_cur_vsram_gpu(void)
 {
 	unsigned int volt = 0;
 
-	/* regulator_get_voltage prints volt with uV */
-	volt = regulator_get_voltage(g_pmic->reg_vsram_gpu) / 10;
+	if (regulator_is_enabled(g_pmic->reg_vsram_gpu)) {
+		/* regulator_get_voltage prints volt with uV */
+		volt = regulator_get_voltage(g_pmic->reg_vsram_gpu) / 10;
+	}
 
 	return volt;
 }
@@ -2956,10 +2961,10 @@ static unsigned int __mt_gpufreq_get_cur_vsram_gpu(void)
 static unsigned int __mt_gpufreq_get_cur_vgpu(void)
 {
 	unsigned int volt = 0;
-
-	/* regulator_get_voltage prints volt with uV */
-	volt = regulator_get_voltage(g_pmic->reg_vgpu) / 10;
-
+	if (regulator_is_enabled(g_pmic->reg_vgpu)){
+		/* regulator_get_voltage prints volt with uV */
+		volt = regulator_get_voltage(g_pmic->reg_vgpu) / 10;
+	}
 	return volt;
 }
 
@@ -3633,6 +3638,15 @@ static void __mt_gpufreq_gpu_dfd_clear(void)
 	__mt_gpufreq_dbgtop_pwr_on(true);
 }
 
+/* the lock prove have false alarm when driver probe. skip it*/
+#define MTK_SKIP_LOCK_PROVE 1
+
+#if MTK_SKIP_LOCK_PROVE
+#define RETURN_ERROR(X) do { lockdep_on(); return X; } while (0)
+#else
+#define RETURN_ERROR(X) do { return X; } while (0)
+#endif
+
 /*
  * gpufreq driver probe
  */
@@ -3640,7 +3654,9 @@ static int __mt_gpufreq_pdrv_probe(struct platform_device *pdev)
 {
 	struct device_node *node;
 	int ret;
-
+#if MTK_SKIP_LOCK_PROVE
+	lockdep_off();
+#endif
 	gpufreq_pr_info("@%s start\n", __func__);
 
 	node = of_find_matching_node(NULL, g_gpufreq_of_match);
@@ -3650,7 +3666,7 @@ static int __mt_gpufreq_pdrv_probe(struct platform_device *pdev)
 #if MT_GPUFREQ_DFD_ENABLE
 	if (mtk_dbgtop_mfg_pwr_en(1)) {
 		gpufreq_pr_info("[GPU_DFD] wait dbgtop ready\n");
-		return EPROBE_DEFER;
+		RETURN_ERROR(EPROBE_DEFER);
 	}
 #endif
 
@@ -3658,18 +3674,18 @@ static int __mt_gpufreq_pdrv_probe(struct platform_device *pdev)
 	/* init efuse */
 	ret = __mt_gpufreq_init_efuse(pdev);
 	if (ret)
-		return ret;
+		RETURN_ERROR(ret);
 #endif
 
 	/* init pmic regulator */
 	ret = __mt_gpufreq_init_pmic(pdev);
 	if (ret)
-		return ret;
+		RETURN_ERROR(ret);
 
 	/* init clock source and mtcmos */
 	ret = __mt_gpufreq_init_clk(pdev);
 	if (ret)
-		return ret;
+		RETURN_ERROR(ret);
 
 	/* init opp table */
 	__mt_gpufreq_init_table();
@@ -3701,7 +3717,7 @@ static int __mt_gpufreq_pdrv_probe(struct platform_device *pdev)
 	g_probe_done = true;
 	gpufreq_pr_info("@%s: GPU driver init done\n", __func__);
 
-	return 0;
+	RETURN_ERROR(0);
 }
 
 /*

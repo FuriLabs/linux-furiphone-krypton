@@ -230,6 +230,10 @@ enum DSI_STATUS DSI_Start(enum DISP_MODULE_ENUM module,
 enum DSI_STATUS DSI_Stop(enum DISP_MODULE_ENUM module,
 	struct cmdqRecStruct *cmdq);
 enum DSI_STATUS DSI_Reset(enum DISP_MODULE_ENUM module, struct cmdqRecStruct *cmdq);
+void mipi_tx_pre_oe_config(enum DISP_MODULE_ENUM module, void *cmdq, bool en);
+void mipi_tx_oe_config(enum DISP_MODULE_ENUM module, void *cmdq, bool en);
+void mipi_tx_dpn_config(enum DISP_MODULE_ENUM module, void *cmdq, bool en);
+void mipi_tx_sw_control_en(enum DISP_MODULE_ENUM module, void *cmdq, bool en);
 
 #ifdef CONFIG_MTK_HIGH_FRAME_RATE
 /*-------------------------------DynFPS start------------------------------*/

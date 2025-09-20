@@ -992,25 +992,25 @@ static void mt_gpufreq_buck_control(enum mt_power_state power)
 	gpufreq_pr_debug("@%s: power=%d", __func__, power);
 
 	if (power == POWER_ON) {
-		if (regulator_enable(g_pmic->reg_vsram_gpu)) {
-			gpufreq_pr_info("@%s: fail tp enable VSRAM_GPU\n",
-					__func__);
-			return;
-		}
 		if (regulator_enable(g_pmic->reg_vgpu)) {
 			gpufreq_pr_info("@%s: fail to enable VGPU\n",
 					__func__);
 			return;
 		}
-		g_buck_on++;
-	} else {
-		if (regulator_disable(g_pmic->reg_vgpu)) {
-			gpufreq_pr_info("@%s: fail to disable VGPU\n",
+		if (regulator_enable(g_pmic->reg_vsram_gpu)) {
+			gpufreq_pr_info("@%s: fail tp enable VSRAM_GPU\n",
 					__func__);
 			return;
 		}
+		g_buck_on++;
+	} else {
 		if (regulator_disable(g_pmic->reg_vsram_gpu)) {
 			gpufreq_pr_info("@%s: fail to disable VSRAM_GPU\n",
+					__func__);
+			return;
+		}
+		if (regulator_disable(g_pmic->reg_vgpu)) {
+			gpufreq_pr_info("@%s: fail to disable VGPU\n",
 					__func__);
 			return;
 		}
@@ -2119,6 +2119,9 @@ static unsigned int __mt_gpufreq_get_segment_id(void)
 	case 0x03:
 		segment_id = MT6877T_SEGMENT;    /* 5G-5++ */
 		break;
+	case 0x04:
+		segment_id = MT6877T_SEGMENT;    /* 5G-5+++ */
+		break;
 	default:
 		segment_id = MT6877_SEGMENT;
 		gpufreq_pr_info("@%s: invalid efuse_id(0x%x)\n",
@@ -2937,10 +2940,6 @@ static enum g_posdiv_power_enum __mt_gpufreq_get_curr_posdiv_power(void)
 	mfgpll = DRV_Reg32(MFGPLL1_CON1);
 
 	posdiv_power = (mfgpll & (0x7 << POSDIV_SHIFT)) >> POSDIV_SHIFT;
-
-	gpufreq_pr_logbuf(
-		"%s : mfgpll: 0x%08x, posdiv_power: %d\n",
-		__func__, mfgpll, posdiv_power);
 
 	return posdiv_power;
 }

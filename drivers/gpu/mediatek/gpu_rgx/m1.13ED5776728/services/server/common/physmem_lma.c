@@ -98,6 +98,9 @@ typedef struct _PMR_LMALLOCARRAY_DATA_ {
 	*/
 	IMG_BOOL bPoisonOnFree;
 
+	IMG_BOOL bIsZombie;
+	IMG_BOOL bIsSparse;
+
 	/* Physical heap and arena pointers for this allocation */
 	PHYS_HEAP* psPhysHeap;
 	RA_ARENA* psArena;
@@ -262,6 +265,7 @@ _AllocLMPageArray(PVRSRV_DEVICE_NODE *psDevNode,
 		psPageArrayData->uiPagesToAlloc = psPageArrayData->uiTotalNumPages;
 		psPageArrayData->uiContigAllocSize = TRUNCATE_64BITS_TO_32BITS(uiSize);
 		psPageArrayData->uiLog2AllocSize = uiLog2AllocPageSize;
+		psPageArrayData->bIsSparse = IMG_FALSE;
 	}
 	else
 	{
@@ -284,6 +288,7 @@ _AllocLMPageArray(PVRSRV_DEVICE_NODE *psDevNode,
 		}
 		psPageArrayData->uiContigAllocSize = 1 << uiLog2AllocPageSize;
 		psPageArrayData->uiLog2AllocSize = uiLog2AllocPageSize;
+		psPageArrayData->bIsSparse = IMG_TRUE;
 	}
 	psPageArrayData->psDevNode = psDevNode;
 	psPageArrayData->psConnection = psConnection;
@@ -589,6 +594,15 @@ _FreeLMPages(PMR_LMALLOCARRAY_DATA *psPageArrayData,
 	IMG_UINT32 uiContigAllocSize;
 	IMG_UINT32 i, ui32PagesToFree=0, ui32PagesFreed=0, ui32Index=0;
 	RA_ARENA *pArena = psPageArrayData->psArena;
+#if defined(PVRSRV_ENABLE_PROCESS_STATS)
+	IMG_UINT32 uiStat = PVRSRV_MEM_ALLOC_TYPE_ALLOC_LMA_PAGES;
+#if defined(SUPPORT_PMR_DEFERRED_FREE)
+	if (psPageArrayData->bIsZombie)
+	{
+		uiStat = PVRSRV_MEM_ALLOC_TYPE_ZOMBIE_LMA_PAGES;
+	}
+#endif /* defined(SUPPORT_PMR_DEFERRED_FREE) */
+#endif /* defined(PVRSRV_ENABLE_PROCESS_STATS) */
 
 	PVR_ASSERT(psPageArrayData->iNumPagesAllocated != 0);
 
@@ -625,12 +639,12 @@ _FreeLMPages(PMR_LMALLOCARRAY_DATA *psPageArrayData,
 #if defined(PVRSRV_ENABLE_PROCESS_STATS)
 #if !defined(PVRSRV_ENABLE_MEMORY_STATS)
 			/* Allocation is done a page at a time */
-			PVRSRVStatsDecrMemAllocStat(PVRSRV_MEM_ALLOC_TYPE_ALLOC_LMA_PAGES,
-			                            uiContigAllocSize,
-			                            psPageArrayData->uiPid);
+			PVRSRVStatsDecrMemAllocStat(uiStat,
+			                          uiContigAllocSize,
+			                          psPageArrayData->uiPid);
 #else
 			{
-				PVRSRVStatsRemoveMemAllocRecord(PVRSRV_MEM_ALLOC_TYPE_ALLOC_LMA_PAGES,
+				PVRSRVStatsRemoveMemAllocRecord(uiStat,
 				                                psPageArrayData->pasDevPAddr[ui32Index].uiAddr,
 				                                psPageArrayData->uiPid);
 			}
@@ -664,9 +678,7 @@ static PVRSRV_ERROR
 PMRFinalizeLocalMem(PMR_IMPL_PRIVDATA pvPriv)
 {
 	PVRSRV_ERROR eError;
-	PMR_LMALLOCARRAY_DATA *psLMAllocArrayData = NULL;
-
-	psLMAllocArrayData = pvPriv;
+	PMR_LMALLOCARRAY_DATA *psLMAllocArrayData = pvPriv;
 
 	/* We can't free pages until now. */
 	if (psLMAllocArrayData->iNumPagesAllocated != 0)
@@ -680,6 +692,68 @@ PMRFinalizeLocalMem(PMR_IMPL_PRIVDATA pvPriv)
 
 	return PVRSRV_OK;
 }
+
+#if defined(SUPPORT_PMR_DEFERRED_FREE)
+static PVRSRV_ERROR PMRZombifyLocalMem(PMR_IMPL_PRIVDATA pvPriv, PMR *psPMR)
+{
+	PMR_LMALLOCARRAY_DATA *psPageArrayData = pvPriv;
+#if defined(PVRSRV_ENABLE_PROCESS_STATS)
+	IMG_PID uiPid = psPageArrayData->uiPid;
+#endif
+
+	psPageArrayData->bIsZombie = IMG_TRUE;
+
+#if defined(PVRSRV_ENABLE_PROCESS_STATS)
+#if !defined(PVRSRV_ENABLE_MEMORY_STATS)
+	{
+		IMG_UINT32 uiLog2ChunkSize = psPageArrayData->uiLog2AllocSize;
+		IMG_UINT64 uiSize = 0;
+
+		if (psPageArrayData->bIsSparse)
+		{
+			uiSize = psPageArrayData->iNumPagesAllocated << uiLog2ChunkSize;
+		}
+		else
+		{
+			uiSize = psPageArrayData->uiContigAllocSize;
+		}
+
+		PVRSRVStatsDecrMemAllocStat(PVRSRV_MEM_ALLOC_TYPE_ALLOC_LMA_PAGES, uiSize, uiPid);
+		PVRSRVStatsIncrMemAllocStat(PVRSRV_MEM_ALLOC_TYPE_ZOMBIE_LMA_PAGES, uiSize, uiPid);
+	}
+#else /* !defined(PVRSRV_ENABLE_MEMORY_STATS) */
+	{
+		IMG_UINT32 i;
+
+		for (i = 0; i < psPageArrayData->uiTotalNumPages; i++)
+		{
+			if (psPageArrayData->pasDevPAddr[i].uiAddr != INVALID_PAGE_ADDR)
+			{
+				IMG_CPU_PHYADDR sCpuPAddr = {
+					.uiAddr = psPageArrayData->pasDevPAddr[i].uiAddr,
+				};
+
+				PVRSRVStatsRemoveMemAllocRecord(PVRSRV_MEM_ALLOC_TYPE_ALLOC_LMA_PAGES,
+				                                psPageArrayData->pasDevPAddr[i].uiAddr,
+				                                uiPid);
+				PVRSRVStatsAddMemAllocRecord(PVRSRV_MEM_ALLOC_TYPE_ZOMBIE_LMA_PAGES,
+				                             NULL,
+				                             sCpuPAddr,
+				                             psPageArrayData->uiContigAllocSize,
+				                             NULL,
+				                             uiPid
+				                             DEBUG_MEMSTATS_VALUES);
+			}
+		}
+	}
+#endif /* !defined(PVRSRV_ENABLE_MEMORY_STATS) */
+#endif /* defined(PVRSRV_ENABLE_PROCESS_STATS) */
+
+	PVR_UNREFERENCED_PARAMETER(psPMR);
+
+	return PVRSRV_OK;
+}
+#endif /* defined(SUPPORT_PMR_DEFERRED_FREE) */
 
 /* callback function for locking the system physical page addresses.
    As we are LMA there is nothing to do as we control physical memory. */
@@ -760,7 +834,9 @@ PMRSysPhysAddrLocalMem(PMR_IMPL_PRIVDATA pvPriv,
 				uiAllocIndex = puiOffset[idx] >> uiLog2AllocSize;
 				uiInAllocOffset = puiOffset[idx] - (uiAllocIndex << uiLog2AllocSize);
 
-				PVR_ASSERT(uiAllocIndex < uiNumAllocs);
+				PVR_LOG_RETURN_IF_FALSE(uiAllocIndex < uiNumAllocs,
+				                        "puiOffset out of range", PVRSRV_ERROR_OUT_OF_RANGE);
+
 				PVR_ASSERT(uiInAllocOffset < (1ULL << uiLog2AllocSize));
 
 				psDevPAddr[idx].uiAddr = psLMAllocArrayData->pasDevPAddr[uiAllocIndex].uiAddr + uiInAllocOffset;
@@ -1028,7 +1104,6 @@ PMRChangeSparseMemLocalMem(PMR_IMPL_PRIVDATA pPriv,
 	IMG_UINT32 uiFreepgidx;
 
 	PMR_LMALLOCARRAY_DATA *psPMRPageArrayData = (PMR_LMALLOCARRAY_DATA *)pPriv;
-	IMG_DEV_PHYADDR sPhyAddr;
 
 #if defined(DEBUG)
 	IMG_BOOL bPoisonFail = IMG_FALSE;
@@ -1099,7 +1174,7 @@ PMRChangeSparseMemLocalMem(PMR_IMPL_PRIVDATA pPriv,
 				{
 					uiFreepgidx = pai32FreeIndices[ui32Loop];
 
-					if (uiFreepgidx > psPMRPageArrayData->uiTotalNumPages)
+					if (uiFreepgidx >= psPMRPageArrayData->uiTotalNumPages)
 					{
 						PVR_GOTO_WITH_ERROR(eError, PVRSRV_ERROR_DEVICEMEM_OUT_OF_RANGE, e0);
 					}
@@ -1122,26 +1197,15 @@ PMRChangeSparseMemLocalMem(PMR_IMPL_PRIVDATA pPriv,
 		for (ui32Loop = ui32AdtnlAllocPages; ui32Loop < ui32AllocPageCount; ui32Loop++)
 		{
 			uiAllocpgidx = pai32AllocIndices[ui32Loop];
-			if (uiAllocpgidx > psPMRPageArrayData->uiTotalNumPages)
+			if (uiAllocpgidx >= psPMRPageArrayData->uiTotalNumPages)
 			{
 				PVR_GOTO_WITH_ERROR(eError, PVRSRV_ERROR_DEVICEMEM_OUT_OF_RANGE, e0);
 			}
 
-			if (SPARSE_REMAP_MEM != (uiFlags & SPARSE_REMAP_MEM))
+			if ((INVALID_PAGE_ADDR != psPageArray[uiAllocpgidx].uiAddr) ||
+					(TRANSLATION_INVALID != psPMRMapTable->aui32Translation[uiAllocpgidx]))
 			{
-				if ((INVALID_PAGE_ADDR != psPageArray[uiAllocpgidx].uiAddr) ||
-						(TRANSLATION_INVALID != psPMRMapTable->aui32Translation[uiAllocpgidx]))
-				{
-					PVR_LOG_GOTO_WITH_ERROR("Trying to allocate already allocated page again", eError, PVRSRV_ERROR_INVALID_PARAMS, e0);
-				}
-			}
-			else
-			{
-				if ((INVALID_PAGE_ADDR == psPageArray[uiAllocpgidx].uiAddr) ||
-				    (TRANSLATION_INVALID == psPMRMapTable->aui32Translation[uiAllocpgidx]))
-				{
-					PVR_LOG_GOTO_WITH_ERROR("Unable to remap memory due to missing page", eError, PVRSRV_ERROR_INVALID_PARAMS, e0);
-				}
+				PVR_LOG_GOTO_WITH_ERROR("Trying to allocate already allocated page again", eError, PVRSRV_ERROR_INVALID_PARAMS, e0);
 			}
 		}
 
@@ -1174,24 +1238,11 @@ PMRChangeSparseMemLocalMem(PMR_IMPL_PRIVDATA pPriv,
 
 			uiAllocpgidx = pai32AllocIndices[ui32Index];
 			uiFreepgidx  = pai32FreeIndices[ui32Loop];
-			sPhyAddr = psPageArray[uiAllocpgidx];
 			psPageArray[uiAllocpgidx] = psPageArray[uiFreepgidx];
 
-			/* Is remap mem used in real world scenario? Should it be turned to a
-			 *  debug feature? The condition check needs to be out of loop, will be
-			 *  done at later point though after some analysis */
-			if (SPARSE_REMAP_MEM != (uiFlags & SPARSE_REMAP_MEM))
-			{
-				psPMRMapTable->aui32Translation[uiFreepgidx] = TRANSLATION_INVALID;
-				psPMRMapTable->aui32Translation[uiAllocpgidx] = uiAllocpgidx;
-				psPageArray[uiFreepgidx].uiAddr = INVALID_PAGE_ADDR;
-			}
-			else
-			{
-				psPageArray[uiFreepgidx] = sPhyAddr;
-				psPMRMapTable->aui32Translation[uiFreepgidx] = uiFreepgidx;
-				psPMRMapTable->aui32Translation[uiAllocpgidx] = uiAllocpgidx;
-			}
+			psPMRMapTable->aui32Translation[uiFreepgidx] = TRANSLATION_INVALID;
+			psPMRMapTable->aui32Translation[uiAllocpgidx] = uiAllocpgidx;
+			psPageArray[uiFreepgidx].uiAddr = INVALID_PAGE_ADDR;
 
 			/* Be sure to honour the attributes associated with the allocation
 			 * such as zeroing, poisoning etc. */
@@ -1345,7 +1396,15 @@ static PMR_IMPL_FUNCTAB _sPMRLMAFuncTab = {
 	/* pfnMMap */
 	NULL,
 	/* pfnFinalize */
-	&PMRFinalizeLocalMem
+	&PMRFinalizeLocalMem,
+	/* pfnGetPMRFactoryLock */
+	NULL,
+	/* pfnGetPMRFactoryLock */
+	NULL,
+#if defined(SUPPORT_PMR_DEFERRED_FREE)
+	/* pfnZombify */
+	&PMRZombifyLocalMem,
+#endif
 };
 
 PVRSRV_ERROR

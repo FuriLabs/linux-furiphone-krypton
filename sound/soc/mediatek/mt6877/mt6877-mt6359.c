@@ -22,6 +22,14 @@
 #include "aw87339.h"
 #endif
 
+#ifdef CONFIG_SND_SOC_AW87390
+extern int aw87xxx_set_profile(int dev_index, char *profile);
+static char *aw_profile[] = {"Music", "Off"};
+enum aw87xxx_dev_index {
+AW_DEV_0 = 0,
+};
+#endif
+
 /*
  * if need additional control for the ext spk amp that is connected
  * after Lineout Buffer / HP Buffer on the codec, put the control in
@@ -33,7 +41,8 @@ static const char *const mt6877_spk_type_str[] = {MTK_SPK_NOT_SMARTPA_STR,
 						  MTK_SPK_RICHTEK_RT5509_STR,
 						  MTK_SPK_MEDIATEK_MT6660_STR,
 						  MTK_SPK_NXP_TFA98XX_STR,
-						  MTK_SPK_MEDIATEK_RT5512_STR
+						  MTK_SPK_MEDIATEK_RT5512_STR,
+						  MTK_SPK_AWINIC_AW883XX_STR
 						  };
 static const char *const
 	mt6877_spk_i2s_type_str[] = {MTK_SPK_I2S_0_STR,
@@ -91,7 +100,9 @@ static int mt6877_mt6359_spk_amp_event(struct snd_soc_dapm_widget *w,
 {
 	struct snd_soc_dapm_context *dapm = w->dapm;
 	struct snd_soc_card *card = dapm->card;
-
+#ifdef CONFIG_SND_SOC_AW87390
+	int ret = 0;
+#endif
 	dev_info(card->dev, "%s(), event %d\n", __func__, event);
 
 	switch (event) {
@@ -100,11 +111,25 @@ static int mt6877_mt6359_spk_amp_event(struct snd_soc_dapm_widget *w,
 #ifdef CONFIG_SND_SOC_AW87339
 		aw87339_spk_enable_set(true);
 #endif
+#ifdef CONFIG_SND_SOC_AW87390
+		ret = aw87xxx_set_profile(AW_DEV_0, aw_profile[0]);
+		if (ret < 0) {
+			pr_err("[Awinic] %s: set profile[%s] failed",__func__, aw_profile[0]);
+			return ret;
+		}
+#endif
 		break;
 	case SND_SOC_DAPM_PRE_PMD:
 		/* spk amp off control */
 #ifdef CONFIG_SND_SOC_AW87339
 		aw87339_spk_enable_set(false);
+#endif
+#ifdef CONFIG_SND_SOC_AW87390
+		ret = aw87xxx_set_profile(AW_DEV_0, aw_profile[1]);
+		if (ret < 0) {
+			pr_err("[Awinic] %s: set profile[%s] failed",__func__, aw_profile[1]);
+			return ret;
+		}
 #endif
 		break;
 	default:

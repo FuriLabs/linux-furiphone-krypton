@@ -1263,7 +1263,8 @@ void DpEngine_COLORonConfig(struct mtk_ddp_comp *comp, struct cmdq_pkt *handle)
 		pq_param_p->u4SatAdj[PURP_TONE] >= COLOR_TUNING_INDEX ||
 		pq_param_p->u4SatAdj[SKIN_TONE] >= COLOR_TUNING_INDEX ||
 		pq_param_p->u4SatAdj[GRASS_TONE] >= COLOR_TUNING_INDEX ||
-		pq_param_p->u4SatAdj[SKY_TONE] >= COLOR_TUNING_INDEX) {
+		pq_param_p->u4SatAdj[SKY_TONE] >= COLOR_TUNING_INDEX ||
+		pq_param_p->u4ColorLUT >= COLOR_3D_CNT) {
 		DRM_ERROR("[PQ][COLOR] Tuning index range error !\n");
 		return;
 	}
@@ -3413,6 +3414,7 @@ static void mtk_color_prepare(struct mtk_ddp_comp *comp)
 #if defined(CONFIG_DRM_MTK_SHADOW_REGISTER_SUPPORT)
 	struct mtk_disp_color *color = comp_to_color(comp);
 #endif
+	bool is_color_restore = (g_color_backup.COLOR_CFG_MAIN != 0);
 
 	mtk_ddp_comp_clk_prepare(comp);
 	atomic_set(&g_color_is_clock_on[index_of_color(comp->id)], 1);
@@ -3437,7 +3439,8 @@ static void mtk_color_prepare(struct mtk_ddp_comp *comp)
 #endif
 #endif
 	// restore DISP_COLOR_CFG_MAIN register
-	ddp_color_restore(comp);
+	if (is_color_restore)
+		ddp_color_restore(comp);
 }
 
 static void mtk_color_unprepare(struct mtk_ddp_comp *comp)

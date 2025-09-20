@@ -13,6 +13,9 @@
 /* #define FPGA_PWRCLK_API_DISABLE */
 /* #define FPGA_INTERRUPT_API_DISABLE */
 
+#define LOG_PARAM_INFO_SIZE 64
+#define LOG_PROPERTY_SIZE 1024
+
 struct mtk_vcodec_mem {
 	size_t length;
 	size_t size;
@@ -65,12 +68,12 @@ extern bool mtk_vcodec_perf;
 #define mtk_v4l2_debug_enter()  mtk_v4l2_debug(8, "+")
 #define mtk_v4l2_debug_leave()  mtk_v4l2_debug(8, "-")
 
-#define mtk_vcodec_debug(h, fmt, args...)                               \
+#define mtk_vcodec_debug(h, fmt, args...)                           \
 	do {                                                            \
-		if (mtk_vcodec_dbg)                                  \
-			pr_info("[MTK_VCODEC][%d]: %s() " fmt "\n",     \
-				((struct mtk_vcodec_ctx *)h->ctx)->id,  \
-				__func__, ##args);                      \
+		if (mtk_vcodec_dbg && h != NULL && h->ctx != NULL)          \
+			pr_info("[MTK_VCODEC][%d]: %s() " fmt "\n",             \
+				((struct mtk_vcodec_ctx *)h->ctx)->id,              \
+				__func__, ##args);                                  \
 	} while (0)
 
 #define mtk_vcodec_perf_log(fmt, args...)                               \
@@ -80,9 +83,12 @@ extern bool mtk_vcodec_perf;
 	} while (0)
 
 
-#define mtk_vcodec_err(h, fmt, args...)                                 \
-	pr_info("[MTK_VCODEC][ERROR][%d]: %s() " fmt "\n",               \
-		   ((struct mtk_vcodec_ctx *)h->ctx)->id, __func__, ##args)
+#define mtk_vcodec_err(h, fmt, args...)                                     \
+	do {                                                                    \
+		if (h != NULL && h->ctx != NULL)                                    \
+			pr_info("[MTK_VCODEC][ERROR][%d]: %s() " fmt "\n",              \
+				((struct mtk_vcodec_ctx *)h->ctx)->id, __func__, ##args);   \
+	} while (0)
 
 #define mtk_vcodec_debug_enter(h)  mtk_vcodec_debug(h, "+")
 #define mtk_vcodec_debug_leave(h)  mtk_vcodec_debug(h, "-")
@@ -149,11 +155,13 @@ void mtk_vcodec_set_curr_ctx(struct mtk_vcodec_dev *dev,
 	struct mtk_vcodec_ctx *ctx, unsigned int hw_id);
 struct mtk_vcodec_ctx *mtk_vcodec_get_curr_ctx(struct mtk_vcodec_dev *dev,
 	unsigned int hw_id);
+void mtk_vcodec_add_ctx_list(struct mtk_vcodec_ctx *ctx);
+void mtk_vcodec_del_ctx_list(struct mtk_vcodec_ctx *ctx);
 struct vdec_fb *mtk_vcodec_get_fb(struct mtk_vcodec_ctx *ctx);
 int mtk_vdec_put_fb(struct mtk_vcodec_ctx *ctx, int type);
 void mtk_enc_put_buf(struct mtk_vcodec_ctx *ctx);
 void v4l2_m2m_buf_queue_check(struct v4l2_m2m_ctx *m2m_ctx,
 		void *vbuf);
 void mtk_vcodec_set_log(struct mtk_vcodec_ctx *ctx, char *val);
-
+void mtk_vcodec_get_log(struct mtk_vcodec_ctx *ctx, char *val);
 #endif /* _MTK_VCODEC_UTIL_H_ */

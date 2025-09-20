@@ -61,15 +61,27 @@ long int gro_flush_timer;
 
 static unsigned long timeout_flush_num, clear_flush_num;
 
+static u64 g_cur_dl_speed;
+
 void set_ccmni_rps(unsigned long value)
 {
 	int i = 0;
 	struct ccmni_ctl_block *ctlb = ccmni_ctl_blk[0];
-
+	if (ctlb == NULL) {
+		pr_info("%s: invalid ctlb\n", __func__);
+		return;
+	}
 	for (i = 0; i < ctlb->ccci_ops->ccmni_num; i++)
 		set_rps_map(ctlb->ccmni_inst[i]->dev->_rx, value);
 }
 EXPORT_SYMBOL(set_ccmni_rps);
+
+void ccmni_set_cur_speed(u64 cur_dl_speed)
+{
+	g_cur_dl_speed = cur_dl_speed;
+}
+EXPORT_SYMBOL(ccmni_set_cur_speed);
+
 
 /********************internal function*********************/
 static inline int is_ack_skb(int md_id, struct sk_buff *skb)
@@ -103,25 +115,34 @@ static inline int is_ack_skb(int md_id, struct sk_buff *skb)
 				sizeof(struct ipv6hdr),
 				&nexthdr, &frag_off);
 
-			tcph = (struct tcphdr *)(skb->data + l4_off);
-			if (nexthdr == IPPROTO_TCP &&
-				!tcph->syn && !tcph->fin &&
-			    !tcph->rst &&
-				((total_len - l4_off) == (tcph->doff << 2)))
-				ret = 1;
+			if (nexthdr == IPPROTO_TCP) {
+				tcph = (struct tcphdr *)(skb->data + l4_off);
+
+				if (tcph->syn)
+					ret = 1;
+				else if (!tcph->fin && !tcph->rst &&
+					((total_len - l4_off) ==
+						(tcph->doff << 2)))
+					ret = 1;
+			}
 		}
 	} else if (packet_type == IPV4_VERSION) {
 		struct iphdr *iph = (struct iphdr *)skb->data;
 
 		if (ntohs(iph->tot_len) <=
 				128 - sizeof(struct ccci_header) - count) {
-			tcph = (struct tcphdr *)(skb->data + (iph->ihl << 2));
 
-			if (iph->protocol == IPPROTO_TCP && !tcph->syn &&
-				!tcph->fin && !tcph->rst &&
-				(ntohs(iph->tot_len) == (iph->ihl << 2) +
-				(tcph->doff << 2)))
-				ret = 1;
+			if (iph->protocol == IPPROTO_TCP) {
+				tcph = (struct tcphdr *)(skb->data + (iph->ihl << 2));
+
+				if (tcph->syn)
+					ret = 1;
+				else if (!tcph->fin && !tcph->rst &&
+					ntohs(iph->tot_len) ==
+					(iph->ihl << 2) + (tcph->doff << 2)) {
+					ret = 1;
+				}
+			}
 		}
 	}
 
@@ -204,18 +225,23 @@ static inline int arp_reply(int md_id, struct net_device *dev,
 static int is_skb_gro(struct sk_buff *skb)
 {
 	u32 packet_type;
+	u32 protocol = 0xFFFFFFFF;
 
 	packet_type = skb->data[0] & 0xF0;
-	if (packet_type == IPV4_VERSION &&
-		(ip_hdr(skb)->protocol == IPPROTO_TCP ||
-		ip_hdr(skb)->protocol == IPPROTO_UDP))
+
+	if (packet_type == IPV4_VERSION)
+		protocol = ip_hdr(skb)->protocol;
+	else if (packet_type == IPV6_VERSION)
+		protocol = ipv6_hdr(skb)->nexthdr;
+
+	if (protocol == IPPROTO_TCP) {
 		return 1;
-	else if (packet_type == IPV6_VERSION &&
-		(ipv6_hdr(skb)->nexthdr == IPPROTO_TCP ||
-		ipv6_hdr(skb)->nexthdr == IPPROTO_UDP))
-		return 1;
-	else
-		return 0;
+	} else if (protocol == IPPROTO_UDP) {
+		if (g_cur_dl_speed > 500000000LL) //>500M
+			return 1;
+	}
+
+	return 0;
 }
 
 static void ccmni_gro_flush(struct ccmni_instance *ccmni)
@@ -930,12 +956,19 @@ static int ccmni_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
 		CCMNI_INF_MSG(ccmni->md_id,
 			"SIOCACKPRIO: ack_prio_en=%d, ccmni0_ack_en=%d\n",
 			ifr->ifr_ifru.ifru_ivalue,
-			ctlb->ccmni_inst[i]->ack_prio_en);
+			ccmni_tmp->ack_prio_en);
 		break;
 
 	case SIOPUSHPENDING:
-		pr_info("Using dummy SIOPUSHPENDING\n");
-		return 0;
+		ctlb = ccmni_ctl_blk[ccmni->md_id];
+		CCMNI_INF_MSG(ccmni->md_id, "%s SIOPUSHPENDING called\n", ccmni->dev->name);
+		cancel_delayed_work(&ccmni->pkt_queue_work);
+		flush_delayed_work(&ccmni->pkt_queue_work);
+		if (ctlb->ccci_ops->ccci_handle_port_list(DEV_OPEN, ccmni->dev->name))
+			CCMNI_INF_MSG(ccmni->md_id,
+				"%s is failed to handle port list\n",
+				ccmni->dev->name);
+		break;
 
 	default:
 		CCMNI_DBG_MSG(ccmni->md_id,
@@ -1108,6 +1141,8 @@ static inline void ccmni_dev_init(int md_id, struct net_device *dev)
 			(~IFF_BROADCAST & ~IFF_MULTICAST);
 	/* not support VLAN */
 	dev->features = NETIF_F_VLAN_CHALLENGED;
+	if (ctlb->ccci_ops->md_ability & MODEM_CAP_HWTXCSUM)
+		dev->features |= NETIF_F_HW_CSUM;
 	if (ctlb->ccci_ops->md_ability & MODEM_CAP_SGIO) {
 		dev->features |= NETIF_F_SG;
 		dev->hw_features |= NETIF_F_SG;

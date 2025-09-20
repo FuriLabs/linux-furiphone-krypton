@@ -472,6 +472,7 @@ enum{
 #define CAM_REG_RRZO_BASE_ADDR(module)          (isp_devs[module].regs + 0x4900)
 #define CAM_REG_RRZO_XSIZE(module)              (isp_devs[module].regs + 0x490C)
 #define CAM_REG_RRZO_YSIZE(module)              (isp_devs[module].regs + 0x4910)
+#define CAM_REG_RRZO_STRIDE(module)             (isp_devs[module].regs + 0x4914)
 
 #define CAM_REG_RRZO_DRS(module)                (isp_devs[module].regs + 0x4908)
 #define CAM_REG_RRZO_CON(module)                (isp_devs[module].regs + 0x4918)

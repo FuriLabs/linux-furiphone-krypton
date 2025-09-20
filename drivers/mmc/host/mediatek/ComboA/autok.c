@@ -3755,8 +3755,14 @@ int execute_cmd_online_tuning(struct msdc_host *host, u8 *res)
 			}
 		}
 		score = autok_simple_score64(tune_result_str64, RawData64);
-		AUTOK_DBGPRINT(AUTOK_DBG_RES, "[AUTOK]CMD %d \t %d \t %s\r\n",
-			uCmdEdge, score, tune_result_str64);
+		AUTOK_DBGPRINT(AUTOK_DBG_RES, "[AUTOK]CMD %d \t %d \t %s lastRawData64=0x%llx\r\n",
+			uCmdEdge, score, tune_result_str64,RawData64);
+		if (res != NULL) {
+			if (uCmdEdge)
+				autok_window_apply(CMD_FALL, RawData64, res);
+			else
+				autok_window_apply(CMD_RISE, RawData64, res);
+		}
 		if (autok_check_scan_res64(RawData64,
 			    &pBdInfo->scan_info[uCmdEdge],
 			    AUTOK_TUNING_INACCURACY) != 0)

@@ -1,0 +1,7 @@
+config NFC_PN553_DEVICES
+	bool "NXP PN553/PN557 support"
+	help
+	  Say Y to enable
+	  NXP PN553/PN557 support
+	  Say N to disable
+	  NXP PN553/PN557 support

@@ -273,7 +273,10 @@ EXPORT_SYMBOL(mtk_vcodec_enc_irq_setup);
 void mtk_vcodec_gce_timeout_dump(void *ctx)
 {
 	struct mtk_vcodec_ctx *curr_ctx = ctx;
-
+	if (IS_ERR_OR_NULL(curr_ctx)) {
+		mtk_v4l2_err("invalid arguments, curr_ctx: %p", curr_ctx);
+		return;
+	}
 	if (curr_ctx->type == MTK_INST_ENCODER)
 		mtk_vcodec_enc_timeout_dump(ctx);
 	else if (curr_ctx->type == MTK_INST_DECODER)
@@ -312,6 +315,19 @@ void mtk_vcodec_enc_timeout_dump(void *ctx)
 			    j, Reg_1[i], value);
 		}
 	}
+	for (j = 0; j < MTK_VENC_HW_NUM; j++) {
+		for (i = 0x0; i <= 0x220; i = i+4) {
+			value = readl(dev->enc_reg_base[j] + i);
+			mtk_v4l2_debug(0, "[line: %d] Core[%d] 0x%x = 0x%lx",__LINE__,
+			    j, i, value);
+		}
+		for (i = 0x1140; i <= 0x12B0; i = i+4) {
+			value = readl(dev->enc_reg_base[j] + i);
+			mtk_v4l2_debug(0, "[line: %d] Core[%d] 0x%x = 0x%lx",__LINE__,
+			    j, i, value);
+		}
+	}
+
 	writel(1, dev->enc_reg_base[0] + 0xEC);
 	writel(1, dev->enc_reg_base[1] + 0xEC);
 	writel(0, dev->enc_reg_base[0] + 0xF4);

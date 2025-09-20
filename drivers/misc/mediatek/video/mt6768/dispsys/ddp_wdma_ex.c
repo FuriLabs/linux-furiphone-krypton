@@ -664,9 +664,9 @@ wdma_golden_setting(enum DISP_MODULE_ENUM module,
 	unsigned int regval;
 	unsigned int idx = wdma_index(module);
 	unsigned long res;
-	unsigned int ultra_low_us = 6;
-	unsigned int ultra_high_us = 4;
-	unsigned int preultra_low_us = 7;
+	unsigned int ultra_low_us = 7;
+	unsigned int ultra_high_us = 5;
+	unsigned int preultra_low_us = 8;
 	unsigned int preultra_high_us = ultra_low_us;
 	unsigned int fifo_pseudo_size = 288;
 	unsigned int frame_rate = 60;
@@ -709,6 +709,10 @@ wdma_golden_setting(enum DISP_MODULE_ENUM module,
 #ifdef CONFIG_MTK_DX_HDCP_DDP_SUPPORT
 		res = 1920 * 1080;
 		frame_rate = 60;
+		ultra_low_us = 8;
+		ultra_high_us = 7;
+		preultra_low_us = 9;
+		preultra_high_us = ultra_low_us;
 #else
 		res = p_golden_setting->ext_dst_width *
 				p_golden_setting->ext_dst_height;

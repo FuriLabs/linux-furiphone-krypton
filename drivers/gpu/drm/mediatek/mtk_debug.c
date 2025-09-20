@@ -352,34 +352,48 @@ extern int mtk_drm_setbacklight(struct drm_crtc *crtc, unsigned int level);
 int mtkfb_set_backlight_level(unsigned int level)
 {
 	struct drm_crtc *crtc;
+	int ret = 0;
+
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return -EINVAL;
+	}
 
 	/* this debug cmd only for crtc0 */
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
-				typeof(*crtc), head);
-	if (!crtc) {
-		DDPPR_ERR("find crtc fail\n");
-		return 0;
+			typeof(*crtc), head);
+	if (IS_ERR_OR_NULL(crtc)) {
+		DDPPR_ERR("%s failed to find crtc\n", __func__);
+		return -EINVAL;
 	}
-	mtk_drm_setbacklight(crtc, level);
 
-	return 0;
+	ret = mtk_drm_setbacklight(crtc, level);
+	DDPINFO("%s-%d, ret=%d\n", __func__, __LINE__, ret);
+
+	return ret;
 }
 EXPORT_SYMBOL(mtkfb_set_backlight_level);
 
 int mtkfb_set_aod_backlight_level(unsigned int level)
 {
 	struct drm_crtc *crtc;
+	int ret = 0;
+
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return -EINVAL;
+	}
 
 	/* this debug cmd only for crtc0 */
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
-	if (!crtc) {
-		pr_info("find crtc fail\n");
-		return 0;
+	if (IS_ERR_OR_NULL(crtc)) {
+		DDPPR_ERR("find crtc fail\n");
+		return -EINVAL;
 	}
-	mtk_drm_aod_setbacklight(crtc, level);
+	ret = mtk_drm_aod_setbacklight(crtc, level);
 
-	return 0;
+	return ret;
 }
 EXPORT_SYMBOL(mtkfb_set_aod_backlight_level);
 
@@ -387,10 +401,15 @@ void mtk_disp_mipi_ccci_callback(unsigned int en, unsigned int usrdata)
 {
 	struct drm_crtc *crtc;
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return;
+	}
+
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
 
-	if (!crtc) {
+	if (IS_ERR_OR_NULL(crtc)) {
 		DDPPR_ERR("find crtc fail\n");
 		return;
 	}
@@ -404,10 +423,15 @@ void mtk_disp_osc_ccci_callback(unsigned int en, unsigned int usrdata)
 {
 	struct drm_crtc *crtc;
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return;
+	}
+
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
 
-	if (!crtc) {
+	if (IS_ERR_OR_NULL(crtc)) {
 		DDPPR_ERR("find crtc fail\n");
 		return;
 	}
@@ -421,10 +445,15 @@ void display_enter_tui(void)
 {
 	struct drm_crtc *crtc;
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return;
+	}
+
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
 
-	if (!crtc) {
+	if (IS_ERR_OR_NULL(crtc)) {
 		DDPPR_ERR("find crtc fail\n");
 		return;
 	}
@@ -437,10 +466,15 @@ void display_exit_tui(void)
 {
 	struct drm_crtc *crtc;
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return;
+	}
+
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
 
-	if (!crtc) {
+	if (IS_ERR_OR_NULL(crtc)) {
 		DDPPR_ERR("find crtc fail\n");
 		return;
 	}
@@ -453,15 +487,15 @@ static int debug_get_info(unsigned char *stringbuf, int buf_len)
 	int n = 0;
 	struct mtk_drm_private *private;
 
-	if (!drm_dev) {
+	if (IS_ERR_OR_NULL(drm_dev)) {
 		DDPPR_ERR("%s:%d, drm_dev is NULL\n",
 			__func__, __LINE__);
-		return -1;
+		return -EINVAL;
 	}
-	if (!drm_dev->dev_private) {
+	if (IS_ERR_OR_NULL(drm_dev->dev_private)) {
 		DDPPR_ERR("%s:%d, drm_dev->dev_private is NULL\n",
 			__func__, __LINE__);
-		return -1;
+		return -ENODEV;
 	}
 
 	private = drm_dev->dev_private;
@@ -759,19 +793,23 @@ int mtk_ddic_dsi_send_cmd(struct mtk_ddic_dsi_msg *cmd_msg,
 
 	DDPMSG("%s +\n", __func__);
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return -EINVAL;
+	}
+
 	/* This cmd only for crtc0 */
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 			typeof(*crtc), head);
+	if (IS_ERR_OR_NULL(crtc)) {
+		DDPPR_ERR("find crtc fail\n");
+		return -EINVAL;
+	}
+
 	index = drm_crtc_index(crtc);
 
 	CRTC_MMP_EVENT_START(index, ddic_send_cmd, (unsigned long)crtc,
 				blocking);
-
-	if (!crtc) {
-		DDPPR_ERR("find crtc fail\n");
-		CRTC_MMP_EVENT_END(index, ddic_send_cmd, 0, 0);
-		return -EINVAL;
-	}
 
 	private = crtc->dev->dev_private;
 	mtk_crtc = to_mtk_crtc(crtc);
@@ -882,18 +920,22 @@ int mtk_ddic_dsi_read_cmd(struct mtk_ddic_dsi_msg *cmd_msg)
 
 	DDPMSG("%s +\n", __func__);
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return -EINVAL;
+	}
+
 	/* This cmd only for crtc0 */
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 			typeof(*crtc), head);
+	if (IS_ERR_OR_NULL(crtc)) {
+		DDPPR_ERR("find crtc fail\n");
+		return -EINVAL;
+	}
+
 	index = drm_crtc_index(crtc);
 
 	CRTC_MMP_EVENT_START(index, ddic_read_cmd, (unsigned long)crtc, 0);
-
-	if (!crtc) {
-		DDPPR_ERR("find crtc fail\n");
-		CRTC_MMP_EVENT_END(index, ddic_read_cmd, 0, 0);
-		return -EINVAL;
-	}
 
 	private = crtc->dev->dev_private;
 	mtk_crtc = to_mtk_crtc(crtc);
@@ -1499,9 +1541,14 @@ bool mtk_drm_cwb_enable(int en,
 	struct mtk_drm_crtc *mtk_crtc;
 	struct mtk_cwb_info *cwb_info;
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return false;
+	}
+
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
-	if (!crtc) {
+	if (IS_ERR_OR_NULL(crtc)) {
 		DDPPR_ERR("find crtc fail\n");
 		return false;
 	}
@@ -1544,9 +1591,14 @@ bool mtk_drm_set_cwb_roi(struct mtk_rect rect)
 	struct mtk_drm_gem_obj *mtk_gem;
 	struct drm_mode_fb_cmd2 mode = {0};
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return false;
+	}
+
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
-	if (!crtc) {
+	if (IS_ERR_OR_NULL(crtc)) {
 		DDPPR_ERR("find crtc fail\n");
 		return false;
 	}
@@ -1639,9 +1691,14 @@ void mtk_drm_cwb_backup_copy_size(void)
 	struct mtk_cwb_info *cwb_info;
 	struct mtk_ddp_comp *comp;
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return;
+	}
+
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
-	if (!crtc) {
+	if (IS_ERR_OR_NULL(crtc)) {
 		DDPPR_ERR("find crtc fail\n");
 		return;
 	}
@@ -1666,10 +1723,15 @@ bool mtk_drm_set_cwb_user_buf(void *user_buffer, enum CWB_BUFFER_TYPE type)
 	struct mtk_drm_crtc *mtk_crtc;
 	struct mtk_cwb_info *cwb_info;
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return false;
+	}
+
 	/* this debug cmd only for crtc0 */
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
-	if (!crtc) {
+	if (IS_ERR_OR_NULL(crtc)) {
 		DDPPR_ERR("find crtc fail\n");
 		return false;
 	}
@@ -1736,6 +1798,11 @@ static void process_dbg_opt(const char *opt)
 {
 	DDPINFO("display_debug cmd %s\n", opt);
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev,opt:%s\n", __func__, opt);
+		return;
+	}
+
 	if (strncmp(opt, "helper", 6) == 0) {
 		/*ex: echo helper:DISP_OPT_BYPASS_OVL,0 > /d/mtkfb */
 		char option[100] = "";
@@ -1746,7 +1813,7 @@ static void process_dbg_opt(const char *opt)
 		int ret;
 
 		tmp = (char *)(opt + 7);
-		for (i = 0; i < 100; i++) {
+		for (i = 0; i < 99; i++) {    /* option[99] should be '\0' to aviod oob */
 			if (tmp[i] != ',' && tmp[i] != ' ')
 				option[i] = tmp[i];
 			else
@@ -2546,9 +2613,14 @@ static int idletime_set(void *data, u64 val)
 	if (val > 1000000)
 		val = 1000000;
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return -EINVAL;
+	}
+
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
-	if (!crtc) {
+	if (IS_ERR_OR_NULL(crtc)) {
 		DDPPR_ERR("find crtc fail\n");
 		return -ENODEV;
 	}
@@ -2563,9 +2635,14 @@ static int idletime_get(void *data, u64 *val)
 {
 	struct drm_crtc *crtc;
 
+	if (IS_ERR_OR_NULL(drm_dev)) {
+		DDPPR_ERR("%s, invalid drm dev\n", __func__);
+		return -EINVAL;
+	}
+
 	crtc = list_first_entry(&(drm_dev)->mode_config.crtc_list,
 				typeof(*crtc), head);
-	if (!crtc) {
+	if (IS_ERR_OR_NULL(crtc)) {
 		DDPPR_ERR("find crtc fail\n");
 		return -ENODEV;
 	}

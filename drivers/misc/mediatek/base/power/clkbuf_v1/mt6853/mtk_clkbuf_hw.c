@@ -175,7 +175,13 @@ static unsigned int clk_buf7_ctrl = true;
 
 static unsigned int CLK_BUF1_STATUS = CLOCK_BUFFER_HW_CONTROL,
 		    CLK_BUF2_STATUS = CLOCK_BUFFER_SW_CONTROL,
+		    /* colin.jiang: nfc clk begin */
+		    #if 0
 		    CLK_BUF3_STATUS = CLOCK_BUFFER_SW_CONTROL,
+		    #else
+			CLK_BUF3_STATUS = CLOCK_BUFFER_HW_CONTROL,
+			#endif
+			/* colin.jiang: nfc clk end */
 		    CLK_BUF4_STATUS = CLOCK_BUFFER_HW_CONTROL,
 		    CLK_BUF5_STATUS = CLOCK_BUFFER_DISABLE,
 		    CLK_BUF6_STATUS = CLOCK_BUFFER_DISABLE,
@@ -205,7 +211,13 @@ static u8 xo_bb_lpm_en_o;
 static enum CLK_BUF_SWCTRL_STATUS_T  pmic_clk_buf_swctrl[CLKBUF_NUM] = {
 	CLK_BUF_SW_ENABLE,
 	CLK_BUF_SW_DISABLE,
+	/* colin.jiang: nfc clk begin */
+	#if 0
 	CLK_BUF_SW_DISABLE,
+	#else
+	CLK_BUF_SW_ENABLE,
+	#endif
+	/* colin.jiang: nfc clk end */
 	CLK_BUF_SW_ENABLE,
 	CLK_BUF_SW_DISABLE,
 	CLK_BUF_SW_DISABLE,
@@ -465,6 +477,10 @@ static void clk_buf_ctrl_internal(enum clk_buf_id id, enum clk_buf_onff onoff)
 
 		break;
 	case CLK_BUF_NFC:
+		/* colin.jiang: nfc clk begin */
+		onoff = 1;
+		pr_err("[ colin.jiang nfc ]%s:%d onoff=%d \n",__func__, __LINE__, onoff);
+		/* colin.jiang: nfc clk end */
 		if (onoff == CLK_BUF_FORCE_ON) {
 			if (pwrap_inf == INF_DCXO) {
 				pwrap_dcxo_en =
@@ -709,6 +725,10 @@ bool clk_buf_ctrl_combine(enum clk_buf_id id, bool onoff)
 		}
 		break;
 	case CLK_BUF_NFC:
+		/* colin.jiang: nfc clk begin */
+		onoff = 1;
+		pr_err("[ colin.jiang nfc ]%s:%d onoff=%d \n",__func__, __LINE__, onoff);
+		/* colin.jiang: nfc clk end */
 		if (onoff)
 			pmic_config_interface(PMIC_DCXO_CW00_SET,
 				xo3_mode_set[CO_BUF_M],
@@ -831,6 +851,10 @@ bool clk_buf_ctrl(enum clk_buf_id id, bool onoff)
 		pmic_clk_buf_swctrl[XO_WCN] = onoff;
 		break;
 	case CLK_BUF_NFC:
+		/* colin.jiang: nfc clk begin */
+		onoff = 1;
+		pr_err("[ colin.jiang nfc ]%s:%d onoff=%d \n",__func__, __LINE__, onoff);	
+		/* colin.jiang: nfc clk begin */
 		if (CLK_BUF3_STATUS != CLOCK_BUFFER_SW_CONTROL) {
 			ret = -1;
 			pr_info("%s: id=%d isn't controlled by SW\n",
@@ -1386,6 +1410,10 @@ static ssize_t clk_buf_debug_store(struct kobject *kobj,
 			else
 				goto ERROR_CMD;
 		} else if (!strcmp(xo_user, "XO_NFC")) {
+			/* colin.jiang: nfc clk begin */
+			onoff = 1;
+			pr_err("[ colin.jiang nfc ]%s:%d onoff=%d \n",__func__, __LINE__, onoff);
+			/* colin.jiang: nfc clk end */
 			if (!strcmp(cmd, "CO_BUFFER"))
 				clk_buf_ctrl_combine(CLK_BUF_NFC, onoff);
 			else if (!strcmp(cmd, "FORCE_ON"))
@@ -1614,7 +1642,7 @@ static ssize_t clk_buf_heater_show(struct kobject *kobj,
 		struct kobj_attribute *attr, char *buf)
 {
 	int len = 0;
-	uint32_t heater;
+	uint32_t heater = 0;
 
 	pmic_read_interface(PMIC_RG_XO_HEATER_SEL_ADDR, &heater,
 		PMIC_RG_XO_HEATER_SEL_MASK,
@@ -1883,6 +1911,8 @@ void clk_buf_post_init(void)
 	CLK_BUF3_STATUS = CLOCK_BUFFER_DISABLE;
 #endif
 */
+	clk_buf_ctrl_combine(CLK_BUF_NFC, true);
+	pr_err("[ colin.jiang nfc ]%s:%d clk_buf_ctrl_combine set TRUE \n",__func__, __LINE__);
 
 #ifdef CLKBUF_USE_BBLPM
 	if (bblpm_switch == 2) {

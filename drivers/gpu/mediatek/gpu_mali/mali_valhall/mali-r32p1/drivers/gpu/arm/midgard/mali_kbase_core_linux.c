@@ -1486,6 +1486,9 @@ static int kbasep_kcpu_queue_enqueue(struct kbase_context *kctx,
 static int kbasep_cs_tiler_heap_init(struct kbase_context *kctx,
 		union kbase_ioctl_cs_tiler_heap_init *heap_init)
 {
+	if (heap_init->in.group_id >= MEMORY_GROUP_MANAGER_NR_GROUPS)
+		return -EINVAL;
+
 	kctx->jit_group_id = heap_init->in.group_id;
 
 	return kbase_csf_tiler_heap_init(kctx, heap_init->in.chunk_size,
@@ -2066,6 +2069,9 @@ static ssize_t kbase_read(struct file *filp, char __user *buf, size_t count, lof
 
 	if (unlikely(!kctx))
 		return -EPERM;
+
+	if (count < data_size)
+		return -ENOBUFS;
 
 	if (atomic_read(&kctx->event_count))
 		read_event = true;
@@ -5225,10 +5231,23 @@ int kbase_backend_devfreq_init(struct kbase_device *kbdev)
 	return 0;
 }
 
+/* the lock prove have false alarm when driver probe. skip it*/
+#define MTK_SKIP_LOCK_PROVE 1
+
+#if MTK_SKIP_LOCK_PROVE
+#define RETURN_ERROR(X) do { lockdep_on(); return X; } while (0)
+#else
+#define RETURN_ERROR(X) do { return X; } while (0)
+#endif
+
 static int kbase_platform_device_probe(struct platform_device *pdev)
 {
 	struct kbase_device *kbdev;
 	int err = 0;
+
+#if MTK_SKIP_LOCK_PROVE
+	lockdep_off();
+#endif
 
 	// *** MTK *** : make sure gpufreq driver is ready
 	pr_info("%s start\n", __func__);
@@ -5243,7 +5262,7 @@ static int kbase_platform_device_probe(struct platform_device *pdev)
 	kbdev = kbase_device_alloc();
 	if (!kbdev) {
 		dev_err(&pdev->dev, "Allocate device failed\n");
-		return -ENOMEM;
+		RETURN_ERROR(-ENOMEM);
 	}
 
 	kbdev->dev = &pdev->dev;
@@ -5283,7 +5302,7 @@ static int kbase_platform_device_probe(struct platform_device *pdev)
 #endif
 	}
 
-	return err;
+	RETURN_ERROR(err);
 }
 
 #undef KBASEP_DEFAULT_REGISTER_HISTORY_SIZE

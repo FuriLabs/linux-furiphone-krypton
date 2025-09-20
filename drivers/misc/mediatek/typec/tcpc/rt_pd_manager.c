@@ -62,7 +62,9 @@ void __attribute__((weak)) usb_dpdm_pulldown(bool enable)
 {
 	pr_notice("%s is not defined\n", __func__);
 }
-
+#if defined(CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT)/* Added start by Eli at 2023-10-06 21:09  */
+extern void typec_headset_queue_work(int state);
+#endif  /* CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT */
 static int pd_tcp_notifier_call(struct notifier_block *nb,
 				unsigned long event, void *data)
 {
@@ -177,6 +179,9 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			ocp96011_switch_event(0);
 			typec_headset_queue_work();
 #endif
+#if defined(CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT) /* Added start by Eli at 2023-10-06 21:10  */
+        typec_headset_queue_work(1);
+#endif  /* CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT */
 		} else if (old_state == TYPEC_ATTACHED_AUDIO &&
 			   new_state == TYPEC_UNATTACHED) {
 			dev_info(rpmd->dev, "%s Audio plug out\n", __func__);
@@ -185,6 +190,9 @@ static int pd_tcp_notifier_call(struct notifier_block *nb,
 			ocp96011_switch_event(1);
 			typec_headset_queue_work();
 #endif
+#if defined(CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT) /* Added start by Eli at 2023-10-06 21:10  */
+          typec_headset_queue_work(0);
+#endif  /* CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT */
 		}
 
 		if (new_state == TYPEC_UNATTACHED) {
@@ -747,7 +755,7 @@ static int __init rt_pd_manager_init(void)
 {
 	return platform_driver_register(&rt_pd_manager_driver);
 }
-late_initcall(rt_pd_manager_init);
+late_initcall_sync(rt_pd_manager_init);
 
 static void __exit rt_pd_manager_exit(void)
 {

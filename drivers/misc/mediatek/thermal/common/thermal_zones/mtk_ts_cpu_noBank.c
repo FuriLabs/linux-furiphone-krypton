@@ -96,6 +96,9 @@ static int isTimerCancelled;
 
 #if !defined(CONFIG_MTK_CLKMGR)
 struct clk *therm_main;		/* main clock for Thermal */
+#if !defined(CFG_THERM_NO_AUXADC)
+struct clk *auxadc_main;		/* auxac clock for Thermal */
+#endif
 #endif
 
 void __iomem  *therm_clk_infracfg_ao_base;
@@ -2689,6 +2692,14 @@ static int tscpu_thermal_probe(struct platform_device *dev)
 		return PTR_ERR(therm_main);
 	}
 	tscpu_dprintk("therm-main Ptr=%p", therm_main);
+#if !defined(CFG_THERM_NO_AUXADC)
+	auxadc_main = devm_clk_get(&dev->dev, "auxadc-main");
+	if (IS_ERR(auxadc_main)) {
+		tscpu_printk("cannot get auxadc clock.\n");
+		return PTR_ERR(auxadc_main);
+	}
+	tscpu_dprintk("auxadc_main Ptr=%p", auxadc_main);
+#endif
 #endif
 
 #if CFG_THERMAL_KERNEL_IGNORE_HOT_SENSOR

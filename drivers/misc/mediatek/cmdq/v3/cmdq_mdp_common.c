@@ -417,32 +417,40 @@ static void cmdq_mdp_lock_wake_lock(bool lock)
 	}
 }
 
-static void cmdq_mdp_common_clock_enable(void)
+static s32 cmdq_mdp_common_clock_enable(void)
 {
 	s32 smi_ref = atomic_inc_return(&mdp_ctx.mdp_smi_usage);
+	s32 err = 0;
 
 	if (smi_ref == 1)
 		cmdq_mdp_lock_wake_lock(true);
 
 	CMDQ_MSG("[CLOCK]MDP SMI clock enable %d\n", smi_ref);
-	cmdq_mdp_get_func()->mdpEnableCommonClock(true);
+	err = cmdq_mdp_get_func()->mdpEnableCommonClock(true);
+	if (err != 0) {
+		CMDQ_ERR("%s common_clock_enable failed\n", __func__);
+		return TASK_STATE_ERROR;
+	}
 
 	CMDQ_PROF_MMP(cmdq_mmp_get_event()->MDP_clock_smi,
 		MMPROFILE_FLAG_PULSE, smi_ref, 1);
+	return err;
 }
 
-static void cmdq_mdp_common_clock_disable(void)
+static s32 cmdq_mdp_common_clock_disable(void)
 {
 	s32 smi_ref = atomic_dec_return(&mdp_ctx.mdp_smi_usage);
+	s32 err = 0;
 
 	CMDQ_MSG("[CLOCK]MDP SMI clock disable %d\n", smi_ref);
-	cmdq_mdp_get_func()->mdpEnableCommonClock(false);
+	err = cmdq_mdp_get_func()->mdpEnableCommonClock(false);
 
 	if (smi_ref == 0)
 		cmdq_mdp_lock_wake_lock(false);
 
 	CMDQ_PROF_MMP(cmdq_mmp_get_event()->MDP_clock_smi,
 		MMPROFILE_FLAG_PULSE, smi_ref, 0);
+	return err;
 }
 
 static s32 cmdq_mdp_clock_enable(u64 engine_flag)
@@ -741,10 +749,17 @@ static u64 cmdq_mdp_get_engine_flag_for_enable_clock(
 	return engine_flag_clk;
 }
 
-static void cmdq_mdp_lock_thread(struct cmdqRecStruct *handle)
+static s32 cmdq_mdp_lock_thread(struct cmdqRecStruct *handle)
 {
 	u64 engine_flag = handle->engineFlag;
 	u32 thread = (u32)handle->thread;
+	s32 err = 0;
+
+	if (unlikely(thread < 0)) {
+		CMDQ_ERR("%s invalid thread:%d engine:0x%llx\n",
+			__func__, thread, engine_flag);
+		return TASK_STATE_ERROR;
+	}
 
 	/* engine clocks enable flag decide here but call clock on before flush
 	 * common clock enable here to avoid disable when mdp engines still
@@ -752,7 +767,9 @@ static void cmdq_mdp_lock_thread(struct cmdqRecStruct *handle)
 	 */
 	CMDQ_MSG("%s handle:0x%p pkt:0x%p engine:0x%016llx\n",
 		__func__, handle, handle->pkt, handle->engineFlag);
-	cmdq_mdp_common_clock_enable();
+	err = cmdq_mdp_common_clock_enable();
+	if (err != 0)
+		return TASK_STATE_ERROR;
 
 	CMDQ_PROF_START(current->pid, __func__);
 
@@ -773,6 +790,7 @@ static void cmdq_mdp_lock_thread(struct cmdqRecStruct *handle)
 	}
 
 	CMDQ_PROF_END(current->pid, __func__);
+	return err;
 }
 
 static u64 cmdq_mdp_get_not_used_engine(const u64 engine_flag)
@@ -1028,7 +1046,7 @@ static s32 cmdq_mdp_find_free_thread(struct cmdqRecStruct *handle)
 
 static s32 cmdq_mdp_consume_handle(void)
 {
-	s32 err;
+	s32 err = 0;
 	struct cmdqRecStruct *handle, *temp;
 	u32 index;
 	bool acquired = false;
@@ -1060,7 +1078,15 @@ static s32 cmdq_mdp_consume_handle(void)
 		}
 
 		/* lock thread for counting and clk */
-		cmdq_mdp_lock_thread(handle);
+		err = cmdq_mdp_lock_thread(handle);
+		if (err != 0) {
+			mutex_unlock(&mdp_thread_mutex);
+			CMDQ_ERR("fail to lock handle or power on: 0x%p\n", handle);
+			/* remove from list */
+			list_del_init(&handle->list_entry);
+			break;
+		}
+
 		mutex_unlock(&mdp_thread_mutex);
 
 		/* remove from list */
@@ -1117,7 +1143,7 @@ static s32 cmdq_mdp_consume_handle(void)
 		wake_up_all(&mdp_thread_dispatch);
 	}
 
-	return 0;
+	return err;
 }
 
 static void cmdq_mdp_consume_wait_item(struct work_struct *ignore)
@@ -2475,19 +2501,26 @@ long cmdq_mdp_get_module_base_VA_MMSYS_CONFIG(void)
 	return cmdq_mmsys_base;
 }
 
-static void cmdq_mdp_enable_common_clock_virtual(bool enable)
+static s32 cmdq_mdp_enable_common_clock_virtual(bool enable)
 {
 #ifdef CMDQ_PWR_AWARE
 #ifdef CONFIG_MTK_SMI_EXT
+	s32 ret = 0;
 	if (enable) {
 		/* Use SMI clock API */
-		smi_bus_prepare_enable(SMI_LARB0, "CMDQ");
+		ret = smi_bus_prepare_enable(SMI_LARB0, "CMDQ");
 	} else {
 		/* disable, reverse the sequence */
-		smi_bus_disable_unprepare(SMI_LARB0, "CMDQ");
+		ret = smi_bus_disable_unprepare(SMI_LARB0, "CMDQ");
+	}
+	if (ret) {
+		CMDQ_ERR("%s %s fail ret:%d\n",
+			__func__, enable ? "enable" : "disable", ret);
+		return TASK_STATE_ERROR;
 	}
 #endif	/* CONFIG_MTK_SMI_EXT */
 #endif	/* CMDQ_PWR_AWARE */
+	return 0;
 }
 
 /* Common Code */

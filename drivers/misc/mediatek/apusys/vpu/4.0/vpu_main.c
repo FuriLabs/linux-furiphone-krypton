@@ -702,6 +702,7 @@ static int vpu_init_adev(struct vpu_device *vd,
 	adev->dev_type = type;
 	adev->preempt_type = APUSYS_PREEMPT_WAITCOMPLETED;
 	adev->private = vd;
+	adev->idx = vd->id;
 	adev->send_cmd = hndl;
 
 	ret = apusys_register_device(adev);

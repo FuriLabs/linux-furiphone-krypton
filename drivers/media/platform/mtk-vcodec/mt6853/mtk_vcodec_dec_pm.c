@@ -600,11 +600,19 @@ void mtk_vdec_dvfs_begin(struct mtk_vcodec_ctx *ctx)
 	vdec_cur_job = move_job_to_head(&ctx->id, &vdec_jobs);
 
 	if (ctx->dec_params.operating_rate > 0) {
-		op_rate_to_freq = 312LL *
-				ctx->q_data[MTK_Q_DATA_DST].coded_width *
-				ctx->q_data[MTK_Q_DATA_DST].coded_height *
-				ctx->dec_params.operating_rate /
-				3840LL / 2160LL / 30LL;
+		if (ctx->q_data[MTK_Q_DATA_SRC].fmt->fourcc == V4L2_PIX_FMT_MPEG4) {
+			op_rate_to_freq = 312LL *
+					ctx->q_data[MTK_Q_DATA_DST].coded_width *
+					ctx->q_data[MTK_Q_DATA_DST].coded_height *
+					ctx->dec_params.operating_rate /
+					2048LL / 1088LL / 60LL;
+		} else {
+			op_rate_to_freq = 312LL *
+					ctx->q_data[MTK_Q_DATA_DST].coded_width *
+					ctx->q_data[MTK_Q_DATA_DST].coded_height *
+					ctx->dec_params.operating_rate /
+					3840LL / 2160LL / 30LL;
+		}
 		target_freq_64 = match_freq((int)op_rate_to_freq,
 					&vdec_freq_steps[0],
 					vdec_freq_step_size);

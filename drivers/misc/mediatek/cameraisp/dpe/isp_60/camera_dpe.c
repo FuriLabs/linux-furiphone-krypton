@@ -210,6 +210,8 @@ struct DPE_CLK_STRUCT dpe_clk;
 #define MAX_NUM_TILE 4
 #define TILE_WITH_NUM 3
 
+#define CHECK_SERVICE_IF_0 0
+
 #ifdef CONFIG_MTK_IOMMU_V2
 static int DPE_MEM_USE_VIRTUL = 1;
 #endif
@@ -1239,6 +1241,11 @@ signed int dpe_enque_cb(struct frame *frames, void *req)
 	/*TODO: m_ReqNum is FrmNum; FIFO only thus f starts from 0 */
 	ucnt = 0;
 	fcnt = _req->m_ReqNum;
+	if (fcnt > MAX_REQUEST_SIZE_PER_ENGINE) {
+		LOG_ERR("fcnt(%d) bigger than max req size(%d)", fcnt, MAX_REQUEST_SIZE_PER_ENGINE);
+		return -1;
+	}
+
 	for (f = 0; f < fcnt; f++) {
 		if (_req->m_pDpeConfig[ucnt].Dpe_DVSSettings.is_pd_mode) {
 			pd_frame_num =
@@ -1324,14 +1331,24 @@ signed int dpe_enque_cb(struct frame *frames, void *req)
 					_req->m_pDpeConfig[
 					ucnt].Dpe_DVSSettings.engHeight);
 				}
-				memcpy(frames[f+t].data,
-				&_req->m_pDpeConfig[ucnt],
-				sizeof(struct DPE_Config));
+				if ((frames[f+t].data != NULL) && (&_req->m_pDpeConfig[ucnt] != NULL)) {
+					memcpy(frames[f+t].data,
+					&_req->m_pDpeConfig[ucnt],
+					sizeof(struct DPE_Config));
+				} else {
+					LOG_ERR("[enque cb] null frame pt\n");
+					return -1;
+				}
 			}
 			f += (t-1);
 		} else {
-			memcpy(frames[f].data, &_req->m_pDpeConfig[ucnt],
+			if ((frames[f].data != NULL) && (&_req->m_pDpeConfig[ucnt] != NULL)) {
+				memcpy(frames[f].data, &_req->m_pDpeConfig[ucnt],
 						sizeof(struct DPE_Config));
+			} else {
+				LOG_ERR("[enque cb] null frame pt\n");
+				return -1;
+			}
 		}
 		pDpeConfig = &_req->m_pDpeConfig[ucnt];
 		ucnt++;
@@ -2451,7 +2468,7 @@ static signed int DPE_DumpReg(void)
 	}
 	spin_unlock(&(DPEInfo.SpinLockDPE));
 
-#if 1
+#if CHECK_SERVICE_IF_0
 	/*  */
 	LOG_INF("DPE Config Info\n");
 	/* DPE Config0 */
@@ -4018,6 +4035,8 @@ static signed int DPE_release(struct inode *pInode, struct file *pFile)
 	LOG_INF("Curr UsrCnt(%d), (process, pid, tgid)=(%s, %d, %d), last user",
 		DPEInfo.UserCount, current->comm, current->pid, current->tgid);
 
+	cmdq_mbox_stop(dpe_clt);
+
 	/* Disable clock. */
 	DPE_EnableClock(MFALSE);
 	LOG_INF("DPE release g_u4EnableClockCount: %d", g_u4EnableClockCount);
@@ -4263,6 +4282,13 @@ spin_unlock_irqrestore(&(DPEInfo.SpinLockIrq[DPE_IRQ_TYPE_INT_DVP_ST]),
 			Ret = -EFAULT;
 			goto EXIT;
 		}
+
+		if (kreq.m_ReqNum > 3) {
+			LOG_ERR("kreq m_ReqNum is too large");
+			Ret = -EFAULT;
+			goto EXIT;
+		}
+
 		if (copy_to_user
 		    ((void *)ureq.m_pDpeConfig, kreq.m_pDpeConfig,
 		     kreq.m_ReqNum * sizeof(struct DPE_Config)) != 0) {

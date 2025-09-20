@@ -595,7 +595,7 @@
 			"syscon", "simple-mfd";
 		reg = <0 0x10007000 0 0x1000>;
 		interrupts = <GIC_SPI 139 IRQ_TYPE_NONE>;
-		mediatek,rg_dfd_timeout = <0x1ffff>;
+		mediatek,rg_dfd_timeout = <0xa0>;
 		#reset-cells = <1>;
 		reboot-mode {
 			compatible = "syscon-reboot-mode";
@@ -1564,7 +1564,7 @@
 	};
 
 	spi0: spi@1100a000 {
-		compatible = "mediatek,mt6739-spi";
+		compatible = "mediatek,mt6765-spi";
 		mediatek,pad-select = <0>;
 		reg = <0 0x1100a000 0 0x1000>;
 		interrupts = <GIC_SPI 118 IRQ_TYPE_LEVEL_LOW>;
@@ -1575,7 +1575,7 @@
 		};
 
 	spi1: spi@11010000 {
-		compatible = "mediatek,mt6739-spi";
+		compatible = "mediatek,mt6765-spi";
 		mediatek,pad-select = <0>;
 		reg = <0 0x11010000 0 0x1000>;
 		interrupts = <GIC_SPI 122 IRQ_TYPE_LEVEL_LOW>;
@@ -1586,7 +1586,7 @@
 	};
 
 	spi2: spi@11012000 {
-		compatible = "mediatek,mt6739-spi";
+		compatible = "mediatek,mt6765-spi";
 		mediatek,pad-select = <0>;
 		reg = <0 0x11012000 0 0x1000>;
 		interrupts = <GIC_SPI 128 IRQ_TYPE_LEVEL_LOW>;
@@ -1600,8 +1600,8 @@
 		compatible = "mediatek,therm_ctrl";
 		reg = <0 0x1100b000 0 0x1000>;
 		interrupts = <GIC_SPI 78 IRQ_TYPE_LEVEL_LOW>;
-		clocks = <&infracfg_ao CLK_INFRA_THERM>;
-		clock-names = "therm-main";
+		clocks = <&infracfg_ao CLK_INFRA_THERM>,<&infracfg_ao CLK_INFRA_AUXADC>;
+		clock-names = "therm-main","auxadc-main";
 	};
 
 	eem_fsm@1100b000 {
@@ -2057,6 +2057,10 @@
 		/* VTOUCH-supply = <&mt_pmic_vgp1_ldo_reg>; */
 	};
 
+	camera_af_hw_node: camera_af_hw_node {
+		compatible = "mediatek,camera_af_lens";
+	};
+
 	flashlight_core: flashlight_core {
 		compatible = "mediatek,flashlight_core";
 	};
@@ -2422,6 +2426,7 @@
 
 	mt6357_gauge {
 		compatible = "mediatek,mt6357_gauge";
+		bootmode = <&chosen>;
 		gauge_name = "gauge";
 		alias_name = "mt6357";
 	};

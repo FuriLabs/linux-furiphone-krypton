@@ -849,16 +849,19 @@
 		#clock-cells=<1>;
 	};
 
-        efuse: efuse@11c10000 {
-                compatible = "mediatek,devinfo";
-                reg = <0 0x11c10000 0 0x10000>;
-                #address-cells = <1>;
-                #size-cells = <1>;
+	efuse: efuse@11c10000 {
+		compatible = "mediatek,devinfo";
+		reg = <0 0x11c10000 0 0x10000>;
+		#address-cells = <1>;
+		#size-cells = <1>;
 
-                efuse_segment: segment@78 {
-                        reg = <0x78 0x4>;
-                };
-        };
+		efuse_segment: segment@78 {
+			reg = <0x78 0x4>;
+		};
+		u2_phy_data: u2_phy_data {
+			reg = <0x1b0 0x4>;
+		};
+	};
 
 	dcm: dcm@10001000 {
 		compatible = "mediatek,mt6833-dcm";
@@ -1108,7 +1111,7 @@
 			<0 0>;
 
 		vcc-supply = <&mt_pmic_vemc_ldo_reg>;
-		vccq2-supply = <&mt_pmic_vufs_ldo_reg>;
+		vcc-fixed-regulator;
 
 		resets = <&infracfg_rst 0>, <&infracfg_rst 1>,
 				 <&infracfg_rst 2>;
@@ -2826,19 +2829,19 @@
 				<30>; /* in_size */
 
 		/* feature, frequecy, coreid */
-		scp_feature_tbl = < 0   5 1>,	/* vow */
+		scp_feature_tbl = < 0   5 0>,	/* vow */
 				  < 1  29 0>,	/* sensor */
 				  < 2  26 0>,	/* flp */
 				  < 3   0 0>,	/* rtos */
-				  < 4 200 1>,	/* speaker */
+				  < 4 200 0>,	/* speaker */
 				  < 5   0 0>,	/* vcore */
-				  < 6 120 1>,	/* barge in */
-				  < 7  10 1>,	/* vow dump */
-				  < 8  80 1>,	/* vow vendor M */
-				  < 9  43 1>,	/* vow vendor A */
-				  <10  22 1>,	/* vow vendor G */
-				  <11  20 1>,	/* vow dual mic */
-				  <12 135 1>,	/* vow dual mic barge in */
+				  < 6 120 0>,	/* barge in */
+				  < 7  10 0>,	/* vow dump */
+				  < 8  80 0>,	/* vow vendor M */
+				  < 9  43 0>,	/* vow vendor A */
+				  <10  22 0>,	/* vow vendor G */
+				  <11  20 0>,	/* vow dual mic */
+				  <12 135 0>,	/* vow dual mic barge in */
 				  <13 200 0>;	/* ultrasound */
 
 		secure_dump = "disable";	/* disabled in default */
@@ -2903,7 +2906,7 @@
                 mediatek,check_dfd_support = <1>;
 		mediatek,dfd_infra_base = <0x390>;
 		mediatek,dfd_ap_addr_offset = <24>;
-		mediatek,dfd_latch_offset = <0x48>;
+		mediatek,dfd_latch_offset = <0x44>;
 	};
 
 	dfd_cache: dfd_cache {
@@ -3064,6 +3067,11 @@
 			mediatek,host-eye-term = <5>; /* 0~7 */
 			mediatek,host-eye-rev6 = <1>; /* 0~3 */
 			mediatek,host-eye-disc = <0>; /* 0~8 */
+			mediatek,rx-sqth = <5>;
+			mediatek,rev4 = <1>;
+			nvmem-cells = <&u2_phy_data>;
+			nvmem-cell-names = "intr_cal";
+			nvmem-cell-masks = <0x1f>;
 			status = "okay";
 		};
 	};
@@ -3941,7 +3949,7 @@
 #endif
 #if defined(CONFIG_MTK_SEC_VIDEO_PATH_SUPPORT)
 			<&gce_mbox 4 0 CMDQ_THR_PRIO_4>,
-			<&gce_mbox 6 0 CMDQ_THR_PRIO_4>,
+			<&gce_mbox 6 0 CMDQ_THR_PRIO_3>,
 			<&gce_mbox_sec 8 0 CMDQ_THR_PRIO_3>,
 			<&gce_mbox_sec 9 0 CMDQ_THR_PRIO_3>,
 			<&gce_mbox_sec 9 0 CMDQ_THR_PRIO_3>;
@@ -4309,6 +4317,11 @@
 		mt6382_nfc_srclk = <&pio 25 0x0>;
 		status = "okay";
 	};
+
+	mtee_svp: mtee_svp {
+		compatible = "medaitek,svp";
+	};
+	/* svp end */
 
 #if defined(CONFIG_MTK_MT6382_BDG)
 	mt6382_eint: mt6382_eint {
@@ -6232,11 +6245,6 @@
 #include "mediatek/mt6359p.dtsi"
 #include "mediatek/mt6833-clkitg.dtsi"
 #include "mediatek/v1/mt6360.dtsi"
-
-&mt_pmic_vemc_ldo_reg {
-	regulator-min-microvolt = <3000000>;
-	regulator-max-microvolt = <3000000>;
-};
 
 &spmi_bus {
 	grpid = <11>;

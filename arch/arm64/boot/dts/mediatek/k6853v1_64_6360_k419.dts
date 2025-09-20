@@ -7,6 +7,8 @@
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/pinctrl/mt6853-pinfunc.h>
+#include <generated/autoconf.h>
+#include <dt-bindings/gpio/gpio.h>
 
 &reserved_memory {
 };
@@ -264,7 +266,7 @@
 };
 /* CONSYS end */
 
-#include "mediatek/cust_mt6853_touch_1080x1920.dtsi"
+//#include "mediatek/cust_mt6853_touch_1080x1920.dtsi"
 #include "mediatek/cust_mt6853_camera.dtsi"
 #include <k6853v1_64_6360_k419/cust.dtsi>
 /* DISPSYS GPIO standardization */
@@ -358,12 +360,12 @@
 	#address-cells = <1>;
 	#size-cells = <0>;
 	panel1@0 {
-		compatible = "nt35695b,auo,vdo";
+		compatible = "truly,jd9366ts,vdo";
 		reg = <0>;
 		pm-enable-gpios = <&pio 41 0>;
+                bias-gpios = <&pio 137 0>,
+                        <&pio 138 0>;
 		reset-gpios = <&pio 86 0>;
-		bias-gpios = <&pio 137 0>,
-			<&pio 138 0>;
 		pinctrl-names = "default";
 		port {
 			panel_in1: endpoint {
@@ -372,12 +374,12 @@
 		};
 	};
 	panel2@0 {
-		compatible = "nt36672a,rt4801,vdo";
+		compatible = "truly,icnl9951r,vdo";
 		reg = <1>;
 		pm-enable-gpios = <&pio 41 0>;
+                bias-gpios = <&pio 137 0>,
+                        <&pio 138 0>;
 		reset-gpios = <&pio 86 0>;
-		bias-gpios = <&pio 137 0>,
-			<&pio 138 0>;
 		pinctrl-names = "default";
 		port {
 			panel_in2: endpoint {
@@ -548,6 +550,75 @@
 	pinctrl-3 = <&sw_disable>;
 	status = "okay";
 };
+
+&i2c6 {
+        lcd@ocp2131 {
+                   compatible = "mediatek,I2C_LCD_BIAS";
+                   reg = <0x3e>;
+                   status = "okay";
+        };
+#ifdef CONFIG_SND_SOC_AW87390
+	aw87xxx_pa@58 {
+		compatible = "awinic,aw87xxx_pa";
+		reg = <0x58>;
+		dev_index = < 0 >;
+		status = "okay";
+	};
+	aw87xxx_pa@5A {
+		compatible = "awinic,aw87xxx_pa";
+		reg = <0x5A>;
+		dev_index = < 1 >;
+		status = "okay";
+	};
+	aw87xxx_pa@59 {
+		compatible = "awinic,aw87xxx_pa";
+		reg = <0x59>;
+		dev_index = < 2 >;
+		status = "okay";
+	};
+	aw87xxx_pa@5B {
+		compatible = "awinic,aw87xxx_pa";
+		reg = <0x5B>;
+		dev_index = < 3 >;
+		status = "okay";
+	};
+#endif
+};
+
+
+&i2c0 {
+    status = "ok";
+
+    jadard@68 {
+	compatible = "jadard,jdcommon";
+	reg = <0x68>;   //iic 地址(7 bit)
+	interrupt-parent = <&pio>;
+	interrupts = <14 IRQ_TYPE_EDGE_FALLING 14 0>;
+	jadard,panel-sense-nums = <32 48>;
+	jadard,panel-coords = <0 1200 0 1920>;
+	jadard,panel-max-points = <5>;
+	jadard,int-is-edge = <1>;
+	jadard,irq-gpio = <&pio 14 0x0>;
+	jadard,rst-gpio = <&pio 15 0x0>;
+	//jadard,stylus = <1>;
+	//vcc_dig-gpio = <&&pio ldo1>;
+	//vdd_ana-gpio = <&&pio ldo2>;
+	status = "ok";
+    };
+
+    chipone_tddi@48 {
+        compatible = "chipone-tddi";
+        reg = <0x48>;
+        interrupt-parent = <&pio>;
+        interrupts = <14 IRQ_TYPE_EDGE_FALLING 14 0>;
+        chipone,rst-gpio = <&pio 15 0x00>;
+        chipone,irq-gpio = <&pio 14 0x00>;
+        chipone,x-res = <1200>;
+        chipone,y-res = <1920>;
+	status = "ok";
+    };
+};
+
 
 /*End of this file, DO NOT ADD ANYTHING HERE*/
 

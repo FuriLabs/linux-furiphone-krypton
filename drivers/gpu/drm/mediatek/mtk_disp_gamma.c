@@ -310,6 +310,14 @@ static int mtk_gamma_user_cmd(struct mtk_ddp_comp *comp,
 		int *value = data;
 
 		mtk_gamma_bypass(comp, *value, handle);
+		if (comp->mtk_crtc->is_dual_pipe) {
+			struct mtk_drm_crtc *mtk_crtc = comp->mtk_crtc;
+			struct drm_crtc *crtc = &mtk_crtc->base;
+			struct mtk_drm_private *priv = crtc->dev->dev_private;
+			struct mtk_ddp_comp *comp_gamma1 = priv->ddp_comp[DDP_COMPONENT_GAMMA1];
+
+			mtk_gamma_bypass(comp_gamma1, *value, handle);
+		}
 	}
 	break;
 	default:

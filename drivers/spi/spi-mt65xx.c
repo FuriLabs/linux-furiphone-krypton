@@ -116,6 +116,7 @@ struct mtk_spi {
 	u32 tx_sgl_len, rx_sgl_len;
 	const struct mtk_spi_compatible *dev_comp;
 	struct pm_qos_request spi_qos_request;
+	bool dual_touch_support;
 };
 
 static const struct mtk_spi_compatible mtk_common_compat;
@@ -366,7 +367,10 @@ static int mtk_spi_prepare_message(struct spi_master *master,
 	writel(reg_val, mdata->base + SPI_CMD_REG);
 
 	/* pad select */
-	if (mdata->dev_comp->need_pad_sel)
+	if (mdata->dual_touch_support == true)
+		writel(mdata->pad_sel[0],
+		       mdata->base + SPI_PAD_SEL_REG);
+	else if (mdata->dev_comp->need_pad_sel)
 		writel(mdata->pad_sel[spi->chip_select],
 		       mdata->base + SPI_PAD_SEL_REG);
 
@@ -783,6 +787,7 @@ static int mtk_spi_probe(struct platform_device *pdev)
 	const struct of_device_id *of_id;
 	struct resource *res;
 	int i, irq, ret, addr_bits, value;
+	u32 touch_cs_num = 0;
 
 	master = spi_alloc_master(&pdev->dev, sizeof(*mdata));
 	if (!master) {
@@ -950,15 +955,22 @@ static int mtk_spi_probe(struct platform_device *pdev)
 
 	pm_runtime_enable(&pdev->dev);
 
+	if (!of_property_read_u32(pdev->dev.of_node, "dual-touch-cs-num", &touch_cs_num))
+		master->num_chipselect = touch_cs_num;
+
+	mdata->dual_touch_support = of_property_read_bool(pdev->dev.of_node, "mediatek,dual-touch-support");
+
 	ret = devm_spi_register_master(&pdev->dev, master);
 	if (ret) {
 		dev_err(&pdev->dev, "failed to register master (%d)\n", ret);
 		goto err_disable_runtime_pm;
 	}
 
-	if (mdata->dev_comp->need_pad_sel) {
+	if (mdata->dev_comp->need_pad_sel && mdata->dual_touch_support )
+		dev_notice(&pdev->dev, "dual touch no need this part\n");
+	else if (mdata->dev_comp->need_pad_sel) {
 		if (mdata->pad_num != master->num_chipselect) {
-			dev_err(&pdev->dev,
+			dev_notice(&pdev->dev,
 				"pad_num does not match num_chipselect(%d != %d)\n",
 				mdata->pad_num, master->num_chipselect);
 			ret = -EINVAL;
@@ -966,7 +978,7 @@ static int mtk_spi_probe(struct platform_device *pdev)
 		}
 
 		if (!master->cs_gpios && master->num_chipselect > 1) {
-			dev_err(&pdev->dev,
+			dev_notice(&pdev->dev,
 				"cs_gpios not specified and num_chipselect > 1\n");
 			ret = -EINVAL;
 			goto err_disable_runtime_pm;
@@ -978,7 +990,7 @@ static int mtk_spi_probe(struct platform_device *pdev)
 							master->cs_gpios[i],
 							dev_name(&pdev->dev));
 				if (ret) {
-					dev_err(&pdev->dev,
+					dev_notice(&pdev->dev,
 						"can't get CS GPIO %i\n", i);
 					goto err_disable_runtime_pm;
 				}

@@ -1296,8 +1296,7 @@ int primary_display_get_debug_state(char *stringbuf, int buf_len)
 	active_cfg = primary_display_get_current_cfg_id();
 #endif
 	/* print HRT table */
-	//copy_hrt_bound_table(0, hrt_table, active_cfg);
-	copy_hrt_bound_table(0, hrt_table);
+	copy_hrt_bound_table(0, hrt_table, active_cfg);
 	len += scnprintf(stringbuf + len, buf_len - len, "|HRT table=[");
 	for (i = 0; i < HRT_LEVEL_NUM-1; i++)
 		len += scnprintf(stringbuf + len, buf_len - len, "%d, ",
@@ -4207,13 +4206,15 @@ int primary_display_init(char *lcm_name, unsigned int lcm_fps,
 	dvfs_last_ovl_req = 0;
 #endif
 #ifdef CONFIG_MTK_MT6382_BDG
-	if (is_lcm_inited) {
-		disp_pm_qos_update_mmclk(559);
-		bdg_register_init();
-		set_mt6382_init(1);
-		set_deskew_status(1);
-	} else
-		set_mt6382_init(0);
+	if (bdg_is_bdg_connected() == 1) {
+		if (is_lcm_inited) {
+			disp_pm_qos_update_mmclk(559);
+			bdg_register_init();
+			set_mt6382_init(1);
+			set_deskew_status(1);
+		} else
+			set_mt6382_init(0);
+	}
 #endif
 
 	init_cmdq_slots(&(pgc->ovl_config_time), 3, 0);

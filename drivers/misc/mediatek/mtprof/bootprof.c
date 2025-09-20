@@ -191,22 +191,21 @@ void bootprof_probe(unsigned long long ts, struct device *dev,
 		return;
 	msec_rem = do_div(ts, NSEC_PER_MSEC);
 
-	pos = scnprintf(msgbuf, sizeof(msgbuf), "probe: probe=%ps",
-					(void *)probe);
+	pos = scnprintf(msgbuf, sizeof(msgbuf), "probe:");
+
 	if (pos < 0)
 		pos = 0;
 
 	if (drv) {
 		len = scnprintf(msgbuf + pos, sizeof(msgbuf) - pos,
-				" drv=%s(%ps)", drv->name ? drv->name : "",
-				(void *)drv);
+				" drv=%s", drv->name ? drv->name : "");
 		if (len >= 0)
 			pos += len;
 	}
 
 	if (dev && dev->init_name) {
 		len = scnprintf(msgbuf + pos, sizeof(msgbuf) - pos,
-				" dev=%s(%ps)", dev->init_name, (void *)dev);
+				" dev=%s", dev->init_name);
 		if (len >= 0)
 			pos += len;
 	}
@@ -227,8 +226,8 @@ void bootprof_pdev_register(unsigned long long ts, struct platform_device *pdev)
 		return;
 	msec_rem = do_div(ts, NSEC_PER_MSEC);
 	len = scnprintf(msgbuf, sizeof(msgbuf),
-			"probe: pdev=%s(%ps) %5llu.%06lums",
-			pdev->name, (void *)pdev, ts, msec_rem);
+			"probe: pdev=%s %5llu.%06lums",
+			pdev->name, ts, msec_rem);
 	if (len < 0)
 		pr_info("BOOTPROF: pdev - Invalid argument.\n");
 

@@ -5,6 +5,8 @@
 
 #define DEBUG 1
 
+#include <linux/fs.h>
+#include <linux/f2fs_fs.h>
 #include <linux/debugfs.h>
 #include <linux/blkdev.h>
 #include <linux/cgroup.h>
@@ -30,6 +32,8 @@
 #include <trace/events/block.h>
 #include <trace/events/ufs.h>
 #include <trace/events/writeback.h>
+#include "fake_f2fs.h"
+#include <trace/events/f2fs.h>
 #include <asm/div64.h>
 
 #define BLOCKIO_MIN_VER	"3.10"
@@ -89,6 +93,147 @@ static bool mtk_btag_mictx_data_dump;
 /* blocktag */
 static DEFINE_MUTEX(mtk_btag_list_lock);
 static LIST_HEAD(mtk_btag_list);
+
+#if defined(CONFIG_MACH_MT6739) && defined(CONFIG_F2FS_FS)
+/* f2fs gc track */
+struct mtk_f2fs_gc {
+	bool sync;
+	bool background;
+	int64_t nodes;
+	int64_t dents;
+	int64_t metas;
+	uint32_t free_sec;
+	uint32_t free_seg;
+	int32_t reserved_seg;
+	uint32_t prefree_seg;
+};
+
+struct mtk_f2fs_victim {
+	int type;
+	int gc_type;
+	uint32_t min_segno;
+	uint32_t pre_victim;
+	uint32_t prefree_segs;
+	uint32_t free_segs;
+};
+
+struct f2fs_gc_track {
+	u64 time;
+	u32 track_type;
+	union {
+		struct mtk_f2fs_gc gc;
+		struct mtk_f2fs_victim victim;
+	} data;
+};
+
+#define F2FS_GC_TRACK_SIZE 50
+#define MTK_TYPE_F2FS_GC 11
+#define MTK_TYPE_F2FS_VICTIM 12
+static DEFINE_SPINLOCK(f2fs_gc_track_lock);
+static int f2fs_gc_track_ptr;
+static struct f2fs_gc_track gc_track[F2FS_GC_TRACK_SIZE];
+
+static void mtk_btag_f2fs_get_victim(void *data, struct super_block *sb,
+					int type, int gc_type,
+					struct victim_sel_policy *p,
+					unsigned int pre_victim,
+					unsigned int prefree,
+					unsigned int free)
+{
+	unsigned long flags;
+	struct f2fs_gc_track *track;
+	struct mtk_f2fs_victim *victim;
+
+	spin_lock_irqsave(&f2fs_gc_track_lock, flags);
+	track = &gc_track[f2fs_gc_track_ptr];
+	track->time = sched_clock();
+	track->track_type = MTK_TYPE_F2FS_VICTIM;
+	victim = &(track->data.victim);
+	victim->type = type;
+	victim->gc_type = gc_type;
+	victim->min_segno = p->min_segno;
+	victim->pre_victim = pre_victim;
+	victim->prefree_segs = prefree;
+	victim->free_segs = free;
+	if (++f2fs_gc_track_ptr >= F2FS_GC_TRACK_SIZE)
+		f2fs_gc_track_ptr = 0;
+	spin_unlock_irqrestore(&f2fs_gc_track_lock, flags);
+}
+
+static void mtk_btag_f2fs_gc_begain(void *data, struct super_block *sb,
+			bool sync, bool background, long long dirty_nodes,
+			long long dirty_dents, long long dirty_imeta,
+			unsigned int free_sec, unsigned int free_seg,
+			int reserved_seg, unsigned int prefree_seg)
+{
+	unsigned long flags;
+	struct f2fs_gc_track *track;
+	struct mtk_f2fs_gc *gc;
+
+	spin_lock_irqsave(&f2fs_gc_track_lock, flags);
+	track = &gc_track[f2fs_gc_track_ptr];
+	gc = &(track->data.gc);
+	track->time = sched_clock();
+	track->track_type = MTK_TYPE_F2FS_GC;
+	gc->sync = sync;
+	gc->background = background;
+	gc->nodes = dirty_nodes;
+	gc->dents = dirty_dents;
+	gc->metas = dirty_imeta;
+	gc->free_sec = free_sec;
+	gc->free_seg = free_seg;
+	gc->reserved_seg = reserved_seg;
+	gc->prefree_seg = prefree_seg;
+	if (++f2fs_gc_track_ptr >= F2FS_GC_TRACK_SIZE)
+		f2fs_gc_track_ptr = 0;
+	spin_unlock_irqrestore(&f2fs_gc_track_lock, flags);
+}
+
+static void mtk_btag_f2fs_gc_show(char **buff, unsigned long *size,
+					struct seq_file *seq)
+{
+	unsigned long flags;
+	struct timespec64 dur;
+	struct f2fs_gc_track *track;
+	int cur_ptr;
+
+	spin_lock_irqsave(&f2fs_gc_track_lock, flags);
+	cur_ptr = f2fs_gc_track_ptr - 1;
+	if (cur_ptr < 0)
+		cur_ptr = F2FS_GC_TRACK_SIZE - 1;
+	do {
+		track = &gc_track[cur_ptr];
+		if (track->time <= 0)
+			break;
+		dur = ns_to_timespec64(track->time);
+		if (track->track_type == MTK_TYPE_F2FS_GC) {
+			struct mtk_f2fs_gc *gc = &(track->data.gc);
+
+			SPREAD_PRINTF(buff, size, seq,
+				"%6llu.%09lu, %d, sync=%d, bg=%d, nodes=%lld, dents=%lld, metas=%lld, free_secs=0x%x, free_segs=0x%x, res_segs=0x%x, pre_segs=0x%x\n",
+				dur.tv_sec, dur.tv_nsec, track->track_type,
+				gc->sync, gc->background, gc->nodes, gc->dents,
+				gc->metas, gc->free_sec, gc->free_seg,
+				gc->reserved_seg, gc->prefree_seg);
+		} else if (track->track_type == MTK_TYPE_F2FS_VICTIM) {
+			struct mtk_f2fs_victim *victim = &(track->data.victim);
+
+			SPREAD_PRINTF(buff, size, seq,
+				"%6llu.%09lu, %d, type=%d, gc_type=%d, min_segno=0x%x, pre_victim=0x%0x, pre_segs=0x%x, free_segs=0x%x\n",
+				dur.tv_sec, dur.tv_nsec, track->track_type,
+				victim->type, victim->gc_type,
+				victim->min_segno, victim->pre_victim,
+				victim->prefree_segs, victim->free_segs);
+		}
+		cur_ptr--;
+		if (cur_ptr < 0)
+			cur_ptr = F2FS_GC_TRACK_SIZE - 1;
+		if (cur_ptr == f2fs_gc_track_ptr)
+			break;
+	} while (true);
+	spin_unlock_irqrestore(&f2fs_gc_track_lock, flags);
+}
+#endif
 
 static struct mtk_blocktag *mtk_btag_find(const char *name)
 {
@@ -1443,6 +1588,10 @@ static void mtk_btag_seq_main_info(char **buff, unsigned long *size,
 
 	SPREAD_PRINTF(buff, size, seq, "--------------------------------\n");
 	SPREAD_PRINTF(buff, size, seq, "Total: %zu KB\n", used_mem >> 10);
+#if defined(CONFIG_MACH_MT6739) && defined(CONFIG_F2FS_FS)
+	SPREAD_PRINTF(buff, size, seq, "<F2FS GC>\n");
+	mtk_btag_f2fs_gc_show(buff, size, seq);
+#endif
 	// useage
 	SPREAD_PRINTF(buff, size, seq, "<Usage>\n");
 	SPREAD_PRINTF(buff, size, seq, "Reset blocktag  : echo 0 > blockio\n");
@@ -1973,7 +2122,10 @@ static int __init mtk_btag_init(void)
 
 	register_trace_writeback_dirty_page(
 		btag_trace_writeback_dirty_page, NULL);
-
+#if defined(CONFIG_MACH_MT6739) && defined(CONFIG_F2FS_FS)
+	register_trace_f2fs_gc_begin(mtk_btag_f2fs_gc_begain, NULL);
+	register_trace_f2fs_get_victim(mtk_btag_f2fs_get_victim, NULL);
+#endif
 	mtk_btag_earaio_init();
 
 	return 0;
@@ -1983,6 +2135,10 @@ static void __exit mtk_btag_exit(void)
 {
 	proc_remove(btag_proc_root);
 
+#if defined(CONFIG_MACH_MT6739) && defined(CONFIG_F2FS_FS)
+	unregister_trace_f2fs_get_victim(mtk_btag_f2fs_get_victim, NULL);
+	unregister_trace_f2fs_gc_begin(mtk_btag_f2fs_gc_begain, NULL);
+#endif
 	unregister_trace_block_rq_insert(
 		btag_trace_block_rq_insert, NULL);
 	unregister_trace_writeback_dirty_page(
@@ -1996,4 +2152,3 @@ MODULE_AUTHOR("Perry Hsu <perry.hsu@mediatek.com>");
 MODULE_AUTHOR("Stanley Chu <stanley.chu@mediatek.com>");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("Storage Block Tag Trace");
-

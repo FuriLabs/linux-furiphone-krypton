@@ -1,0 +1,25 @@
+config TMS_NFC_DEVICE
+	bool "TMS NFC THN31 support"
+	help
+	  Say Y to enable
+	  TMS NFC THN31 support
+	  Say N to disable
+	  TMS NFC THN31 not support
+
+config TMS_ESE_DEVICE
+	bool "TMS NFC THN31 support"
+	depends on TMS_NFC_DEVICE
+	help
+	  Say Y to enable
+	  TMS_ESE_DEVICE support
+	  Say N to disable
+	  TMS_ESE_DEVICE not support
+
+config TMS_GUIDE_DEVICE
+	bool "TMS_GUIDE_DEVICE support"
+	depends on TMS_NFC_DEVICE
+	help
+	  Say Y to enable
+	  TMS_GUIDE_DEVICE support
+	  Say N to disable
+	  TMS_GUIDE_DEVICE not support

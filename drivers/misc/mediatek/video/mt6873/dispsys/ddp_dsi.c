@@ -2247,7 +2247,7 @@ UINT32 DSI_dcs_read_lcm_reg_v2(enum DISP_MODULE_ENUM module,
 					(void *)&read_data1, 4);
 				memcpy((void *)buffer + 4,
 					(void *)&read_data2, 4);
-				memcpy((void *)buffer + 8, (void *)&read_data2,
+				memcpy((void *)buffer + 8, (void *)&read_data3,
 				    recv_data_cnt - 8);
 			}
 		} else if (packet_type == 0x11 || packet_type == 0x12 ||
@@ -2538,7 +2538,7 @@ UINT32 DSI_dcs_read_lcm_reg_v3(enum DISP_MODULE_ENUM module,
 					(void *)&read_data1, 4);
 				memcpy((void *)buffer + 4,
 					(void *)&read_data2, 4);
-				memcpy((void *)buffer + 8, (void *)&read_data2,
+				memcpy((void *)buffer + 8, (void *)&read_data3,
 				    recv_data_cnt - 8);
 			}
 		} else if (packet_type == 0x11 || packet_type == 0x12 ||

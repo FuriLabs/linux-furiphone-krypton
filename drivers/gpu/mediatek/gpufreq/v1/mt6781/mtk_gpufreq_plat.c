@@ -741,24 +741,24 @@ static void mt_gpufreq_buck_control(enum mt_power_state power)
 	gpufreq_pr_debug("@%s: power=%d", __func__, power);
 
 	if (power == POWER_ON) {
-		if (regulator_enable(g_pmic->reg_vsram_gpu)) {
-			gpufreq_pr_info("@%s: fail tp enable VSRAM_GPU\n",
+		if (regulator_enable(g_pmic->reg_vgpu)) {
+			gpufreq_pr_info("@%s: fail tp enable VGPU\n",
 					__func__);
 			return;
 		}
-		if (regulator_enable(g_pmic->reg_vgpu)) {
-			gpufreq_pr_info("@%s: fail to enable VGPU\n",
+		if (regulator_enable(g_pmic->reg_vsram_gpu)) {
+			gpufreq_pr_info("@%s: fail to enable VSRAM_GPU\n",
 					__func__);
 			return;
 		}
 	} else {
-		if (regulator_disable(g_pmic->reg_vgpu)) {
-			gpufreq_pr_info("@%s: fail to disable VGPU\n",
+		if (regulator_disable(g_pmic->reg_vsram_gpu)) {
+			gpufreq_pr_info("@%s: fail to disable VSRAM_GPU\n",
 					__func__);
 			return;
 		}
-		if (regulator_disable(g_pmic->reg_vsram_gpu)) {
-			gpufreq_pr_info("@%s: fail to disable VSRAM_GPU\n",
+		if (regulator_disable(g_pmic->reg_vgpu)) {
+			gpufreq_pr_info("@%s: fail to disable VGPU\n",
 					__func__);
 			return;
 		}

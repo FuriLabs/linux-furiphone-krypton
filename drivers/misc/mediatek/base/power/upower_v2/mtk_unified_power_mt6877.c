@@ -113,6 +113,19 @@ struct upower_tbl_info
 		INIT_UPOWER_TBL_INFOS(UPOWER_BANK_CCI,
 				upower_tbl_cci_B25G),
 	},
+	[3] = {
+		INIT_UPOWER_TBL_INFOS(UPOWER_BANK_LL,
+				upower_tbl_l_B27G),
+		INIT_UPOWER_TBL_INFOS(UPOWER_BANK_L,
+				upower_tbl_b_B27G),
+		INIT_UPOWER_TBL_INFOS(UPOWER_BANK_CLS_LL,
+				upower_tbl_cluster_l_B27G),
+		INIT_UPOWER_TBL_INFOS(UPOWER_BANK_CLS_L,
+				upower_tbl_cluster_b_B27G),
+		INIT_UPOWER_TBL_INFOS(UPOWER_BANK_CCI,
+				upower_tbl_cci_B27G),
+	},
+
 };
 /* Upower will know how to apply voltage that comes from EEM */
 unsigned char upower_recognize_by_eem[NR_UPOWER_BANK] = {

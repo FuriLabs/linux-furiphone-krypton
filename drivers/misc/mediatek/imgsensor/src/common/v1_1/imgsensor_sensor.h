@@ -9,7 +9,9 @@
 #include "kd_camera_feature.h"
 #include "kd_imgsensor_define.h"
 #include "imgsensor_i2c.h"
-
+#ifdef CONFIG_CAMERA_CUSTOMKEY
+#include "custom-toggle.h"
+#endif
 enum IMGSENSOR_STATE {
 	IMGSENSOR_STATE_CLOSE,
 	IMGSENSOR_STATE_OPEN
@@ -33,6 +35,9 @@ struct IMGSENSOR_SENSOR_INST {
 struct IMGSENSOR_SENSOR {
 	struct IMGSENSOR_SENSOR_INST  inst;
 	struct SENSOR_FUNCTION_STRUCT *pfunc;
+#ifdef CONFIG_CAMERA_CUSTOMKEY
+	struct camera_device cam_dev;
+#endif
 };
 
 #endif

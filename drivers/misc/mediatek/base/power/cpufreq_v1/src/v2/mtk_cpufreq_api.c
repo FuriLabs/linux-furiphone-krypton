@@ -180,7 +180,7 @@ EXPORT_SYMBOL(mt_cpufreq_update_volt);
 void mt_cpufreq_update_cci_map_tbl(unsigned int idx_1, unsigned int idx_2,
 	unsigned char result, unsigned int mode, unsigned int use_id)
 {
-#if defined(CONFIG_HYBRID_CPU_DVFS) && defined(CCI_MAP_TBL_SUPPORT)
+#if defined(CONFIG_HYBRID_CPU_DVFS) && defined(CCI_MAP_TBL_SUPPORT) && defined(CONFIG_MTK_ENG_BUILD)
 	cpuhvfs_update_cci_map_tbl(idx_1, idx_2, result, mode, use_id);
 #endif
 }

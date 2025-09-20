@@ -3010,7 +3010,7 @@ static int pwrap_wait_for_state(struct pmic_wrapper *wrp,
 	}
 
 	start_time_ns = sched_clock();
-	timeout_ns = 10000 * 1000;  /* 10000us */
+	timeout_ns = 50000 * 1000;  /* 50000us */
 
 	do {
 		if (pwrap_timeout_ns(start_time_ns, timeout_ns)) {

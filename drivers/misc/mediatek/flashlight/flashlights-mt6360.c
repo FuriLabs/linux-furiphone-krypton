@@ -78,7 +78,8 @@ struct mt6360_platform_data {
 };
 
 #if defined(CONFIG_MACH_MT6877) || defined(CONFIG_MACH_MT6833) \
-|| defined(CONFIG_MACH_MT6893)
+|| defined(CONFIG_MACH_MT6893) || defined(CONFIG_MACH_MT6785) \
+|| defined(CONFIG_MACH_MT6885) || defined(CONFIG_MACH_MT6873)
 /* define charger consumer */
 static struct charger_consumer *flashlight_charger_consumer;
 #define CHARGER_SUPPLY_NAME "charger_port1"
@@ -120,16 +121,16 @@ static const int mt6360_current[MT6360_LEVEL_NUM] = {
 };
 
 static const unsigned char mt6360_torch_level[MT6360_LEVEL_TORCH] = {
-	0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E, 0x10, 0x12,
-	0x14, 0x16, 0x18, 0x1A, 0x1C, 0x1E
+	0x00, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
+	0x02, 0x02, 0x02, 0x02, 0x02, 0x02
 };
 
 /* 0x00~0x74 6.25mA/step 0x75~0xB1 12.5mA/step */
 static const unsigned char mt6360_strobe_level[MT6360_LEVEL_FLASH] = {
-	0x00, 0x04, 0x08, 0x0C, 0x10, 0x14, 0x18, 0x1C, 0x20, 0x24,
-	0x28, 0x2C, 0x30, 0x34, 0x38, 0x3C, 0x44, 0x4C, 0x54, 0x5C,
-	0x64, 0x6C, 0x74, 0x78, 0x7C, 0x80, 0x84, 0x88, 0x8C, 0x90,
-	0x94, 0x98
+	0x00, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+	0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+	0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
+	0x04, 0x04
 };
 
 static int mt6360_decouple_mode;
@@ -358,7 +359,8 @@ static int mt6360_set_scenario(int scenario)
 		if (!is_decrease_voltage) {
 			pr_info("Decrease voltage level.\n");
 #if defined(CONFIG_MACH_MT6877) || defined(CONFIG_MACH_MT6833) \
-|| defined(CONFIG_MACH_MT6893)
+|| defined(CONFIG_MACH_MT6893) || defined(CONFIG_MACH_MT6785) \
+|| defined(CONFIG_MACH_MT6885) || defined(CONFIG_MACH_MT6873)
 			charger_manager_enable_high_voltage_charging(
 				flashlight_charger_consumer, false);
 #else
@@ -370,7 +372,8 @@ static int mt6360_set_scenario(int scenario)
 		if (is_decrease_voltage) {
 			pr_info("Increase voltage level.\n");
 #if defined(CONFIG_MACH_MT6877) || defined(CONFIG_MACH_MT6833) \
-|| defined(CONFIG_MACH_MT6893)
+|| defined(CONFIG_MACH_MT6893) || defined(CONFIG_MACH_MT6785) \
+|| defined(CONFIG_MACH_MT6885) || defined(CONFIG_MACH_MT6873)
 			charger_manager_enable_high_voltage_charging(
 				flashlight_charger_consumer, true);
 #else
@@ -661,7 +664,8 @@ static int mt6360_release(void)
 	if (fd_use_count == 0 && is_decrease_voltage) {
 		pr_info("Increase voltage level.\n");
 #if defined(CONFIG_MACH_MT6877) || defined(CONFIG_MACH_MT6833) \
-|| defined(CONFIG_MACH_MT6893)
+|| defined(CONFIG_MACH_MT6893) || defined(CONFIG_MACH_MT6785) \
+|| defined(CONFIG_MACH_MT6885) || defined(CONFIG_MACH_MT6873)
 			charger_manager_enable_high_voltage_charging(
 				flashlight_charger_consumer, true);
 #else
@@ -799,6 +803,63 @@ err_node_put:
 	return -EINVAL;
 }
 
+int switch_node_status = -1;
+static ssize_t switch_node_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    int len = 0;
+    len = sprintf(buf, "%d\n", switch_node_status);
+    return len;
+}
+
+static ssize_t switch_node_store(struct device *dev, struct device_attribute *attr,
+                                                         const char *buf, size_t size)
+{
+   char *pvalue = NULL;
+
+   if (buf != NULL && size != 0)
+   {
+       switch_node_status = simple_strtoul(buf, &pvalue, 10);
+       if (switch_node_status == 0){
+
+       }else if(switch_node_status == 1){
+
+	}
+       else {
+	     
+       }
+   }
+   return size;
+}
+static DEVICE_ATTR(switch_node, 0664, switch_node_show, switch_node_store);
+
+int switch_rom_status = -1;
+static ssize_t switch_rom_show(struct device *dev, struct device_attribute *attr, char *buf)
+{
+    int len = 0;
+    len = sprintf(buf, "%d\n", switch_rom_status);
+    return len;
+}
+
+static ssize_t switch_rom_store(struct device *dev, struct device_attribute *attr,
+                                                         const char *buf, size_t size)
+{
+   char *pvalue = NULL;
+
+   if (buf != NULL && size != 0)
+   {
+       switch_rom_status = simple_strtoul(buf, &pvalue, 10);
+       if (switch_rom_status == 0){
+
+       }else if(switch_rom_status == 1){
+
+	}
+       else {
+	     
+       }
+   }
+   return size;
+}
+static DEVICE_ATTR(switch_rom, 0664, switch_rom_show, switch_rom_store);
 static int mt6360_probe(struct platform_device *pdev)
 {
 	struct mt6360_platform_data *pdata = dev_get_platdata(&pdev->dev);
@@ -852,7 +913,8 @@ static int mt6360_probe(struct platform_device *pdev)
 				MT6360_HW_TIMEOUT, MT6360_HW_TIMEOUT + 200) < 0)
 		pr_info("Failed to set strobe timeout.\n");
 #if defined(CONFIG_MACH_MT6877) || defined(CONFIG_MACH_MT6833) \
-|| defined(CONFIG_MACH_MT6893)
+|| defined(CONFIG_MACH_MT6893) || defined(CONFIG_MACH_MT6785) \
+|| defined(CONFIG_MACH_MT6885) || defined(CONFIG_MACH_MT6873)
 	/* get charger consumer manager */
 	flashlight_charger_consumer = charger_manager_get_by_name(
 			&flashlight_dev_ch1->dev, CHARGER_SUPPLY_NAME);
@@ -872,6 +934,8 @@ static int mt6360_probe(struct platform_device *pdev)
 		if (flashlight_dev_register(MT6360_NAME, &mt6360_ops))
 			return -EFAULT;
 	}
+	device_create_file(&(pdev->dev), &dev_attr_switch_node);
+	device_create_file(&(pdev->dev), &dev_attr_switch_rom);
 
 	pr_debug("Probe done.\n");
 

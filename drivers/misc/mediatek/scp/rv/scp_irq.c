@@ -32,7 +32,8 @@ static void scp_A_wdt_handler(unsigned long data)
 		readl(R_CORE1_WDT_IRQ) : 0;
 #if SCP_RECOVERY_SUPPORT
 	if (scp_set_reset_status() == RESET_STATUS_STOP) {
-		pr_debug("[SCP] start to reset scp...\n");
+		pr_notice("[SCP] start to reset scp...\n");
+		mdelay(2);
 		scp_dump_last_regs();
 		scp_send_reset_wq(RESET_TYPE_WDT);
 	} else

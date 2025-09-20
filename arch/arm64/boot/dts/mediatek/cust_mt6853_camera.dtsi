@@ -474,7 +474,8 @@
 	cam2_vcamio-supply = <&mt_pmic_vcamio_ldo_reg>;
 	cam4_vcamio-supply = <&mt_pmic_vcamio_ldo_reg>;
 
-	cam1_enable_sensor = "imx576_mipi_raw";
+	cam0_enable_sensor = "s5k3l8_mipi_raw";
+	cam1_enable_sensor = "gc05a2_mipi_raw";
 
 	status = "okay";
 };
@@ -508,3 +509,12 @@
 	};
 };
 /* CAMERA EEPROM end */
+
+/* CAMERA AF */
+&camera_af_hw_node {
+	camaf_m1_pmic-supply = <&mt_pmic_vcamio_ldo_reg>;
+	camaf_m2_pmic-supply = <&mt_pmic_vcamio_ldo_reg>;
+	camaf_m3_pmic-supply = <&mt_pmic_vcamio_ldo_reg>;
+	status = "okay";
+};
+/* CAMERA AF end */

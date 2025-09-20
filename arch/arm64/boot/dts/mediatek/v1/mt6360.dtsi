@@ -53,8 +53,8 @@
 			chg_name = "primary_chg";
 			ichg = <2000000>;		/* uA */
 			aicr = <500000>;		/* uA */
-			mivr = <4400000>;		/* uV */
-			cv = <4350000>;			/* uA */
+			mivr = <4420000>;		/* uV */
+			cv = <4390000>;			/* uA */
 			ieoc = <150000>;		/* uA */
 			safety_timer = <12>;		/* hour */
 			ircmp_resistor = <25000>;	/* uohm */

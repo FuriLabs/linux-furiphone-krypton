@@ -8,7 +8,9 @@
 #include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include <dt-bindings/pinctrl/mt6877-pinfunc.h>
-
+#include <generated/autoconf.h>
+#include <dt-bindings/gpio/gpio.h>
+#include <dt-bindings/input/input.h>
 /* chosen */
 &chosen {
 	atag,videolfb-fb_base_l = <0x7e605000>;
@@ -50,6 +52,11 @@
 	};
 }; /* IRTX GPIO Settings -End */
 
+&mt6360_ldo {
+    sdcard_det_en = <1>; //1表示使用这根pin，0表示不使用这根pin
+    sdcard_hlact = <0>;  //1表示高电平为SD拔出，0表示低电平为SD拔出
+};
+
 &mt6360_pmu {
 	mt6360,intr_gpio_num = <4>; /* direct defined GPIO num */
 	mt6360,intr_gpio = <&pio 4 0x0>;
@@ -67,7 +74,7 @@
 &pio {
 	mtkfb_pins_lcm_led_en1: lcm_led_en1_gpio {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO107__FUNC_GPIO107>;
+			pinmux = <PINMUX_GPIO38__FUNC_GPIO38>;
 			slew-rate = <1>;
 			output-high;
 		};
@@ -75,7 +82,7 @@
 
 	mtkfb_pins_lcm_led_en0: lcm_led_en0_gpio {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO107__FUNC_GPIO107>;
+			pinmux = <PINMUX_GPIO38__FUNC_GPIO38>;
 			slew-rate = <1>;
 			output-low;
 		};
@@ -83,7 +90,7 @@
 
 	mtkfb_pins_lcd_bias_enp1: lcd_bias_enp1_gpio {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO108__FUNC_GPIO108>;
+			pinmux = <PINMUX_GPIO107__FUNC_GPIO107>;
 			slew-rate = <1>;
 			output-high;
 		};
@@ -91,7 +98,7 @@
 
 	mtkfb_pins_lcd_bias_enp0: lcd_bias_enp0_gpio {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO108__FUNC_GPIO108>;
+			pinmux = <PINMUX_GPIO107__FUNC_GPIO107>;
 			slew-rate = <1>;
 			output-low;
 		};
@@ -99,7 +106,7 @@
 
 	mtkfb_pins_lcd_bias_enn1: lcd_bias_enn1_gpio {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO111__FUNC_GPIO111>;
+			pinmux = <PINMUX_GPIO109__FUNC_GPIO109>;
 			slew-rate = <1>;
 			output-high;
 		};
@@ -107,7 +114,7 @@
 
 	mtkfb_pins_lcd_bias_enn0: lcd_bias_enn0_gpio {
 		pins_cmd_dat {
-			pinmux = <PINMUX_GPIO111__FUNC_GPIO111>;
+			pinmux = <PINMUX_GPIO109__FUNC_GPIO109>;
 			slew-rate = <1>;
 			output-low;
 		};
@@ -169,7 +176,9 @@
 	panel1@0 {
 		compatible = "truly,ft8756,vdo";
 		reg = <0>;
-		pm-enable-gpios = <&pio 107 0>;
+		pm-enable-gpios = <&pio 38 0>;
+                bias-gpios = <&pio 107 0>,
+                        <&pio 109 0>;
 		reset-gpios = <&pio 40 0>;
 		pinctrl-names = "default";
 		port {
@@ -181,7 +190,7 @@
 	panel2@0 {
 		compatible = "nt36672a,rt4801,vdo";
 		reg = <1>;
-		pm-enable-gpios = <&pio 107 0>;
+		pm-enable-gpios = <&pio 38 0>;
 		reset-gpios = <&pio 40 0>;
 		pinctrl-names = "default";
 		port {
@@ -193,7 +202,7 @@
 	panel3@0 {
 		compatible = "truly,td4330,cmd";
 		reg = <2>;
-		pm-enable-gpios = <&pio 107 0>;
+		pm-enable-gpios = <&pio 38 0>;
 		reset-gpios = <&pio 40 0>;
 		pinctrl-names = "default";
 		port {
@@ -250,8 +259,9 @@
 	};
 	led6:led@6 {
 		compatible = "mediatek,lcd-backlight";
-		led_mode = <6>;
+		led_mode = <5>;
 		data = <1>;
+		pwm_config = <0 1 0 0 0>;
 		led_config = <8 11>;
 	};
 	vibrator0:vibrator@0 {
@@ -336,7 +346,7 @@
 				0x5 0x3 0x3 0x5 0xe>;
 	accdet-plugout-debounce = <1>;
 	/*1:ACC mode, 2:low cost without in bias, 6:low cost with in bias*/
-	accdet-mic-mode = <2>;
+	accdet-mic-mode = <1>;
 	/*0--MD_MAX--UP_MAX--DW_MAX*/
 	headset-three-key-threshold = <0 80 220 400>;
 	headset-three-key-threshold-CDD = <0 121 192 600>;
@@ -345,10 +355,56 @@
 
 	/* select VTH to 2v and 500k, use internal resitance */
 	eint_use_ext_res = <0>;
+
+#if defined(CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT)
+	pinctrl-names = "switch_to_usb", "switch_to_hp","fsa8049_en", "fsa8049_disable";
+	pinctrl-0 = <&switch_to_usb_cfg>;
+	pinctrl-1 = <&switch_to_hp_cfg>;
+	pinctrl-2 = <&fsa8049_en_cfg>;
+	pinctrl-3 = <&fsa8049_disable_cfg>;
+#endif  /* CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT */
 	status = "okay";
 };
 
+
+#if defined(CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT)
+&pio {
+	switch_to_usb_cfg: gpio110@0 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO110__FUNC_GPIO110>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+
+	switch_to_hp_cfg: gpio110@1 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO110__FUNC_GPIO110>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	fsa8049_en_cfg: gpio108@1 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO108__FUNC_GPIO108>;
+			slew-rate = <1>;
+			output-high;
+		};
+	};
+
+	fsa8049_disable_cfg: gpio108@0 {
+		pins_cmd_dat {
+			pinmux = <PINMUX_GPIO108__FUNC_GPIO108>;
+			slew-rate = <1>;
+			output-low;
+		};
+	};
+};
+#endif  /* CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT */
+
 /* keypad start */
+#if 0
 &keypad {
 	pinctrl-names = "default";
 	pinctrl-0 = <&kpd_pins_default>;
@@ -364,6 +420,7 @@
 		};
 	};
 };
+#endif
 /* keypad end */
 
 &ps5169{
@@ -410,8 +467,116 @@
 	};
 };
 
+&i2c0 {
+        lcd@ocp2131 {
+                   compatible = "mediatek,I2C_LCD_BIAS";
+                   reg = <0x3e>;
+                   status = "okay";
+        };
+};
+
+&i2c3 {
+	status = "okay";
+	
+	/* pn544@28{
+		status = "okay";
+		compatible = "nxp,pn544";
+		reg = <0x28>;
+		nxp,pn544-irq = <&pio 11 0x00>;
+		nxp,pn544-ven = <&pio 10 0x00>;
+		nxp,pn544-fw-dwnld = <&pio 7 0x00>;
+	}; */
+
+	tms_nfc: tms_nfc@28 {
+	status = "okay";
+	compatible = "tms,nfc";
+	reg = <0x28>;
+	tms,device-name = "tms_nfc";
+	tms,device-count = <1>;
+	tms,irq-gpio = <&pio 11 0x00>; //GPIO1_A0
+	tms,ven-gpio = <&pio 10 0x00>; //GPIO1_A1
+	tms,download-gpio = <&pio 7 0x00>; //GPIO1_A3
+	};
+};
+
+&spi0 {
+    focaltech@0 {
+        compatible = "focaltech,fts";
+        reg = <0x0>;
+        spi-max-frequency = <6000000>;
+        vdd-supply = <&mt_pmic_vtp_ldo_reg>;
+        interrupt-parent = <&pio>;
+        interrupts = <14 IRQ_TYPE_EDGE_FALLING 14 0>;
+        focaltech,reset-gpio = <&pio 15 0>;
+        focaltech,irq-gpio = <&pio 14 02>;
+        focaltech,max-touch-number = <10>;
+        focaltech,display-coords =  <0 0 720 1600>;
+        status = "okay";
+    };
+};
+
+#if 0
+&gpio_keys {
+    status = "okay";
+    key-volumedown {
+		label = "Volume Down Key";
+		linux,code = <115>;
+		gpios = <&pio 114 1>;
+		debounce-interval = <2>;
+		wakeup-source;
+    };
+
+    key-volumeup {
+		label = "Volume Up Key";
+		linux,code = <114>;
+		gpios = <&pio 116 1>;
+		debounce-interval = <2>;
+		wakeup-source;
+    };
+    key-f1 {
+		label = "F1";
+		linux,code = <59>;
+		gpios = <&pio 21 1>;
+		debounce-interval = <5>;
+		wakeup-source;
+    };
+    key-f2 {
+		label = "F2";
+		linux,code = <60>;
+		gpios = <&pio 22 1>;
+		debounce-interval = <5>;
+		wakeup-source;
+    };
+};
+
+&custom_toggle {
+    status = "okay";
+    gpios = <&pio 21 GPIO_ACTIVE_HIGH>;
+    interrupts = <GIC_SPI 21 IRQ_TYPE_EDGE_BOTH>;
+};
+#endif
+
+&custom_keys {
+	interrupt-parent = <&pio>;
+	status = "okay";
+	key0 {
+	    label = "cam_switch";
+	    gpios = <&pio 21 GPIO_ACTIVE_HIGH>;
+	    linux,code = <KEY_CAMERA>;
+	    wakeup-source;
+	    debounce-interval = <50>;
+	};
+	key1 {
+	    label = "nwk_switch";
+	    gpios = <&pio 22 GPIO_ACTIVE_HIGH>;
+	    linux,code = <60>;
+	    wakeup-source;
+	    debounce-interval = <50>;
+	};
+};
+
 #include "k6877v1_64_k419/cust.dtsi"
-#include "mediatek/cust_mt6877_touch_1080x2300.dtsi"
+//#include "mediatek/cust_mt6877_touch_1080x2300.dtsi"
 #include "mediatek/cust_mt6877_camera.dtsi"
 /*End of this file, DO NOT ADD ANYTHING HERE*/
 

@@ -936,12 +936,13 @@ void testcase_clkmgr_mdp(void)
 #endif
 }
 
-static void cmdq_mdp_enable_common_clock(bool enable)
+static s32 cmdq_mdp_enable_common_clock(bool enable)
 {
 #ifdef CMDQ_PWR_AWARE
+	s32 ret = 0;
 	if (enable) {
 		/* Use SMI clock API */
-		smi_bus_prepare_enable(SMI_LARB0, "MDP");
+		ret = smi_bus_prepare_enable(SMI_LARB0, "MDP");
 
 		/* reset ovl engine to avoid
 		 * ovl eof event always set and block bus
@@ -950,9 +951,15 @@ static void cmdq_mdp_enable_common_clock(bool enable)
 		cmdq_mdp_enable_clock_DISP_OVL0(false);
 	} else {
 		/* disable, reverse the sequence */
-		smi_bus_disable_unprepare(SMI_LARB0, "MDP");
+		ret = smi_bus_disable_unprepare(SMI_LARB0, "MDP");
+	}
+	if (ret) {
+		CMDQ_ERR("%s %s fail ret:%d\n",
+			__func__, enable ? "enable" : "disable", ret);
+		return TASK_STATE_ERROR;
 	}
 #endif	/* CMDQ_PWR_AWARE */
+	return 0;
 }
 
 void cmdq_mdp_platform_function_setting(void)

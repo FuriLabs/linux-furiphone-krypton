@@ -361,14 +361,25 @@ static int mtk_extcon_tcpc_notifier(struct notifier_block *nb,
 				noti->typec_state.new_state);
 
 #ifdef CONFIG_MTK_USB_TYPEC_U3_MUX
-		if ((noti->typec_state.new_state == TYPEC_ATTACHED_SRC ||
-			noti->typec_state.new_state == TYPEC_ATTACHED_SNK ||
+		if ((noti->typec_state.new_state == TYPEC_ATTACHED_SNK ||
 			noti->typec_state.new_state == TYPEC_ATTACHED_NORP_SRC ||
 			noti->typec_state.new_state == TYPEC_ATTACHED_CUSTOM_SRC)) {
 			if (noti->typec_state.polarity == 0)
 				usb3_switch_set(TYPEC_ORIENTATION_REVERSE);
 			else
 				usb3_switch_set(TYPEC_ORIENTATION_NORMAL);
+		} else if (noti->typec_state.new_state == TYPEC_ATTACHED_SRC) {
+			if (g_extcon->support_u3) {
+				if (noti->typec_state.polarity == 0)
+					usb3_switch_set(TYPEC_ORIENTATION_REVERSE);
+				else
+					usb3_switch_set(TYPEC_ORIENTATION_NORMAL);
+			} else {
+				if (noti->typec_state.polarity == 0)
+					usb3_switch_set(TYPEC_ORIENTATION_NORMAL);
+				else
+					usb3_switch_set(TYPEC_ORIENTATION_REVERSE);
+			}
 		} else if (noti->typec_state.new_state == TYPEC_UNATTACHED) {
 			usb3_switch_set(TYPEC_ORIENTATION_NONE);
 		}
@@ -397,12 +408,12 @@ static int mtk_extcon_tcpc_notifier(struct notifier_block *nb,
 		dev_info(dev, "%s dr_swap, new role=%d\n",
 				__func__, noti->swap_state.new_role);
 		if (noti->swap_state.new_role == PD_ROLE_UFP &&
-				extcon->c_role == DUAL_PROP_DR_HOST) {
+				extcon->c_role != DUAL_PROP_DR_DEVICE) {
 			dev_info(dev, "switch role to device\n");
 			mtk_usb_extcon_set_role(extcon, DUAL_PROP_DR_NONE);
 			mtk_usb_extcon_set_role(extcon, DUAL_PROP_DR_DEVICE);
 		} else if (noti->swap_state.new_role == PD_ROLE_DFP &&
-				extcon->c_role == DUAL_PROP_DR_DEVICE) {
+				extcon->c_role != DUAL_PROP_DR_HOST) {
 			dev_info(dev, "switch role to host\n");
 			mtk_usb_extcon_set_role(extcon, DUAL_PROP_DR_NONE);
 			mtk_usb_extcon_set_role(extcon, DUAL_PROP_DR_HOST);
@@ -532,7 +543,7 @@ void mt_usb_connect_v1(void)
 {
 	pr_info("%s in mtk extcon\n", __func__);
 
-#ifdef CONFIG_TCPC_CLASS
+#if (defined CONFIG_TCPC_CLASS) || (defined CONFIG_CHRDET_VBUS_DETECTION)
 	/* check current role to avoid power role swap issue */
 	if (g_extcon && g_extcon->c_role == DUAL_PROP_DR_NONE)
 		issue_connection_work(DUAL_PROP_DR_DEVICE);
@@ -554,6 +565,10 @@ void mt_usb_disconnect_v1(void)
 EXPORT_SYMBOL_GPL(mt_usb_disconnect_v1);
 #endif //ADAPT_PSY_V1
 
+#ifdef CONFIG_CHRDET_VBUS_DETECTION
+	extern bool mtk_mt_pmic_get_vcdt(void);
+#endif
+
 static int mtk_usb_extcon_probe(struct platform_device *pdev)
 {
 	struct device *dev = &pdev->dev;
@@ -561,6 +576,9 @@ static int mtk_usb_extcon_probe(struct platform_device *pdev)
 	struct platform_device *conn_pdev;
 	struct device_node *conn_np;
 	int ret;
+#ifdef CONFIG_CHRDET_VBUS_DETECTION
+	bool is_vcdt_on;
+#endif
 
 	extcon = devm_kzalloc(&pdev->dev, sizeof(*extcon), GFP_KERNEL);
 	if (!extcon)
@@ -613,6 +631,7 @@ static int mtk_usb_extcon_probe(struct platform_device *pdev)
 		return PTR_ERR(extcon->vbus);
 	}
 
+#ifndef CONFIG_CHRDET_VBUS_DETECTION
 	if (!of_property_read_u32(dev->of_node, "vbus-voltage",
 					&extcon->vbus_vol))
 		dev_info(dev, "vbus-voltage=%d", extcon->vbus_vol);
@@ -620,6 +639,7 @@ static int mtk_usb_extcon_probe(struct platform_device *pdev)
 	if (!of_property_read_u32(dev->of_node, "vbus-current",
 					&extcon->vbus_cur))
 		dev_info(dev, "vbus-current=%d", extcon->vbus_cur);
+#endif
 
 	extcon->bypss_typec_sink =
 		of_property_read_bool(dev->of_node,
@@ -629,11 +649,23 @@ static int mtk_usb_extcon_probe(struct platform_device *pdev)
 	if (!extcon->extcon_wq)
 		return -ENOMEM;
 
+	extcon->support_u3 = !of_property_read_bool(dev->of_node, "not_support_u3");
+	if (!extcon->support_u3)
+		dev_info(dev, "platform does not support U3\n");
+
 	extcon->c_role = DUAL_PROP_DR_DEVICE;
 
 	/* default initial role */
+#ifdef CONFIG_CHRDET_VBUS_DETECTION
+	is_vcdt_on = mtk_mt_pmic_get_vcdt();
+	dev_info(dev, "extcon vcdt %d\n", is_vcdt_on);
+	if (is_vcdt_on)
+		mtk_usb_extcon_set_role(extcon, DUAL_PROP_DR_DEVICE);
+	else
+		mtk_usb_extcon_set_role(extcon, DUAL_PROP_DR_NONE);
+#else
 	mtk_usb_extcon_set_role(extcon, DUAL_PROP_DR_NONE);
-
+#endif
 	/* default turn off vbus */
 	mtk_usb_extcon_set_vbus(extcon, false);
 

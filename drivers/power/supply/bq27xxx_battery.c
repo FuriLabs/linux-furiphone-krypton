@@ -1801,15 +1801,16 @@ static int bq27xxx_battery_get_property(struct power_supply *psy,
 	case POWER_SUPPLY_PROP_STATUS:
 		ret = bq27xxx_battery_status(di, val);
 #if defined(CONFIG_MACH_MT6893)
-		pr_info("original charger status(%d)", val->intval);
+		pr_info("gauge charger status(%d), charger online_val.intval(%d), type_val.intval(%d)",
+			val->intval, online_val.intval, type_val.intval);
 		if ((val->intval == POWER_SUPPLY_STATUS_DISCHARGING) ||
 			(val->intval == POWER_SUPPLY_STATUS_NOT_CHARGING) ||
 			(val->intval == POWER_SUPPLY_STATUS_UNKNOWN)) {
-			if (online_val.intval && (type_val.intval != 0)) {
+			if (online_val.intval && (type_val.intval != 0))
 				val->intval = POWER_SUPPLY_STATUS_CHARGING;
-				pr_info("update charger status(%d), online_val.intval(%d), type_val.intval(%d)",
-					val->intval,online_val.intval, type_val.intval);
-			}
+		} else if ((val->intval == POWER_SUPPLY_STATUS_CHARGING) &&
+			!(online_val.intval) && !(type_val.intval)) {
+			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
 		}
 #endif
 		break;

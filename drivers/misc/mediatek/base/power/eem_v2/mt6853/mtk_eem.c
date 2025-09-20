@@ -863,6 +863,7 @@ static enum hrtimer_restart eem_log_timer_func(struct hrtimer *timer)
 	return HRTIMER_RESTART;
 }
 
+#ifdef CONFIG_MTK_ENG_BUILD
 static void eem_calculate_aging_margin(struct eemsn_det *det,
 	int start_oft, int end_oft)
 {
@@ -882,6 +883,7 @@ static void eem_calculate_aging_margin(struct eemsn_det *det,
 	}
 
 }
+#endif /* CONFIG_MTK_ENG_BUILD */
 #endif
 
 #if !EARLY_PORTING
@@ -1776,6 +1778,7 @@ out:
 	return (ret < 0) ? ret : count;
 }
 
+#ifdef CONFIG_MTK_ENG_BUILD
 static int eem_setmargin_proc_show(struct seq_file *m, void *v)
 {
 	struct eemsn_det *det = (struct eemsn_det *)m->private;
@@ -1828,8 +1831,8 @@ static ssize_t eem_setmargin_proc_write(struct file *file,
 		ret = -EINVAL;
 
 	while ((tok = strsep(&buf, " ")) != NULL) {
-		if (i == 3) {
-			eem_error("number of arguments > 3!\n");
+		if (i >= 2) {
+			eem_error("number of arguments > 2!\n");
 			goto out;
 		}
 
@@ -1865,6 +1868,7 @@ out:
 
 	return ret;
 }
+#endif /* CONFIG_MTK_ENG_BUILD */
 
 #if 0
 void eem_dump_reg_by_det(struct eemsn_det *det, struct seq_file *m)
@@ -2745,7 +2749,9 @@ PROC_FOPS_RW(eem_en);
 PROC_FOPS_RW(eem_sn_en);
 PROC_FOPS_RO(eem_force_sensing);
 PROC_FOPS_RO(eem_pull_data);
+#ifdef CONFIG_MTK_ENG_BUILD
 PROC_FOPS_RW(eem_setmargin);
+#endif /* CONFIG_MTK_ENG_BUILD */
 
 static int create_procfs(void)
 {
@@ -2764,7 +2770,9 @@ static int create_procfs(void)
 		PROC_ENTRY(eem_status),
 		PROC_ENTRY(eem_cur_volt),
 		PROC_ENTRY(eem_offset),
+		#ifdef CONFIG_MTK_ENG_BUILD
 		PROC_ENTRY(eem_setmargin),
+		#endif /* CONFIG_MTK_ENG_BUILD */
 	};
 
 	struct pentry eem_entries[] = {

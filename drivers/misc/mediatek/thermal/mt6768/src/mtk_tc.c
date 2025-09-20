@@ -257,6 +257,11 @@ int tscpu_thermal_clock_on(void)
 	ret = clk_prepare_enable(therm_main);
 	if (ret)
 		tscpu_printk("Cannot enable thermal clock.\n");
+#if !defined(CFG_THERM_NO_AUXADC)
+	ret = clk_prepare_enable(auxadc_main);
+	if (ret)
+		tscpu_printk("Cannot enable auxadc clock.\n");
+#endif
 #endif
 	return ret;
 }
@@ -273,6 +278,9 @@ int tscpu_thermal_clock_off(void)
 	/*Use CCF instead*/
 	tscpu_dprintk("%s CCF\n", __func__);
 	clk_disable_unprepare(therm_main);
+#if !defined(CFG_THERM_NO_AUXADC)
+	clk_disable_unprepare(auxadc_main);
+#endif
 #endif
 	return ret;
 }

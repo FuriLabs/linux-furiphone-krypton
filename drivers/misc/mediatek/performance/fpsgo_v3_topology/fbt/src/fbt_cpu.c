@@ -1819,6 +1819,7 @@ static void fbt_do_jerk_locked(struct render_info *thr, struct fbt_jerk *jerk, i
 
 	mutex_lock(&fbt_mlock);
 
+	rescue_opp_c = clamp(rescue_opp_c, 0, NR_FREQ_CPU - 1);
 	blc_wt = fbt_get_new_base_blc(pld, blc_wt, rescue_enhance_f, rescue_opp_c);
 	if (!blc_wt)
 		goto EXIT;
@@ -2168,6 +2169,7 @@ static void fbt_do_boost(unsigned int blc_wt, int pid,
 	int cluster, i = 0;
 	int min_ceiling = 0;
 
+	bhr_opp = clamp(bhr_opp, 0, NR_FREQ_CPU - 1);
 	pld =
 		kcalloc(cluster_num, sizeof(struct cpu_ctrl_data),
 				GFP_KERNEL);
@@ -2507,7 +2509,7 @@ static int fbt_get_next_jerk(int cur_id)
 
 int update_quota(struct fbt_boost_info *boost_info, int target_fps,
 	unsigned long long t_Q2Q_ns, unsigned long long t_enq_len_ns,
-	unsigned long long t_deq_len_ns)
+	unsigned long long t_deq_len_ns, int cooler_on)
 {
 	int rm_idx, new_idx, first_idx;
 	long long target_time = div64_s64(100000000, target_fps * 100 + gcc_fps_margin);
@@ -2526,7 +2528,7 @@ int update_quota(struct fbt_boost_info *boost_info, int target_fps,
 
 	s32_target_time = target_time;
 
-	if (target_fps != boost_info->quota_fps) {
+	if (target_fps != boost_info->quota_fps && !cooler_on) {
 		boost_info->quota_cur_idx = -1;
 		boost_info->quota_cnt = 0;
 		boost_info->quota = 0;
@@ -2647,7 +2649,7 @@ int update_quota(struct fbt_boost_info *boost_info, int target_fps,
 
 int fbt_eva_gcc(struct fbt_boost_info *boost_info,
 		int target_fps, int fps_margin, unsigned long long t_Q2Q,
-		unsigned int gpu_loading, int pct, int blc_wt, long long t_cpu)
+		unsigned int gpu_loading, int pct, int blc_wt, long long t_cpu, int cooler_on)
 {
 	long long target_time = div64_s64(100000000, target_fps * 100 + gcc_fps_margin);
 	int gcc_down_window, gcc_up_window;
@@ -2678,7 +2680,7 @@ int fbt_eva_gcc(struct fbt_boost_info *boost_info,
 	}
 
 
-	if (boost_info->gcc_target_fps != target_fps) {
+	if (boost_info->gcc_target_fps != target_fps && !cooler_on) {
 		boost_info->gcc_target_fps = target_fps;
 		boost_info->correction = 0;
 		boost_info->gcc_count = 1;
@@ -2830,7 +2832,7 @@ static int fbt_boost_policy(
 	unsigned int fps_margin,
 	struct render_info *thread_info,
 	unsigned long long ts,
-	long aa)
+	long aa, int cooler_on)
 {
 	unsigned int blc_wt = 0U;
 	unsigned long long temp_blc;
@@ -2914,7 +2916,7 @@ static int fbt_boost_policy(
 				target_fps,
 				thread_info->Q2Q_time,
 				thread_info->enqueue_length,
-				thread_info->dequeue_length);
+				thread_info->dequeue_length, cooler_on);
 
 		if (qr_debug)
 			fpsgo_systrace_c_fbt(pid, buffer_id, boost_info->quota, "quota");
@@ -2933,7 +2935,8 @@ static int fbt_boost_policy(
 		gcc_boost = fbt_eva_gcc(
 				boost_info,
 				target_fps, fps_margin,
-				thread_info->Q2Q_time, gpu_loading, pct, blc_wt, t_cpu_cur);
+				thread_info->Q2Q_time, gpu_loading,
+				pct, blc_wt, t_cpu_cur, cooler_on);
 		fpsgo_systrace_c_fbt(pid, buffer_id, boost_info->gcc_count, "gcc_count");
 		fpsgo_systrace_c_fbt(pid, buffer_id, gcc_boost, "gcc_boost");
 		fpsgo_systrace_c_fbt(pid, buffer_id, boost_info->correction, "correction");
@@ -3392,7 +3395,7 @@ static void fbt_frame_start(struct render_info *thr, unsigned long long ts)
 {
 	struct fbt_boost_info *boost;
 	long long runtime;
-	int targettime, targetfps, fps_margin;
+	int targettime, targetfps, fps_margin, cooler_on;
 	unsigned int limited_cap = 0;
 	int blc_wt = 0;
 	long loading = 0L;
@@ -3408,7 +3411,7 @@ static void fbt_frame_start(struct render_info *thr, unsigned long long ts)
 
 	fpsgo_fbt2fstb_query_fps(thr->pid, thr->buffer_id,
 			&targetfps, &targettime, &fps_margin, thr->tgid, thr->mid,
-			&q_c_time, &q_g_time);
+			&q_c_time, &q_g_time, &cooler_on);
 	boost->quantile_cpu_time = q_c_time;
 	boost->quantile_gpu_time = q_g_time;
 	if (!targetfps)
@@ -3431,7 +3434,7 @@ static void fbt_frame_start(struct render_info *thr, unsigned long long ts)
 
 	blc_wt = fbt_boost_policy(runtime,
 			targettime, targetfps, fps_margin,
-			thr, ts, loading);
+			thr, ts, loading, cooler_on);
 
 	limited_cap = fbt_get_max_userlimit_freq();
 	fpsgo_systrace_c_fbt(thr->pid, thr->buffer_id,
@@ -3929,6 +3932,7 @@ void fpsgo_uboost2fbt_uboost(struct render_info *thr)
 	if (!floor)
 		goto leave;
 
+	rescue_opp_c = clamp(rescue_opp_c, 0, NR_FREQ_CPU - 1);
 	headroom = rescue_opp_c;
 	if (thr->boost_info.cur_stage == FPSGO_JERK_SECOND)
 		headroom = rescue_second_copp;

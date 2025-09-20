@@ -10,6 +10,7 @@
 #include <linux/printk.h>
 #include <linux/soc/mediatek/mtk-cmdq.h>
 #include <linux/trace_events.h>
+#include <linux/kref.h>
 
 #include "mdp_def.h"
 
@@ -719,6 +720,8 @@ struct cmdqRecStruct {
 	enum cmdq_thread_dispatch thd_dispatch;
 	/* work item when auto release is used */
 	struct work_struct auto_release_work;
+	bool auto_released;
+	struct kref use_cnt;
 	u32 prev_addr;
 	u32 prev_subsys;
 
@@ -963,6 +966,7 @@ s32 cmdq_core_suspend_hw_thread(s32 thread);
 u64 cmdq_core_get_gpr64(const enum cmdq_gpr_reg regID);
 void cmdq_core_set_gpr64(const enum cmdq_gpr_reg regID, const u64 value);
 
+void cmdq_remove_handle_from_handle_active(struct cmdqRecStruct *handle);
 void cmdq_core_release_handle_by_file_node(void *file_node);
 s32 cmdq_core_suspend(void);
 s32 cmdq_core_resume(void);

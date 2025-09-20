@@ -43,15 +43,19 @@ int mt_cpufreq_set_by_wfi_load_cluster(unsigned int cluster_id,
 
 #if defined(CONFIG_MACH_MT6893) || defined(CONFIG_MACH_MT6877) \
 	|| defined(CONFIG_MACH_MT6781)
-	for_each_cpu(cpu, policy->cpus)
-		trace_cpu_frequency(freq, cpu);
+	if(policy != NULL) {
+		for_each_cpu(cpu, policy->cpus)
+			trace_cpu_frequency(freq, cpu);
+	}
 #endif
 	cpuhvfs_set_dvfs(id, freq);
 #if defined(CONFIG_MACH_MT6893) || defined(CONFIG_MACH_MT6877) \
 	|| defined(CONFIG_MACH_MT6781)
-	policy->cur = freq;
+	if(policy != NULL)
+		policy->cur = freq;
 #endif
-	arch_set_freq_scale(p->mt_policy->cpus, freq, p->mt_policy->cpuinfo.max_freq);
+	if( p != NULL && p->mt_policy != NULL)
+		arch_set_freq_scale(p->mt_policy->cpus, freq, p->mt_policy->cpuinfo.max_freq);
 #endif
 	return 0;
 }
@@ -179,7 +183,7 @@ EXPORT_SYMBOL(mt_cpufreq_update_volt);
 void mt_cpufreq_update_cci_map_tbl(unsigned int idx_1, unsigned int idx_2,
 	unsigned char result, unsigned int mode, unsigned int use_id)
 {
-#if defined(CONFIG_HYBRID_CPU_DVFS) && defined(CCI_MAP_TBL_SUPPORT)
+#if defined(CONFIG_HYBRID_CPU_DVFS) && defined(CCI_MAP_TBL_SUPPORT) && defined(CONFIG_MTK_ENG_BUILD)
 	cpuhvfs_update_cci_map_tbl(idx_1, idx_2, result, mode, use_id);
 #endif
 }

@@ -1522,7 +1522,7 @@ int tc1, int tc2, int passive_delay, int polling_delay)
 
 	struct thermal_zone_device *tz = NULL;
 	struct mtk_thermal_tz_data *tzdata = NULL;
-	int tzidx;
+	int tzidx = 0;
 
 	THRML_LOG("%s tz: %s trips: %d passive_delay: %d polling_delay: %d\n",
 			__func__, type, trips, passive_delay, polling_delay);
@@ -1533,7 +1533,7 @@ int tc1, int tc2, int passive_delay, int polling_delay)
 	tzdata = kzalloc(sizeof(struct mtk_thermal_tz_data), GFP_KERNEL);
 	if (!tzdata) {
 		THRML_ERROR_LOG("%s tzdata kzalloc fail.\n", __func__);
-		return ERR_PTR(-ENOMEM);
+		goto error_tz;
 	}
 
 	mutex_init(&tzdata->ma_lock);
@@ -1557,6 +1557,11 @@ int tc1, int tc2, int passive_delay, int polling_delay)
 			&mtk_thermal_wrapper_dev_ops, /* /< use wrapper ops. */
 			NULL,	/* /< tzp */
 			passive_delay, polling_delay);
+
+	if (IS_ERR(tz)) {
+		THRML_ERROR_LOG("%s %s fail, err=%d\n", __func__, type, PTR_ERR(tz));
+		goto error_tz;
+	}
 
 	tzidx = mtk_thermal_get_tz_idx(type);
 
@@ -1591,6 +1596,16 @@ int tc1, int tc2, int passive_delay, int polling_delay)
 	/* This interface function adds a new thermal zone device */
 	return tz;
 
+error_tz:
+	/* free memory */
+	if (tzdata) {
+		mutex_lock(&tzdata->ma_lock);
+		tzdata->ops = NULL;
+		mutex_unlock(&tzdata->ma_lock);
+		mutex_destroy(&tzdata->ma_lock);
+		kfree(tzdata);
+	}
+	return NULL;
 }
 EXPORT_SYMBOL(mtk_thermal_zone_device_register_wrapper);
 
@@ -1599,7 +1614,10 @@ void mtk_thermal_zone_device_unregister_wrapper(struct thermal_zone_device *tz)
 {
 	char type[32] = { 0 };
 	struct mtk_thermal_tz_data *tzdata = NULL;
-	int tzidx;
+	int tzidx = 0;
+
+	if (!tz)
+		return;
 
 	strncpy(type, tz->type, 20);
 	tzdata = (struct mtk_thermal_tz_data *)tz->devdata;

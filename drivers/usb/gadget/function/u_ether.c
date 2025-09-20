@@ -722,11 +722,12 @@ static netdev_tx_t eth_start_xmit(struct sk_buff *skb,
 	static unsigned long	okCnt, busyCnt;
 	static DEFINE_RATELIMIT_STATE(ratelimit1, 1 * HZ, 2);
 	static DEFINE_RATELIMIT_STATE(ratelimit2, 1 * HZ, 2);
+	struct sk_buff *skb2 = NULL;
+	int offset = 0;
 
 	if (!skb)
 		return -EINVAL;
 
-	pinfo = skb_shinfo(skb);
 
 	spin_lock_irqsave(&dev->lock, flags);
 	if (dev->port_usb) {
@@ -773,6 +774,7 @@ static netdev_tx_t eth_start_xmit(struct sk_buff *skb,
 			dev->net->stats.tx_dropped++;
 		return NETDEV_TX_OK;
 	}
+	pinfo = skb_shinfo(skb);
 	spin_lock_irqsave(&dev->req_lock, flags);
 	if (multi_pkt_xfer && !dev->tx_req_bufsize) {
 		retval = alloc_tx_buffer(dev);
@@ -903,9 +905,35 @@ static netdev_tx_t eth_start_xmit(struct sk_buff *skb,
 		spin_unlock_irqrestore(&dev->req_lock, flags);
 
 	} else {
+		frag_cnt = 0;
+		if (net->features & NETIF_F_GSO)
+			frag_cnt = pinfo->nr_frags;
 		length = skb->len;
-		req->buf = skb->data;
-		req->context = skb;
+		if (frag_cnt == 0) {
+			req->buf = skb->data;
+			req->context = skb;
+		} else {
+			skb2 = alloc_skb(skb->len + NET_IP_ALIGN, GFP_KERNEL);
+			if (skb2 == NULL) {
+				dev_kfree_skb_any(skb);
+				return -ENOMEM;
+			}
+			skb_put(skb2, skb->len);
+			memcpy(skb2->data, skb->data, skb->len - skb->data_len);
+			offset += skb->len - skb->data_len;
+			for (frag_idx = 0; frag_idx < frag_cnt; frag_idx++) {
+				frag = pinfo->frags + frag_idx;
+				frag_data_len = skb_frag_size(frag);
+				frag_data_addr = skb_frag_address(frag);
+
+				memcpy(skb2->data + offset, frag_data_addr,
+								frag_data_len);
+				offset += frag_data_len;
+			}
+			dev_kfree_skb_any(skb);
+			req->buf = skb2->data;
+			req->context = skb2;
+		}
 	}
 
 
@@ -949,7 +977,10 @@ static netdev_tx_t eth_start_xmit(struct sk_buff *skb,
 
 	if (retval) {
 		if (!multi_pkt_xfer)
-			dev_kfree_skb_any(skb);
+			if (skb2 == NULL)
+				dev_kfree_skb_any(skb);
+			else
+				dev_kfree_skb_any(skb2);
 		else
 			req->length = 0;
 

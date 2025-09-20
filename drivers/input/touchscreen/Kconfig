@@ -12,6 +12,7 @@ menuconfig INPUT_TOUCHSCREEN
 source "drivers/input/touchscreen/mediatek/Kconfig"
 
 source "drivers/input/touchscreen/NT36672C/Kconfig"
+source "drivers/input/touchscreen/NT36532/Kconfig"
 
 if INPUT_TOUCHSCREEN
 
@@ -1325,7 +1326,28 @@ config TOUCHSCREEN_MTK_GT1151
           To compile this dirver as a module, choose M here: the
           module will be called.
 
+config TOUCHSCREEN_JADARD
+	tristate "JADARD touchscreen for Mediatek package"
+	default n
+	help
+	  Say y here if you have JADARD touch panel.
+	  If unsure, say N.
+
 source "drivers/input/touchscreen/GT1151/Kconfig"
+source "drivers/input/touchscreen/focaltech_touch_ft8057s/Kconfig"
+source "drivers/input/touchscreen/chipone-tddi/Kconfig"
+source "drivers/input/touchscreen/jdchipset/Kconfig"
+
+config TOUCHSCREEN_MTK_NT36xxx_no_flash_spi
+        bool "NT36xxx for Mediatek package"
+        default n
+        help
+          Say Y here if you have NT36xxx touch panel.
+
+          If unsure, say N.
+
+          To compile this dirver as a module, choose M here: the
+          module will be called.
 
 config TOUCHSCREEN_MTK_FOCALTECH_HD
 	bool "Focaltech Touchscreen"

@@ -170,6 +170,7 @@ int pdc_setup(int idx)
 		if (pd->cap.max_mv[idx] - oldmivr / 1000 >
 			PD_VBUS_IR_DROP_THRESHOLD)
 			force_update = true;
+		pdc_get_idx(idx, &pd->pd_boost_idx, &pd->pd_buck_idx);
 	}
 
 	if (pd->pd_idx != idx || force_update) {

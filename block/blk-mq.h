@@ -190,6 +190,7 @@ static inline void blk_mq_put_driver_tag_hctx(struct blk_mq_hw_ctx *hctx,
 	if (rq->tag == -1 || rq->internal_tag == -1)
 		return;
 
+	hctx->tags->rqs[rq->tag] = NULL;
 	__blk_mq_put_driver_tag(hctx, rq);
 }
 
@@ -201,6 +202,7 @@ static inline void blk_mq_put_driver_tag(struct request *rq)
 		return;
 
 	hctx = blk_mq_map_queue(rq->q, rq->mq_ctx->cpu);
+	hctx->tags->rqs[rq->tag] = NULL;
 	__blk_mq_put_driver_tag(hctx, rq);
 }
 

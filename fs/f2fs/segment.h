@@ -7,6 +7,9 @@
  */
 #include <linux/blkdev.h>
 #include <linux/backing-dev.h>
+#if defined(CONFIG_MACH_MT6739) || defined(CONFIG_MACH_MT6885)
+#define NR_GC_CHECKPOINT_SECS (3)	/* data/node/dentry sections */
+#endif
 
 /* constant macro */
 #define NULL_SEGNO			((unsigned int)(~0))
@@ -531,6 +534,84 @@ static inline int reserved_sections(struct f2fs_sb_info *sbi)
 	return GET_SEC_FROM_SEG(sbi, (unsigned int)reserved_segments(sbi));
 }
 
+#if defined(CONFIG_MACH_MT6739) || defined(CONFIG_MACH_MT6885)
+static inline bool has_curseg_enough_space(struct f2fs_sb_info *sbi,
+			unsigned int node_blocks, unsigned int dent_blocks)
+{
+
+	unsigned int segno, left_blocks;
+	int i;
+
+	/* check current node segment */
+	for (i = CURSEG_HOT_NODE; i <= CURSEG_COLD_NODE; i++) {
+		segno = CURSEG_I(sbi, i)->segno;
+		left_blocks = sbi->blocks_per_seg -
+			get_seg_entry(sbi, segno)->ckpt_valid_blocks;
+
+		if (node_blocks > left_blocks)
+			return false;
+	}
+
+	/* check current data segment */
+	segno = CURSEG_I(sbi, CURSEG_HOT_DATA)->segno;
+	left_blocks = sbi->blocks_per_seg -
+			get_seg_entry(sbi, segno)->ckpt_valid_blocks;
+	if (dent_blocks > left_blocks)
+		return false;
+	return true;
+}
+
+/*
+ * calculate needed sections for dirty node/dentry
+ * and call has_curseg_enough_space
+ */
+static inline void __get_secs_required(struct f2fs_sb_info *sbi,
+		unsigned int *lower_p, unsigned int *upper_p, bool *curseg_p)
+{
+	unsigned int total_node_blocks = get_pages(sbi, F2FS_DIRTY_NODES) +
+					get_pages(sbi, F2FS_DIRTY_DENTS) +
+					get_pages(sbi, F2FS_DIRTY_IMETA);
+	unsigned int total_dent_blocks = get_pages(sbi, F2FS_DIRTY_DENTS);
+	unsigned int node_secs = total_node_blocks / BLKS_PER_SEC(sbi);
+	unsigned int dent_secs = total_dent_blocks / BLKS_PER_SEC(sbi);
+	unsigned int node_blocks = total_node_blocks % BLKS_PER_SEC(sbi);
+	unsigned int dent_blocks = total_dent_blocks % BLKS_PER_SEC(sbi);
+
+	if (lower_p)
+		*lower_p = node_secs + dent_secs;
+	if (upper_p)
+		*upper_p = node_secs + dent_secs +
+			(node_blocks ? 1 : 0) + (dent_blocks ? 1 : 0);
+	if (curseg_p)
+		*curseg_p = has_curseg_enough_space(sbi,
+				node_blocks, dent_blocks);
+}
+
+static inline bool has_not_enough_free_secs(struct f2fs_sb_info *sbi,
+					int freed, int needed)
+{
+	unsigned int free_secs, lower_secs, upper_secs;
+	bool curseg_space;
+
+	if (unlikely(is_sbi_flag_set(sbi, SBI_POR_DOING)))
+		return false;
+
+	__get_secs_required(sbi, &lower_secs, &upper_secs, &curseg_space);
+
+	free_secs = free_sections(sbi) + freed;
+	lower_secs += needed + reserved_sections(sbi);
+	upper_secs += needed + reserved_sections(sbi);
+	if (free_sections(sbi) <= NR_GC_CHECKPOINT_SECS) {
+		pr_info("%s: free sections[0x%x] is less than %d. caller: %pS\n",
+			__func__, free_sections(sbi), NR_GC_CHECKPOINT_SECS, __builtin_return_address(0));
+	}
+	if (free_secs > upper_secs)
+		return false;
+	else if (free_secs <= lower_secs)
+		return true;
+	return !curseg_space;
+}
+#else
 static inline bool has_curseg_enough_space(struct f2fs_sb_info *sbi)
 {
 	unsigned int node_blocks = get_pages(sbi, F2FS_DIRTY_NODES) +
@@ -575,6 +656,7 @@ static inline bool has_not_enough_free_secs(struct f2fs_sb_info *sbi,
 		(node_secs + 2 * dent_secs + imeta_secs +
 		reserved_sections(sbi) + needed);
 }
+#endif /* CONFIG_MACH_MT6739 || CONFIG_MACH_MT6885 */
 
 static inline bool f2fs_is_checkpoint_ready(struct f2fs_sb_info *sbi)
 {
@@ -648,9 +730,10 @@ static inline unsigned short curseg_blkoff(struct f2fs_sb_info *sbi, int type)
 	return curseg->next_blkoff;
 }
 
-static inline void check_seg_range(struct f2fs_sb_info *sbi, unsigned int segno)
+static inline bool valid_main_segno(struct f2fs_sb_info *sbi,
+		unsigned int segno)
 {
-	f2fs_bug_on(sbi, segno > TOTAL_SEGS(sbi) - 1);
+	return segno <= (MAIN_SEGS(sbi) - 1);
 }
 
 static inline void verify_fio_blkaddr(struct f2fs_io_info *fio)
@@ -698,7 +781,7 @@ static inline int check_block_count(struct f2fs_sb_info *sbi,
 
 	/* check segment usage, and check boundary of a given segment number */
 	if (unlikely(GET_SIT_VBLOCKS(raw_sit) > sbi->blocks_per_seg
-					|| segno > TOTAL_SEGS(sbi) - 1)) {
+					|| !valid_main_segno(sbi, segno))) {
 		f2fs_err(sbi, "Wrong valid blocks %d or segno %u",
 			 GET_SIT_VBLOCKS(raw_sit), segno);
 		set_sbi_flag(sbi, SBI_NEED_FSCK);
@@ -714,7 +797,7 @@ static inline pgoff_t current_sit_addr(struct f2fs_sb_info *sbi,
 	unsigned int offset = SIT_BLOCK_OFFSET(start);
 	block_t blk_addr = sit_i->sit_base_addr + offset;
 
-	check_seg_range(sbi, start);
+	f2fs_bug_on(sbi, !valid_main_segno(sbi, start));
 
 #ifdef CONFIG_F2FS_CHECK_FS
 	if (f2fs_test_bit(offset, sit_i->sit_bitmap) !=

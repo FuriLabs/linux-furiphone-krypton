@@ -131,11 +131,11 @@ static u32 PMQoS_BW_value;
 #endif
 
 // #define log_inf(format, args...) pr_debug(MyTag format, ##args)
-#define log_inf(format, args...) pr_info(MyTag format, ##args)
-#define log_notice(format, args...) pr_notice(MyTag format, ##args)
-#define log_wrn(format, args...) pr_info(MyTag format, ##args)
-#define log_err(format, args...) pr_info(MyTag format, ##args)
-#define log_ast(format, args...) pr_info(MyTag format, ##args)
+#define log_inf(format, args...) pr_info(MyTag "[%s] " format, __func__, ##args)
+#define log_notice(format, args...) pr_notice(MyTag "[%s] " format, __func__, ##args)
+#define log_wrn(format, args...) pr_info(MyTag "[%s] " format, __func__, ##args)
+#define log_err(format, args...) pr_info(MyTag "[%s] " format, __func__, ##args)
+#define log_ast(format, args...) pr_info(MyTag "[%s] " format, __func__, ##args)
 
 /*******************************************************************
  *
@@ -264,6 +264,9 @@ static int g_bWaitLock;
 static unsigned int g_log_def_constraint;
 #endif
 
+#ifdef _imgo_fbc_wrkarnd_
+static unsigned int shift_cnt;
+#endif
 #define ISP_ADDR (gISPSYS_Reg[ISP_BASE_ADDR])
 #define ISP_IMGSYS_BASE (gISPSYS_Reg[ISP_IMGSYS_CONFIG_BASE_ADDR])
 #define ISP_ADDR_CAMINF (gISPSYS_Reg[ISP_IMGSYS_CONFIG_BASE_ADDR])
@@ -282,7 +285,10 @@ static unsigned int g_log_def_constraint;
 #endif
 
 #define ISP_REG_ADDR_EN1 (ISP_ADDR + 0x4)
+#define ISP_REG_ADDR_DMA_EN (ISP_ADDR + 0x8) //CAM_REG_CTL_EN_P1_DMA
+#define ISP_REG_ADDR_DMA_EN_D (ISP_ADDR + 0x14) //CAM_REG_CTL_EN_P1_DMA_D
 #define ISP_REG_CTL_SEL_GLOBAL (ISP_ADDR + 0x20)
+#define ISP_REG_ADDR_INT_P1_EN (ISP_ADDR + 0x48) //CAM_REG_CTL_INT_P1_EN
 #define ISP_REG_ADDR_INT_P1_ST (ISP_ADDR + 0x4C)
 #define ISP_REG_ADDR_INT_P1_ST2 (ISP_ADDR + 0x54)
 #define ISP_REG_ADDR_INT_P1_ST_D (ISP_ADDR + 0x5C)
@@ -306,6 +312,9 @@ static unsigned int g_log_def_constraint;
 #define ISP_REG_ADDR_TG2_INTER_ST (ISP_ADDR + 0x244C)
 #define ISP_REG_ADDR_IMGO_BASE_ADDR (ISP_ADDR + 0x3300)
 #define ISP_REG_ADDR_RRZO_BASE_ADDR (ISP_ADDR + 0x3320)
+#define ISP_REG_ADDR_AAO_BASE_ADDR (ISP_ADDR + 0x3388)
+#define ISP_REG_ADDR_AAO_XSIZE (ISP_ADDR + 0x3390)
+#define ISP_REG_ADDR_AAO_YSIZE (ISP_ADDR + 0x3394)
 #define ISP_REG_ADDR_DMA_DCM_STATUS (ISP_ADDR + 0x1A8)
 
 #define ISP_REG_ADDR_DMA_REQ_STATUS (ISP_ADDR + 0x1C0)
@@ -1551,7 +1560,7 @@ bool ISP_chkModuleSetting(void)
 		unsigned int af_sat_th0, af_sat_th1, af_sat_th2, af_sat_th3;
 		unsigned int TG_W;
 		unsigned int TG_H;
-		unsigned int AF_EN, AFO_D_EN, AFO_EN;
+		unsigned int AF_EN, AFO_D_EN, AFO_EN, EIS_EN;
 		unsigned int SGG1_EN, SGG5_EN;
 		unsigned int cam_ctrl_en_p1_dma_d; /*4014*/
 		unsigned int cam_ctrl_en_p1_dma; /*4014*/
@@ -1698,6 +1707,7 @@ bool ISP_chkModuleSetting(void)
 		afo_ysize = ISP_RD32(ISP_ADDR + 0x348C);
 
 		AF_EN = (cam_ctrl_en_p1 >> 16) & 0x1;
+		EIS_EN = (cam_ctrl_en_p1 >> 21) & 0x01;
 		AFO_D_EN = (cam_ctrl_en_p1_dma_d >> 3) & 0x1;
 		AFO_EN = (cam_ctrl_en_p1_dma >> 8) & 0x1;
 		SGG1_EN = (cam_ctrl_en_p1 >> 15) & 0x1;
@@ -2010,6 +2020,9 @@ AF_EXIT:
 		}
 
 
+
+		if (EIS_EN == 0)
+			goto EIS_EXIT;
 /*Check EIS Setting */
 
 		// unsigned int rrz_out_width;
@@ -2217,6 +2230,8 @@ AF_EXIT:
 			pr_info("grab_width:%d, grab_height:%d, bmx_width:%d, bmx_height:%d",
 				grab_width, grab_height, bmx_width, bmx_height);
 		}
+EIS_EXIT:
+		log_inf("EIS_%d check end\n", EIS_EN);
 	}
 #if (ISP_RAW_D_SUPPORT == 1)
 	if (cam_tg2_vf_con & 0x01) {
@@ -3013,13 +3028,15 @@ static signed int ISP_DumpReg(void)
 
 static inline void Prepare_Enable_ccf_clock(void)
 {
-	int ret;
+	int ret = 0;
 	/* must keep this clk open order: CG_SCP_SYS_DIS-> CG_SCP_SYS_CAM
 	 * enable through smi API : CG_IMG_LARB2_SMI, CG_MM_SMI_COMMON
 	 */
 	// before smi drv ready
 #ifndef EP_MARK_SMI
-	smi_bus_prepare_enable(SMI_LARB2, ISP_DEV_NAME);
+	ret = smi_bus_prepare_enable(SMI_LARB2, ISP_DEV_NAME);
+	if (ret != 0)
+		log_err("smi_bus_prepare_enable fail!\n");
 #endif
 	ret = clk_prepare_enable(isp_clk.CG_SCP_SYS_CAM);
 	if (ret)
@@ -3056,6 +3073,7 @@ static inline void Prepare_Enable_ccf_clock(void)
 
 static inline void Disable_Unprepare_ccf_clock(void)
 {
+	int ret = 0;
 	/* must keep this clk close order: CG_SCP_SYS_CAM ->
 	 * CG_SCP_SYS_DIS
 	 */
@@ -3080,7 +3098,9 @@ static inline void Disable_Unprepare_ccf_clock(void)
 	// clk_disable_unprepare(isp_clk.CG_SCP_SYS_DIS);
 
 #ifndef EP_MARK_SMI
-	smi_bus_disable_unprepare(SMI_LARB2, ISP_DEV_NAME);
+	ret = smi_bus_disable_unprepare(SMI_LARB2, ISP_DEV_NAME);
+	if (ret != 0)
+		log_err("smi_bus_disable_unprepare fail!\n");
 #endif
 }
 
@@ -3090,12 +3110,7 @@ static inline void Disable_Unprepare_ccf_clock(void)
  ******************************************************************************/
 static void ISP_EnableClock(bool En)
 {
-/*
- *  if (G_u4EnableClockCount ==  1) {
- *  log_dbg("- E. En: %d. G_u4EnableClockCount:%d.", En, G_u4EnableClockCount);
- *  }
- */
-	log_inf("- E. En: %d. G_u4EnableClockCount:%d.", En, G_u4EnableClockCount);
+	log_dbg("- E. En: %d. G_u4EnableClockCount:%d.", En, G_u4EnableClockCount);
 #if defined(EP_NO_CLKMGR)
 	unsigned int setReg;
 #endif
@@ -3188,7 +3203,8 @@ static void ISP_EnableClock(bool En)
 		Disable_Unprepare_ccf_clock();
 #endif
 	}
-	log_inf("- X. En: %d. G_u4EnableClockCount:%d.", En, G_u4EnableClockCount);
+	if (G_u4EnableClockCount == 0 || G_u4EnableClockCount == 1)
+		log_inf("- X. En: %d. G_u4EnableClockCount:%d.", En, G_u4EnableClockCount);
 }
 
 /******************************************************************************
@@ -3205,7 +3221,7 @@ static inline void ISP_Reset(signed int rst_path)
 	/*      */
 	log_dbg("- E.");
 
-	log_dbg("isp gate clk(0x%x),rst_path(%d)", ISP_RD32(ISP_ADDR_CAMINF),
+	log_inf("isp gate clk(0x%x),rst_path(%d)", ISP_RD32(ISP_ADDR_CAMINF),
 		rst_path);
 
 	if (rst_path == ISP_REG_SW_CTL_RST_CAM_P1) {
@@ -4835,7 +4851,7 @@ static unsigned int m_LastMNum[_rt_dma_max_] = {0}; /* imgo/rrzo */
 static long ISP_Buf_CTRL_FUNC(unsigned long Param)
 {
 	signed int Ret = 0;
-	unsigned int rt_dma;
+	unsigned int rt_dma, target_dma;
 	unsigned int reg_val = 0;
 	unsigned int reg_val2 = 0;
 	unsigned int camsv_reg_cal[2] = {0, 0};
@@ -5344,6 +5360,9 @@ for (i = 0; i < ISP_RT_BUF_SIZE; i++) {
 			}
 }
 		if (i == ISP_RT_BUF_SIZE) {
+			spin_unlock_irqrestore(
+				&(IspInfo.SpinLockIrq
+					[irqT_Lock]),flags);
 			for (x = 0; x < ISP_RT_BUF_SIZE; x++)
 				log_dbg("[rtbc]dma(%d),idx(%d) PA(0x%x) VA(0x%llx)",
 					rt_dma,
@@ -5610,10 +5629,23 @@ for (i = 0; i < ISP_RT_BUF_SIZE; i++) {
 			}
 		}
 		if (_bypass == MFALSE) {
-			if ((p1_fbc[rt_dma].Bits.FB_NUM ==
-			     p1_fbc[rt_dma].Bits.FBC_CNT) ||
-			    ((p1_fbc[rt_dma].Bits.FB_NUM - 1) ==
-			     p1_fbc[rt_dma].Bits.FBC_CNT)) {
+			#ifdef _imgo_fbc_wrkarnd_
+			//for main cam
+			if (_openedDma == 2 && ch_imgo == _imgo_ && ch_rrzo == _rrzo_){
+				if(p1_fbc[_imgo_].Bits.FBC_CNT > p1_fbc[_rrzo_].Bits.FBC_CNT)
+					target_dma = _imgo_;
+				else
+					target_dma = _rrzo_;
+			} else{
+				target_dma = rt_dma;
+			}
+			#else
+			target_dma = rt_dma;
+			#endif
+			if ((p1_fbc[target_dma].Bits.FB_NUM ==
+			     p1_fbc[target_dma].Bits.FBC_CNT) ||
+			    ((p1_fbc[target_dma].Bits.FB_NUM - 1) ==
+			     p1_fbc[target_dma].Bits.FBC_CNT)) {
 	/* write to phy register */
 	/* log_inf("[rtbc_%d][ENQUE]
 	 * write2Phy
@@ -5864,6 +5896,23 @@ LOG_BYPASS:
 						 .read_idx + 1) %
 					pstRTBuf->ring_buf[rt_dma]
 						.total_count;
+#ifdef _imgo_fbc_wrkarnd_
+				/* 2. for case "shift_cnt == 2", add one more read_idx,
+				 * to "skip" the abnormal frame, which can be told from shift_cnt.
+				 * The meaning of shift_cnt==2 is that ringbuffer has been checked
+				 * twice in ISP_DONE_Buf_Time, to make sure HW idx(which is WCNT)
+				 * and SW idx(.start) are matched.
+				 * Otherwise, img header err may be observed accordinglly.
+				 */
+				if (shift_cnt == 2){
+					//add by 1
+					pstRTBuf->ring_buf[rt_dma].read_idx =
+							(pstRTBuf->ring_buf[rt_dma]
+								 .read_idx + 1) %
+							pstRTBuf->ring_buf[rt_dma]
+								.total_count;
+				}
+#endif
 				if (deque_buf->count != P1_DEQUE_CNT) {
 					log_err("support only deque	1 buf at 1 time\n");
 					deque_buf->count = P1_DEQUE_CNT;
@@ -7480,6 +7529,24 @@ static signed int ISP_DONE_Buf_Time(enum eISPIrq irqT, union CQ_RTBC_FBC *pFbc,
 	/* dynamic dma port     ctrl */
 	if (pstRTBuf->ring_buf[ch_imgo].active &&
 		pstRTBuf->ring_buf[ch_rrzo].active) {
+#ifdef _imgo_fbc_wrkarnd_
+		// 1. take larger fbc_cnt as ref
+		if (imgo_fbc.Bits.FBC_CNT >
+			rrzo_fbc.Bits.FBC_CNT) {
+			_dma_cur_fbc = imgo_fbc;
+			_working_dma = ch_imgo;
+		} else {
+			_dma_cur_fbc = rrzo_fbc;
+			_working_dma = ch_rrzo;
+		}
+
+		if (rrzo_fbc.Bits.WCNT != imgo_fbc.Bits.WCNT)
+			IRQ_LOG_KEEPER(
+				irqT, m_CurrentPPB, _LOG_INF,
+				"[rtbc_%d]:wcnt mismatch(%d,%d)!\n", irqT,
+				imgo_fbc.Bits.WCNT,
+				rrzo_fbc.Bits.WCNT);
+#else
 		/* if P1_DON ISR is coming at */
 		/* output 2 imgo frames, */
 		/* but 1 rrzo frame */
@@ -7494,6 +7561,7 @@ static signed int ISP_DONE_Buf_Time(enum eISPIrq irqT, union CQ_RTBC_FBC *pFbc,
 			_dma_cur_fbc = imgo_fbc;
 			_working_dma = ch_imgo;
 		}
+#endif
 	} else if (pstRTBuf->ring_buf[ch_imgo].active) {
 		_dma_cur_fbc = imgo_fbc;
 		_working_dma = ch_imgo;
@@ -7539,7 +7607,10 @@ static signed int ISP_DONE_Buf_Time(enum eISPIrq irqT, union CQ_RTBC_FBC *pFbc,
 		   */
 	}
 #endif
-
+#ifdef _imgo_fbc_wrkarnd_
+	//reset shift_cnt
+	shift_cnt = 0;
+#endif
 #ifdef _rtbc_buf_que_2_0_
 	for (k = 0; k < shiftT + 1; k++)
 #endif
@@ -7596,6 +7667,10 @@ static signed int ISP_DONE_Buf_Time(enum eISPIrq irqT, union CQ_RTBC_FBC *pFbc,
 						pstRTBuf->ring_buf[i_dma]
 							.total_count;
 					pstRTBuf->ring_buf[i_dma].empty_count--;
+#ifdef _imgo_fbc_wrkarnd_
+					if (i == 0)
+						shift_cnt++;
+#endif
 					/*      */
 					if (g1stSof[irqT] == MTRUE)
 						log_err("Done&&Sof receive at the same time in 1st f(%d)\n",
@@ -10585,6 +10660,20 @@ static __tcmfunc irqreturn_t ISP_Irq_CAM(signed int Irq, void *DeviceId)
 
 		G_PM_QOS[ISP_PASS1_PATH_TYPE_RAW].sof_flag = MTRUE;
 
+#ifdef _imgo_fbc_wrkarnd_
+		/* work around for abnormal behavior: IMGO(WCNT+0) or (WCNT+2)
+		 * take larger fbc_cnt as ref to make sure the one with larger FBC_CNT
+		 * will satisfy "lost p1 don" condition.
+		 * p1_fbc[0] -> IMGO_FBC, p1_fbc[1] -> RRZO_FBC
+		 */
+		if (p1_fbc[0].Bits.FBC_CNT > p1_fbc[1].Bits.FBC_CNT){
+			_dmaport = 0;
+			rt_dma = _imgo_;
+		} else {
+			_dmaport = 1;
+			rt_dma = _rrzo_;
+		}
+#else
 		if (pstRTBuf->ring_buf[_imgo_].active) {
 			_dmaport = 0;
 			rt_dma = _imgo_;
@@ -10594,6 +10683,7 @@ static __tcmfunc irqreturn_t ISP_Irq_CAM(signed int Irq, void *DeviceId)
 		} else {
 			log_err("no main dma port opened at	SOF\n");
 		}
+#endif
 		/* chk this     frame have EOF or not, dynimic dma port chk */
 		if (p1_fbc[_dmaport].Bits.FB_NUM ==
 		    p1_fbc[_dmaport].Bits.FBC_CNT) {
@@ -10716,28 +10806,40 @@ static __tcmfunc irqreturn_t ISP_Irq_CAM(signed int Irq, void *DeviceId)
 			_fbc_chk[1].Reg_val = ISP_RD32(ISP_REG_ADDR_RRZO_FBC);
 			IRQ_LOG_KEEPER(
 				_IRQ, m_CurrentPPB, _LOG_INF,
-				"P1_SOF_%d_%d(0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x, D_%d(%d/%d)_Filled(%d_%d_%d),D_%d(%d/%d)_Filled(%d_%d_%d) )\n",
+				"P1_SOF_%d_%d(0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,0x%x,AAO(0x%x,0x%x,0x%x),D_%d(%d/%d)_Filled(%d_%d_%d)_PA(0x%x_0x%x_0x%x),D_%d(%d/%d)_Filled(%d_%d_%d)_PA(0x%x_0x%x_0x%x))\n",
 				sof_count[_PASS1], cur_v_cnt,
 				(unsigned int)(_fbc_chk[0].Reg_val),
 				(unsigned int)(_fbc_chk[1].Reg_val),
+				ISP_RD32(ISP_REG_ADDR_DMA_EN),
+				ISP_RD32(ISP_REG_ADDR_DMA_EN_D),
+				ISP_RD32(ISP_REG_ADDR_INT_P1_EN),
 				ISP_RD32(ISP_REG_ADDR_IMGO_BASE_ADDR),
 				ISP_RD32(ISP_REG_ADDR_RRZO_BASE_ADDR),
 				ISP_RD32(ISP_INNER_REG_ADDR_IMGO_YSIZE),
 				ISP_RD32(ISP_INNER_REG_ADDR_RRZO_YSIZE),
 				ISP_RD32(ISP_REG_ADDR_TG_MAGIC_0),
 				ISP_RD32(ISP_REG_ADDR_DMA_DCM_STATUS),
+				ISP_RD32(ISP_REG_ADDR_AAO_BASE_ADDR),
+				ISP_RD32(ISP_REG_ADDR_AAO_XSIZE),
+				ISP_RD32(ISP_REG_ADDR_AAO_YSIZE),
 				_imgo_,
 				pstRTBuf->ring_buf[_imgo_].start,
 				pstRTBuf->ring_buf[_imgo_].read_idx,
 				pstRTBuf->ring_buf[_imgo_].data[0].bFilled,
 				pstRTBuf->ring_buf[_imgo_].data[1].bFilled,
 				pstRTBuf->ring_buf[_imgo_].data[2].bFilled,
+				pstRTBuf->ring_buf[_imgo_].data[0].base_pAddr,
+				pstRTBuf->ring_buf[_imgo_].data[1].base_pAddr,
+				pstRTBuf->ring_buf[_imgo_].data[2].base_pAddr,
 				_rrzo_,
 				pstRTBuf->ring_buf[_rrzo_].start,
 				pstRTBuf->ring_buf[_rrzo_].read_idx,
 				pstRTBuf->ring_buf[_rrzo_].data[0].bFilled,
 				pstRTBuf->ring_buf[_rrzo_].data[1].bFilled,
-				pstRTBuf->ring_buf[_rrzo_].data[2].bFilled);
+				pstRTBuf->ring_buf[_rrzo_].data[2].bFilled,
+				pstRTBuf->ring_buf[_rrzo_].data[0].base_pAddr,
+				pstRTBuf->ring_buf[_rrzo_].data[1].base_pAddr,
+				pstRTBuf->ring_buf[_rrzo_].data[2].base_pAddr);
 			/* 1 port is enough     */
 			if (pstRTBuf->ring_buf[_imgo_].active) {
 				if (_fbc_chk[0].Bits.WCNT !=
@@ -11295,7 +11397,6 @@ static long ISP_ioctl(struct file *pFile, unsigned int Cmd, unsigned long Param)
 	struct ISP_ED_BUFQUE_STRUCT edQueBuf;
 	unsigned int regScenInfo_value = 0xa5a5a5a5;
 	signed int burstQNum;
-	unsigned int wakelock_ctrl;
 	unsigned long flags;
 	/* old: unsigned int flags;*/ /* FIX to avoid build warning */
 	int userKey = -1;
@@ -11311,30 +11412,7 @@ static long ISP_ioctl(struct file *pFile, unsigned int Cmd, unsigned long Param)
 	/*      */
 	switch (Cmd) {
 	case ISP_WAKELOCK_CTRL: {
-		if (copy_from_user(&wakelock_ctrl, (void *)Param,
-				   sizeof(unsigned int)) != 0) {
-			log_err("get ISP_WAKELOCK_CTRL from	user fail");
-			Ret = -EFAULT;
-		} else {
-			if (wakelock_ctrl == 1) { /* Enable     wakelock */
-				if (g_bWaitLock == 0) {
-#ifdef CONFIG_PM_SLEEP
-					__pm_stay_awake(isp_wake_lock);
-#endif
-					g_bWaitLock = 1;
-					log_dbg("wakelock enable!!\n");
-				}
-			} else { /* Disable wakelock */
-				if (g_bWaitLock == 1) {
-#ifdef CONFIG_PM_SLEEP
-					__pm_relax(isp_wake_lock);
-#endif
-					g_bWaitLock = 0;
-					log_dbg("wakelock disable!!\n");
-				}
-			}
-		}
-
+		log_wrn("K419 control wake lock by kernel!\n");
 	} break;
 	case ISP_GET_DROP_FRAME:
 		if (copy_from_user(&DebugFlag[0], (void *)Param,
@@ -11936,7 +12014,7 @@ static long ISP_ioctl(struct file *pFile, unsigned int Cmd, unsigned long Param)
 					Ret = -EFAULT;
 					break;
 				}
-				log_inf("User_%s(%d), type(%d)",
+				log_inf("ISP_FLUSH_IRQ_REQUEST User_%s(%d), type(%d)",
 					IrqUserKey_UserInfo[IrqInfo.UserInfo
 								    .UserKey]
 						.userName,
@@ -12949,7 +13027,14 @@ EXIT:
 
 /* log_dbg("Before spm_disable_sodi()."); */
 /* Disable sodi (Multi-Core     Deep Idle).     */
-
+	/* The driver need to hold wakelock, when camera is open */
+	if (IspInfo.UserCount == 1) {
+	#if IS_ENABLED(CONFIG_PM_SLEEP)
+		__pm_stay_awake(isp_wake_lock);
+	#endif
+		g_bWaitLock = 1;
+		log_inf("- get wake_lock: %d.", g_bWaitLock);
+	}
 	log_inf("- X. Ret: %d. UserCount: %d.", Ret, IspInfo.UserCount);
 	return Ret;
 }
@@ -13003,18 +13088,9 @@ static signed int ISP_release(struct inode *pInode, struct file *pFile)
 	Reg &= 0xfffffffE; /* close Vfinder */
 	ISP_WR32(ISP_REG_ADDR_TG2_VF_CON, Reg);
 
-	/* why i add this wake_unlock here, because     the     Ap is not
-	 * expected to be dead.
-	 * The driver must releae the wakelock, otherwise the system will not
-	 * enter
-	 * the power-saving mode
-	 */
-	if (g_bWaitLock == 1) {
-#ifdef CONFIG_PM_SLEEP
-		__pm_relax(isp_wake_lock);
-#endif
-		g_bWaitLock = 0;
-	}
+	for ( i = 0; i < ISP_REG_SW_CTL_RST_CAMSV2; i++)
+		ISP_Reset(i + 1);
+
 	/* reset */
 	/*      */
 	for (i = 0; i < IRQ_USER_NUM_MAX; i++) {
@@ -13057,6 +13133,16 @@ EXIT:
 	 */
 	ISP_EnableClock(MFALSE);
 	log_dbg("isp release G_u4EnableClockCount: %d", G_u4EnableClockCount);
+	/* The driver must releae the wakelock, otherwise the system will not
+	 * enter the power-saving mode
+	 */
+	if (IspInfo.UserCount == 0 && g_bWaitLock == 1) {
+	#if IS_ENABLED(CONFIG_PM_SLEEP)
+		__pm_relax(isp_wake_lock);
+	#endif
+		g_bWaitLock = 0;
+		log_inf("- pm_relax wake_lock: %d.", g_bWaitLock);
+	}
 	/*  */
 	log_inf("- X. UserCount: %d.", IspInfo.UserCount);
 	return 0;
@@ -13732,39 +13818,6 @@ static signed int ISP_suspend(struct platform_device *pDev, pm_message_t Mesg)
  ******************************************************************************/
 static signed int ISP_resume(struct platform_device *pDev)
 {
-	unsigned int regTG1Val, regTG2Val;
-
-	if (IspInfo.UserCount == 0) {
-		log_dbg("ISP UserCount=0");
-		return 0;
-	}
-	//enable clock
-	ISP_EnableClock(MTRUE);
-
-	/* TG_VF_CON[0] (0x15004414[0]): VFDATA_EN.     TG1     Take Picture
-	 * Request.
-	 */
-	regTG1Val = ISP_RD32(ISP_ADDR + 0x414);
-	/* TG2_VF_CON[0] (0x150044B4[0]): VFDATA_EN. TG2 Take Picture Request.
-	 */
-	regTG2Val = ISP_RD32(ISP_ADDR + 0x4B4);
-
-	log_dbg("bPass1_On_In_Resume_TG1(%d). bPass1_On_In_Resume_TG2(%d). regTG1Val(0x%x) regTG2Val(0x%x)\n",
-		bPass1_On_In_Resume_TG1, bPass1_On_In_Resume_TG2,
-		regTG1Val, regTG2Val);
-
-	if (bPass1_On_In_Resume_TG1) {
-		bPass1_On_In_Resume_TG1 = 0;
-		ISP_WR32(ISP_ADDR + 0x414,
-			 (regTG1Val | 0x01)); /* For TG1 Main sensor. */
-	}
-
-	if (bPass1_On_In_Resume_TG2) {
-		bPass1_On_In_Resume_TG2 = 0;
-		ISP_WR32(ISP_ADDR + 0x4B4,
-			 (regTG2Val | 0x01)); /* For TG2 Sub sensor. */
-	}
-
 	return 0;
 }
 

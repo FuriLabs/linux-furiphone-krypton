@@ -516,7 +516,7 @@ static int get_vbus_voltage(struct mtk_charger_type *info,
 {
 	int ret;
 
-	if (!IS_ERR(info->chan_vbus)) {
+	if (!IS_ERR(info->chan_vbus) && info->chan_vbus != NULL) {
 		ret = iio_read_channel_processed(info->chan_vbus, val);
 		if (ret < 0)
 			pr_notice("[%s]read fail,ret=%d\n", __func__, ret);
@@ -639,7 +639,7 @@ static int psy_chr_type_get_property(struct power_supply *psy,
 
 	switch (psp) {
 	case POWER_SUPPLY_PROP_ONLINE:
-		if (info->type == POWER_SUPPLY_USB_TYPE_UNKNOWN)
+		if (info->type == POWER_SUPPLY_USB_TYPE_UNKNOWN || !info->bc12_active)
 			val->intval = 0;
 		else
 			val->intval = 1;

@@ -19,7 +19,11 @@
 #include "lens_info.h"
 
 #define AF_DRVNAME "DW9714AF_DRV"
+
 #define AF_I2C_SLAVE_ADDR 0x18
+
+#define PD9215B_I2C_SLAVE_ADDR 0x18
+
 
 #define AF_DEBUG
 #ifdef AF_DEBUG
@@ -37,23 +41,48 @@ static unsigned long g_u4AF_INF;
 static unsigned long g_u4AF_MACRO = 1023;
 static unsigned long g_u4CurrPosition;
 
+static int PD9215B_Flag = 1;
+
+
 
 static int s4AF_WriteReg(u16 a_u2Data)
 {
-	int i4RetValue = 0;
 
-	char puSendCmd[2] = {(char)(a_u2Data >> 4),
-			     (char)((a_u2Data & 0xF) << 4)};
+  if(PD9215B_Flag == 0)
+  	{
+		int i4RetValue = 0;
 
-	g_pstAF_I2Cclient->addr = AF_I2C_SLAVE_ADDR;
+		char puSendCmd[2] = {(char)(a_u2Data >> 4),
+				     (char)((a_u2Data & 0xF) << 4)};
 
-	g_pstAF_I2Cclient->addr = g_pstAF_I2Cclient->addr >> 1;
+		g_pstAF_I2Cclient->addr = AF_I2C_SLAVE_ADDR;
 
-	i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmd, 2);
+		g_pstAF_I2Cclient->addr = g_pstAF_I2Cclient->addr >> 1;
 
-	if (i4RetValue < 0) {
-		LOG_INF("I2C send failed!!\n");
-		return -1;
+		i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmd, 2);
+
+		if (i4RetValue < 0) {
+			LOG_INF("I2C send failed!!\n");
+			return -1;
+		}
+  	}
+  else
+  	{
+	    int  i4RetValue = 0;
+
+	    char puSendCmd[3] = {0x03 , (char)(a_u2Data >> 8) , (char)(a_u2Data)};
+
+	    g_pstAF_I2Cclient->addr = PD9215B_I2C_SLAVE_ADDR;
+
+		g_pstAF_I2Cclient->addr = g_pstAF_I2Cclient->addr >> 1;
+		
+	    i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmd, 3);
+
+	    if (i4RetValue < 0)
+	    {
+	        LOG_INF("[PD9215B] I2C send failed!! \n");
+	        return -1;
+	    }
 	}
 
 	return 0;
@@ -85,7 +114,31 @@ static inline int getAFInfo(__user struct stAF_MotorInfo *pstMotorInfo)
 /* initAF include driver initialization and standby mode */
 static int initAF(void)
 {
-	LOG_INF("+\n");
+
+	char puSendCmd1[2]={(char)(0x02),(char)(0x01)};
+	char puSendCmd2[2]={(char)(0x02),(char)(0x00)};
+	char puSendCmd3[2]={(char)(0x06),(char)(0x88)};
+	char puSendCmd4[2]={(char)(0x07),(char)(0x01)};
+	char puSendCmd5[2]={(char)(0x08),(char)(0x49)};
+
+	int i4RetValue = 0;
+
+	printk("%s Start\n",__func__);
+	g_pstAF_I2Cclient->addr = PD9215B_I2C_SLAVE_ADDR >> 1;
+
+ 	i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmd1, 2);
+	i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmd2, 2);
+	 mdelay(1);
+	i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmd3, 2);
+	i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmd4, 2);
+	i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmd5, 2);
+
+	if (i4RetValue < 0)
+	{
+		printk("[PD9215B] I2C send failed ,change to dw9714AF !! \n");
+		PD9215B_Flag = 0;
+		//return -1;
+	}
 
 	if (*g_pAF_Opened == 1) {
 
@@ -94,7 +147,7 @@ static int initAF(void)
 		spin_unlock(g_pAF_SpinLock);
 	}
 
-	LOG_INF("-\n");
+	printk("%s PD9215B_Flag: %d end\n",__func__,PD9215B_Flag);
 
 	return 0;
 }
@@ -108,7 +161,7 @@ static inline int moveAF(unsigned long a_u4Position)
 		g_u4CurrPosition = a_u4Position;
 		ret = 0;
 	} else {
-		LOG_INF("set I2C failed when moving the motor\n");
+		printk("set I2C failed when moving the motor\n");
 		ret = -1;
 	}
 
@@ -171,11 +224,23 @@ long DW9714AF_Ioctl(struct file *a_pstFile, unsigned int a_u4Command,
 /* Q1 : Try release multiple times. */
 int DW9714AF_Release(struct inode *a_pstInode, struct file *a_pstFile)
 {
-	LOG_INF("Start\n");
+	printk("%s Start\n",__func__);
 
 	if (*g_pAF_Opened == 2) {
 		LOG_INF("Wait\n");
 		s4AF_WriteReg(0x80); /* Power down mode */
+	
+	if(PD9215B_Flag == 1)
+		{
+			s4AF_WriteReg(0x0200);
+			mdelay(15);
+			s4AF_WriteReg(0x0100);
+			mdelay(15);
+	        s4AF_WriteReg(0x0080);
+			mdelay(15);
+			s4AF_WriteReg(0x0000);
+			mdelay(15);
+		}
 	}
 
 	if (*g_pAF_Opened) {
@@ -186,7 +251,7 @@ int DW9714AF_Release(struct inode *a_pstInode, struct file *a_pstFile)
 		spin_unlock(g_pAF_SpinLock);
 	}
 
-	LOG_INF("End\n");
+	printk("%s End\n",__func__);
 
 	return 0;
 }

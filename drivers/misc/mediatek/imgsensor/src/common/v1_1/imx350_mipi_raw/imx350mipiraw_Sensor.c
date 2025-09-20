@@ -109,25 +109,17 @@ static BYTE imx350_SPC_data[352] = { 0 };
 
 static struct imgsensor_info_struct imgsensor_info = {
 	.sensor_id = IMX350_SENSOR_ID,
-	.checksum_value = 0xD1EFF68B,
+	.checksum_value = 0xFFFFFFFF,
 	.pre = {		/*data rate 1099.20 Mbps/lane */
-		.pclk = 420000000,	/* record different mode's pclk */
-		.linelength = 6648,	/* record different mode's linelength */
-		.framelength = 2104, /* record different mode's framelength */
-		.startx = 0, /* record different mode's startx of grabwindow */
-		.starty = 0, /* record different mode's starty of grabwindow */
-
-		/* record different mode's width of grabwindow */
-		.grabwindow_width = 2592,
-		/* record different mode's height of grabwindow */
-		.grabwindow_height = 1936,
-
-		/* following for MIPIDataLowPwr2HighSpeedSettleDelayCount
-		 * by different scenario
-		 */
+			.pclk = 823200000,
+		.linelength = 6720,
+		.framelength = 4080,
+		.startx = 0,
+		.starty = 0,
+		.grabwindow_width = 5184,
+		.grabwindow_height = 3880,
 		.mipi_data_lp2hs_settle_dc = 85,	/* unit , ns */
-		.mipi_pixel_rate = 319200000,
-		/*     following for GetDefaultFramerateByScenario()    */
+		.mipi_pixel_rate = 673920000,
 		.max_framerate = 300,
 	},
 #ifdef IMX350_24_FPS
@@ -253,8 +245,8 @@ static struct imgsensor_struct imgsensor = {
 
 /* Sensor output window information */
 static struct SENSOR_WINSIZE_INFO_STRUCT imgsensor_winsize_info[10] = {
-	{5184, 3880, 0, 0, 5184, 3872, 2592, 1936,
-	0000, 0000, 2592, 1936, 0, 0, 2592, 1936},	/* Preview */
+{5184, 3880, 0, 0, 5184, 3880, 5184, 3880,
+	0000, 0000, 5184, 3880, 0, 0, 5184, 3880},	/* capture */
 	{5184, 3880, 0, 0, 5184, 3880, 5184, 3880,
 	0000, 0000, 5184, 3880, 0, 0, 5184, 3880},	/* capture */
 	{5184, 3880, 0, 480, 5184, 2916, 5184, 2916,
@@ -2838,13 +2830,6 @@ kal_uint16 addr_data_pair_preview_imx350[] = {
 	0xE000, 0x00
 };
 
-static void preview_setting(void)
-{
-	imx350_table_write_cmos_sensor(addr_data_pair_preview_imx350,
-	sizeof(addr_data_pair_preview_imx350) / sizeof(kal_uint16));
-	/* zvhdr_setting(); */
-}				/*    preview_setting  */
-
 kal_uint16 addr_data_pair_capture_imx350[] = {
 	0x0100, 0x00,
 /*24fps*/
@@ -3080,6 +3065,13 @@ kal_uint16 addr_data_pair_capture_imx350[] = {
 
 	0xE000, 0x00
 };
+
+static void preview_setting(void)
+{
+        imx350_table_write_cmos_sensor(addr_data_pair_capture_imx350,
+        sizeof(addr_data_pair_preview_imx350) / sizeof(kal_uint16));
+        /* zvhdr_setting(); */
+}
 
 static kal_uint32 streaming_control(kal_bool enable)
 {
@@ -3455,11 +3447,11 @@ static kal_uint32 get_imgsensor_id(UINT32 *sensor_id)
 			/* return_sensor_id(); */
 			if (*sensor_id == imgsensor_info.sensor_id) {
 				imx350_read_SPC(imx350_SPC_data);
-				LOG_INF("i2c write id: 0x%x, sensor id: 0x%x\n",
+				printk("i2c write id: 0x%x, sensor id: 0x%x\n",
 					imgsensor.i2c_write_id, *sensor_id);
 				return ERROR_NONE;
 			}
-			LOG_INF(
+			printk(
 				"Read sensor id fail, write id: 0x%x, id: 0x%x\n",
 				imgsensor.i2c_write_id, *sensor_id);
 			retry--;

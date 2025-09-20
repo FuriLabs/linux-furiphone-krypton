@@ -1863,8 +1863,9 @@ static bool compr_l_config_PVRIC_V3_1(struct mtk_ddp_comp *comp,
 	}
 
 	/* 7. config register */
-	buf_size = (dst_h - 1) * pending->pitch +
-		dst_w * drm_format_plane_cpp(fmt, 0);
+	buf_size = dst_h > 0 ? (dst_h - 1) * pending->pitch +
+		dst_w * drm_format_plane_cpp(fmt, 0) : 0;
+
 	buf_total_size = header_offset + src_buf_tile_num * tile_body_size;
 	if (ext_lye_idx != LYE_NORMAL) {
 		unsigned int id = ext_lye_idx - 1;
@@ -2249,7 +2250,8 @@ static bool compr_l_config_AFBC_V1_2(struct mtk_ddp_comp *comp,
 	}
 
 	/* 7. config register */
-	buf_size = (dst_h - 1) * pitch + dst_w * Bpp;
+	buf_size = dst_h > 0 ? (dst_h - 1) * pitch + dst_w * Bpp : 0;
+
 	buf_total_size = header_offset + src_buf_tile_num * tile_body_size;
 	if (ext_lye_idx != LYE_NORMAL) {
 		unsigned int id = ext_lye_idx - 1;

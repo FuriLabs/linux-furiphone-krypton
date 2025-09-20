@@ -18,7 +18,7 @@
 
 
 #define AF_DRVNAME "DW9800WAF_DRV"
-#define AF_I2C_SLAVE_ADDR        0x18
+#define AF_I2C_SLAVE_ADDR        0x1c
 
 #define AF_DEBUG
 #ifdef AF_DEBUG
@@ -122,10 +122,17 @@ static inline int getAFInfo(__user struct stAF_MotorInfo *pstMotorInfo)
 static int initdrv(void)
 {
 	int i4RetValue = 0;
+	#if  0
 	char puSendCmdArray[7][2] = {
 	{0x02, 0x01}, {0x02, 0x00}, {0xFE, 0xFE},
 	{0x02, 0x02}, {0x06, 0x40}, {0x07, 0x60}, {0xFE, 0xFE},
 	};
+    #else
+	char puSendCmdArray[7][2] = {
+	{0x02, 0x01}, {0x02, 0x00}, {0xFE, 0xFE},
+    {0x06, 0x88}, {0x07, 0x01}, {0x08, 0x49}, {0xFE, 0xFE},
+	};
+	#endif /* #if 0 */
 	unsigned char cmd_number;
 
 	LOG_INF("InitDrv[1] %p, %p\n", &(puSendCmdArray[1][0]),

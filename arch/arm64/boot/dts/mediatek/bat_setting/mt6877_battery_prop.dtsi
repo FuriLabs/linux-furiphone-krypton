@@ -13,13 +13,13 @@ bat_gm30: battery{
 /*	The ui_soc will keep 100% until SOC drop X percents after unplugged*/
 	R_FG_VALUE = <(5)>;
 /*	R_sense resistance*/
-	EMBEDDED_SEL = <(0)>;
+	EMBEDDED_SEL = <(1)>;
 /*	Configures whether using embedded battery or not*/
 	PMIC_SHUTDOWN_CURRENT = <(20)>;
 /*	System shutdown current*/
 	FG_METER_RESISTANCE = <(100)>;
 /*	The resistance of PCB*/
-	CAR_TUNE_VALUE = <(100)>;
+	CAR_TUNE_VALUE = <(96)>;
 /*	Tune value for current measurement*/
 	PMIC_MIN_VOL = <(33500)>;
 /*	vboot voltage for gauge 0%*/
@@ -37,15 +37,15 @@ bat_gm30: battery{
 /*	Battery temperature T3*/
 	TEMPERATURE_T4 = <(-10)>;
 /*	Battery temperature T4*/
-	g_FG_PSEUDO100_T0 = <(100)>;
+	g_FG_PSEUDO100_T0 = <(95)>;
 /*	Pseudo 100% percentage at T0*/
-	g_FG_PSEUDO100_T1 = <(100)>;
+	g_FG_PSEUDO100_T1 = <(95)>;
 /*	Pseudo 100% percentage at T1*/
-	g_FG_PSEUDO100_T2 = <(100)>;
+	g_FG_PSEUDO100_T2 = <(95)>;
 /*	Pseudo 100% percentage at T2*/
-	g_FG_PSEUDO100_T3 = <(100)>;
+	g_FG_PSEUDO100_T3 = <(95)>;
 /*	Pseudo 100% percentage at T3*/
-	g_FG_PSEUDO100_T4 = <(100)>;
+	g_FG_PSEUDO100_T4 = <(95)>;
 /*	Pseudo 100% percentage at T4*/
 	Q_MAX_SYS_VOLTAGE_BAT0 = <(3350)>;
 /*	Pseudo1 for hide percentage*/
@@ -63,7 +63,27 @@ bat_gm30: battery{
 /* Enable update temp when suspend */
 	ACTIVE_TABLE = <(0)>;
 /* Table numbers per battery*/
+	MULTI_BATTERY = <(0)>;
+/* Multi battery support: 0=single battery, 1=multi battery*/
 	MULTI_TEMP_GAUGE0 = <(1)>;
+	
+#if 0	
+	/* g_FG_charge_PSEUDO100 2D array definition */
+	g_FG_charge_PSEUDO100_row = <10>;  /* MAX_TABLE = 10 temperature points */
+	g_FG_charge_PSEUDO100_col = <5>;   /* MAX_CHARGE_RDC = 5 charge levels */
+	g_FG_charge_PSEUDO100 = <
+		95  95  95  95  95    /* T0: 50°C */
+		95  95  95  95  95    /* T1: 25°C */
+		95  95  95  95  95    /* T2: 10°C */
+		95  95  95  95  95    /* T3: 0°C */
+		95  95  95  95  95    /* T4: -10°C */
+		95  95  95  95  95    /* T5 */
+		95  95  95  95  95    /* T6 */
+		95  95  95  95  95    /* T7 */
+		95  95  95  95  95    /* T8 */
+		95  95  95  95  95    /* T9 */
+	>;
+#endif	
 /* Multi gauge0 enable*/
 #include "mt6877_battery_table.dtsi"
 #include "mt6877_battery_prop_dim2_ext.dtsi"

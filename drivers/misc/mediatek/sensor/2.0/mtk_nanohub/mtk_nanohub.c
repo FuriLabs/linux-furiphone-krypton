@@ -676,7 +676,7 @@ static void mtk_nanohub_init_sensor_info(void)
 
 	p = &sensor_state[SENSOR_TYPE_OIS];
 	p->sensorType = SENSOR_TYPE_OIS;
-	p->gain = 1000000;
+	p->gain = 100000;
 	strlcpy(p->name, "ois", sizeof(p->name));
 	strlcpy(p->vendor, "mtk", sizeof(p->vendor));
 
@@ -958,7 +958,7 @@ int mtk_nanohub_enable_to_hub(uint8_t sensor_id, int enabledisable)
 	struct ConfigCmd cmd;
 	int ret = 0;
 
-	if (enabledisable == 1 && (READ_ONCE(scp_system_ready)))
+	if (enabledisable == 1 && (atomic_read(&power_status) == SENSOR_POWER_UP))
 		scp_register_feature(SENS_FEATURE_ID);
 	mutex_lock(&sensor_state_mtx);
 	if (sensor_id >= ID_SENSOR_MAX) {

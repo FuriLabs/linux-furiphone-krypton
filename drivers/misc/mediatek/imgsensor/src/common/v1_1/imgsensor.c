@@ -146,6 +146,19 @@ static void imgsensor_mutex_unlock(struct IMGSENSOR_SENSOR_INST *psensor_inst)
 #endif
 }
 
+#ifdef CONFIG_CAMERA_CUSTOMKEY
+static void imgsensor_power_off(void *priv) {
+    struct IMGSENSOR_SENSOR *psensor = (struct IMGSENSOR_SENSOR *)priv;
+
+    printk(KERN_INFO "%s: Force closing camera\n", __func__);
+
+    if (psensor->inst.state == IMGSENSOR_STATE_OPEN) {
+        printk(KERN_INFO "%s: sensor_idx:%d\n", __func__,psensor->inst.sensor_idx);
+        imgsensor_sensor_close(psensor);
+    }
+}
+#endif
+
 MINT32 imgsensor_sensor_open(struct IMGSENSOR_SENSOR *psensor)
 {
 	MINT32 ret = ERROR_NONE;
@@ -164,7 +177,17 @@ MINT32 imgsensor_sensor_open(struct IMGSENSOR_SENSOR *psensor)
 #endif
 
 	IMGSENSOR_FUNCTION_ENTRY();
+#ifdef CONFIG_CAMERA_CUSTOMKEY
+	if(is_camera_locked()) {
+		printk(KERN_ERR "%s Camera is locked\n",__func__);
+		return -1;
+	}
+	if (psensor_inst->state == IMGSENSOR_STATE_OPEN) {
+		printk(KERN_WARNING "imgsensor: Camera already open, closing first\n");
+		imgsensor_sensor_close(psensor);
+	}
 
+#endif
 	if (psensor_func && psensor_func->SensorOpen && psensor_inst) {
 
 		/* turn on power */
@@ -592,6 +615,12 @@ int imgsensor_set_driver(struct IMGSENSOR_SENSOR *psensor)
 					__func__,
 					psensor_inst->sensor_idx,
 					psensor_inst->psensor_list->name);
+
+#ifdef CONFIG_CAMERA_CUSTOMKEY
+					psensor->cam_dev.power_off = imgsensor_power_off;
+					psensor->cam_dev.priv = psensor;
+					register_camera_device(&psensor->cam_dev);
+#endif
 					ret = 0;
 					break;
 				}
@@ -2131,7 +2160,7 @@ static long imgsensor_compat_ioctl(struct file *filp,
 
 	if (!filp->f_op || !filp->f_op->unlocked_ioctl)
 		return -ENOTTY;
-
+	
 	switch (cmd) {
 	case COMPAT_KDIMGSENSORIOC_X_FEATURECONCTROL:
 	{
@@ -2428,7 +2457,15 @@ static int imgsensor_probe(struct platform_device *pplatform_device)
 static int imgsensor_remove(struct platform_device *pplatform_device)
 {
 	struct IMGSENSOR *pimgsensor = &gimgsensor;
-
+#ifdef CONFIG_CAMERA_CUSTOMKEY
+	int i;
+	for (i = 0; i < IMGSENSOR_SENSOR_IDX_MAX_NUM; i++) {
+		struct IMGSENSOR_SENSOR *psensor = &pimgsensor->sensor[i];
+		if (psensor->pfunc) {
+			unregister_camera_device(&psensor->cam_dev);
+		}
+	}
+#endif
 	imgsensor_i2c_delete();
 
 	/* Release char driver */

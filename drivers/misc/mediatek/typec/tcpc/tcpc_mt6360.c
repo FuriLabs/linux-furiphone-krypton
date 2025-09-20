@@ -2139,7 +2139,7 @@ static int mt6360_transmit(struct tcpc_device *tcpc,
 			   const u32 *data)
 {
 	int ret, data_cnt, packet_cnt;
-	u8 temp[MT6360_TRANSMIT_MAX_SIZE];
+	u8 temp[MT6360_TRANSMIT_MAX_SIZE + 1];
 
 	if (type < TCPC_TX_HARD_RESET) {
 		data_cnt = sizeof(u32) * PD_HEADER_CNT(header);
@@ -2398,13 +2398,9 @@ static int mt6360_tcpcdev_init(struct mt6360_chip *chip, struct device *dev)
 		desc->role_def = TYPEC_ROLE_DRP;
 	}
 
-	if (of_property_read_u32(np, "mt-tcpc,notifier_supply_num",
-				 &val) >= 0) {
-		if (val < 0)
-			desc->notifier_supply_num = 0;
-		else
-			desc->notifier_supply_num = val;
-	} else
+	if (of_property_read_u32(np, "mt-tcpc,notifier_supply_num", &val) >= 0)
+		desc->notifier_supply_num = val;
+	else
 		desc->notifier_supply_num = 0;
 
 	if (of_property_read_u32(np, "mt-tcpc,rp_level", &val) >= 0) {

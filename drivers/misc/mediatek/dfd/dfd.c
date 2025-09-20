@@ -78,10 +78,12 @@ static int __init fdt_get_chosen(unsigned long node, const char *uname,
 
 static int __init dfd_init(void)
 {
-	struct device_node *dev_node, *infra_node;
+	struct device_node *dev_node, *infra_node, *rgu_node;
 	unsigned long node;
 	const void *prop;
 	unsigned int val;
+	int ret = 0;
+	void __iomem *toprgu_base;
 
 	drv = kzalloc(sizeof(struct dfd_drv), GFP_KERNEL);
 	if (!drv)
@@ -92,8 +94,20 @@ static int __init dfd_init(void)
 	/* get dfd settings */
 	dev_node = of_find_compatible_node(NULL, NULL, "mediatek,dfd");
 	if (dev_node) {
-		if (of_property_read_u32(dev_node, "mediatek,dfd_latch_offset", &val))
+		if (of_property_read_u32(dev_node, "mediatek,dfd_latch_offset", &val)) {
 			pr_info("%s: Latch offset not found.\n", __func__);
+			ret = -EINVAL;
+			goto error_get_dts;
+		}
+		pr_info("%s: Latch offset is 0x%x\n", __func__, val);
+		rgu_node = of_find_compatible_node(NULL, NULL, "mediatek,toprgu");
+		toprgu_base = of_iomap(rgu_node, 0);
+
+		if (!toprgu_base)
+			pr_info("%s: RGU base not found.\n", __func__);
+		else
+			pr_info("%s: get topdbg base success\n", __func__);
+		get_dfd_base(toprgu_base, val);
 
 		if (of_property_read_u32(dev_node, "mediatek,enabled", &val))
 			drv->enabled = 0;
@@ -129,8 +143,10 @@ static int __init dfd_init(void)
 			drv->dfd_ap_addr_offset = 0;
 		else
 			drv->dfd_ap_addr_offset = val;
-	} else
-		return -ENODEV;
+	} else {
+		ret = -ENODEV;
+		goto error_get_dts;
+	}
 
 	/* for cachedump enable */
 	dev_node = of_find_compatible_node(NULL, NULL,
@@ -182,6 +198,7 @@ static int __init dfd_init(void)
 				| (drv->base_addr_msb >>
 					drv->dfd_ap_addr_offset),
 				infra);
+			iounmap(infra);
 		}
 	}
 
@@ -190,10 +207,16 @@ static int __init dfd_init(void)
 	if (node) {
 		prop = of_get_flat_dt_prop(node, "dfd,base_addr", NULL);
 		drv->base_addr = (prop) ? (u64) of_read_number(prop, 2) : 0;
-	} else
-		return -ENODEV;
-
+	} else {
+		ret = -ENODEV;
+		goto error_get_dts;
+	}
 	return 0;
+
+error_get_dts:
+	kfree(drv);
+	drv = NULL;
+	return ret;
 }
 
 core_initcall(dfd_init);

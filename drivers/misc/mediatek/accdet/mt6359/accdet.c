@@ -14,6 +14,7 @@
 #include <linux/sched/clock.h>
 #include <linux/timer.h>
 #include <linux/irq.h>
+#include <linux/iio/consumer.h>
 #include "reg_accdet.h"
 #if defined CONFIG_MTK_PMIC_NEW_ARCH
 #include <upmu_common.h>
@@ -39,6 +40,8 @@
 #endif
 #include "pmic_auxadc.h"
 #endif /* end of #if PMIC_ACCDET_KERNEL */
+
+#include <linux/pinctrl/consumer.h>
 
 /********************grobal variable definitions******************/
 #if PMIC_ACCDET_CTP
@@ -111,6 +114,10 @@ static struct cdev *accdet_cdev;
 static struct class *accdet_class;
 static struct device *accdet_device;
 static int s_button_status;
+
+#if defined(CONFIG_MACH_MT6785)
+static struct iio_channel *accdet_auxadc_iio;
+#endif
 
 /* accdet input device to report cable type and key event */
 static struct input_dev *accdet_input_dev;
@@ -186,6 +193,16 @@ static u32 button_press_debounce = 0x400;
 static u32 button_press_debounce_01 = 0x800;
 
 static atomic_t accdet_first;
+
+#if defined(CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT)
+static struct pinctrl *pinctrl;
+static struct pinctrl_state *pins_switch_to_usb;
+static struct pinctrl_state *pins_switch_to_hp;
+static struct pinctrl_state *pins_hp_type_det_en;
+static struct pinctrl_state *pins_hp_type_det_disable;
+static bool headset_mode;
+bool headset_revert_flag;
+#endif
 
 /* SW mode only, moisture vm, resister declaration */
 static unsigned int moisture_vm = 50; /* TBD */
@@ -270,6 +287,10 @@ signed int pwrap_write(unsigned int adr, unsigned int wdata)
 }
 #endif
 
+#if defined(CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT)/* Added start by Eli at 2023-09-15 14:16  */
+static void accdet_revert_headset_mode(void);
+void typec_headset_queue_work(int state);
+#endif  /* CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT */
 inline u32 pmic_read(u32 addr)
 {
 	u32 val = 0;
@@ -878,6 +899,23 @@ static bool accdet_timeout_ns(u64 start_time_ns, u64 timeout_time_ns)
 }
 #endif /* end of #if PMIC_ACCDET_KERNEL */
 
+#if defined(CONFIG_MACH_MT6785)
+static u32 accdet_get_auxadc(int deCount)
+{
+	int value = 0, ret = 0;
+
+	if (!PTR_ERR_OR_ZERO(accdet_auxadc_iio)) {
+		ret = iio_read_channel_processed(accdet_auxadc_iio,  &value);
+		pr_info("%s() value :%d\n", __func__, value);
+		if (ret < 0) {
+			pr_notice("Error: %s read fail (%d)\n", __func__, ret);
+			return ret;
+		}
+	}
+
+	return value;
+}
+#else //defined(CONFIG_MACH_MT6785)
 static u32 accdet_get_auxadc(int deCount)
 {
 #if defined CONFIG_MTK_PMIC_NEW_ARCH | defined PMIC_ACCDET_CTP
@@ -897,6 +935,7 @@ static u32 accdet_get_auxadc(int deCount)
 	return 0;
 #endif
 }
+#endif //defined(CONFIG_MACH_MT6785)
 
 static void accdet_get_efuse(void)
 {
@@ -1270,6 +1309,9 @@ static u32 adjust_eint_analog_setting(u32 eintID)
 		/* enable RG_EINT0CONFIGACCDET */
 		pmic_write_set(PMIC_RG_EINT0CONFIGACCDET_ADDR,
 			PMIC_RG_EINT0CONFIGACCDET_SHIFT);
+		/*select 500k, use internal resistor */
+			pmic_write_set(PMIC_RG_EINT0HIRENB_ADDR,
+				PMIC_RG_EINT0HIRENB_SHIFT);
 #elif defined CONFIG_ACCDET_SUPPORT_EINT1
 		/* enable RG_EINT1CONFIGACCDET */
 		pmic_write_set(PMIC_RG_EINT1CONFIGACCDET_ADDR,
@@ -2098,6 +2140,21 @@ static void accdet_work_callback(void)
 	u32 pre_cable_type = cable_type;
 
 	__pm_stay_awake(accdet_irq_lock);
+#if defined(CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT)/* Added start by Eli at 2023-09-15 14:05  */
+    {
+        u32 cur_AB = 0;
+        cur_AB = pmic_read(PMIC_ACCDET_MEM_IN_ADDR) >> ACCDET_STATE_MEM_IN_OFFSET;
+        cur_AB = cur_AB & ACCDET_STATE_AB_MASK;
+        if(cur_AB == ACCDET_STATE_AB_00 && accdet_status == PLUG_OUT && !headset_revert_flag)
+        {
+            headset_revert_flag = true;
+            accdet_revert_headset_mode();
+            typec_headset_queue_work(EINT_PIN_PLUG_IN);
+            __pm_relax(accdet_irq_lock);
+            return; 
+        }   
+    }
+#endif  /* CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT */
 	check_cable_type();
 
 	mutex_lock(&accdet_eint_irq_sync_mutex);
@@ -2118,6 +2175,88 @@ static void accdet_work_callback(void)
 	pr_info("%s() report cable_type done\n", __func__);
 	__pm_relax(accdet_irq_lock);
 }
+
+#if defined(CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT)/* Added start by Eli at 2023-09-15 09:58  */
+static inline int typec_swicth_gpio_init(struct platform_device *platform_device)
+{
+	int ret = 0;
+	pr_info("%s() begin!\n", __func__);
+	pinctrl = devm_pinctrl_get(&platform_device->dev);
+	if (IS_ERR(pinctrl)) {
+		ret = PTR_ERR(pinctrl);
+		return ret;
+	}
+    
+	pins_switch_to_usb = pinctrl_lookup_state(pinctrl, "switch_to_usb");
+	if (IS_ERR(pins_switch_to_usb)) {
+		ret = PTR_ERR(pins_switch_to_usb);
+		return ret;
+	}
+    
+	pins_switch_to_hp = pinctrl_lookup_state(pinctrl, "switch_to_hp");
+	if (IS_ERR(pins_switch_to_hp)) {
+		ret = PTR_ERR(pins_switch_to_hp);
+		return ret;
+	}
+    
+	pins_hp_type_det_en = pinctrl_lookup_state(pinctrl, "fsa8049_en");
+	if (IS_ERR(pins_hp_type_det_en)) {
+		ret = PTR_ERR(pins_hp_type_det_en);
+		return ret;
+	}
+    
+	pins_hp_type_det_disable = pinctrl_lookup_state(pinctrl, "fsa8049_disable");
+	if (IS_ERR(pins_hp_type_det_disable)) {
+		ret = PTR_ERR(pins_hp_type_det_disable);
+		return ret;
+	}
+
+	//init default status
+	pinctrl_select_state(pinctrl, pins_switch_to_usb);
+	pinctrl_select_state(pinctrl, pins_hp_type_det_en);
+	pr_info("%s() end!\n", __func__);
+	return 0;
+}
+
+static void accdet_revert_headset_mode(void)
+{
+	if(headset_mode)
+	{
+        if (!IS_ERR(pins_hp_type_det_en))
+            pinctrl_select_state(pinctrl, pins_hp_type_det_en);
+		headset_mode = false;
+	}
+	else
+	{
+        if (!IS_ERR(pins_hp_type_det_disable))
+            pinctrl_select_state(pinctrl, pins_hp_type_det_disable);
+		headset_mode = true;
+	}
+}
+
+void typec_headset_queue_work(int state)
+{
+    pr_info("%s() begin!state=%d\n", __func__,state);
+    cur_eint_state = state;
+
+    if(state == EINT_PIN_PLUG_IN)
+    {
+        if (!IS_ERR(pins_switch_to_hp))
+            pinctrl_select_state(pinctrl, pins_switch_to_hp);
+        mod_timer(&micbias_timer, jiffies + MICBIAS_DISABLE_TIMER);
+    }
+    else//when plug out headset,clear revert flag
+    {
+        if (!IS_ERR(pins_switch_to_usb))
+            pinctrl_select_state(pinctrl, pins_switch_to_usb);
+        headset_revert_flag = false;
+    }
+    pr_info("%s() end\n", __func__);   
+    queue_work(eint_workqueue, &eint_work);
+}
+
+EXPORT_SYMBOL(typec_headset_queue_work);
+#endif
 
 static void accdet_queue_work(void)
 {
@@ -3003,7 +3142,21 @@ static void config_eint_init_by_mode(void)
 #endif
 		}
 	} else if (accdet_dts.eint_detect_mode == 0x4) {
-		/* do nothing */
+		/* enable RG_EINT0CONFIGACCDET */
+		pmic_write_set(PMIC_RG_EINT0CONFIGACCDET_ADDR,
+			PMIC_RG_EINT0CONFIGACCDET_SHIFT);
+		/*select 500k, use internal resistor */
+		pmic_write_set(PMIC_RG_EINT0HIRENB_ADDR,
+			PMIC_RG_EINT0HIRENB_SHIFT);
+		/* select VTH to 2v */
+		pmic_write_mset(PMIC_RG_EINTCOMPVTH_ADDR,
+			PMIC_RG_EINTCOMPVTH_SHIFT, PMIC_RG_EINTCOMPVTH_MASK,
+			0x2);
+		pr_info("%s: %x=%x %x=%x",
+		    __func__,
+			PMIC_RG_EINT0CONFIGACCDET_ADDR,
+			pmic_read(PMIC_RG_EINT0CONFIGACCDET_ADDR),
+			PMIC_RG_EINTCOMPVTH_ADDR, pmic_read(PMIC_RG_EINTCOMPVTH_ADDR));
 	} else if (accdet_dts.eint_detect_mode == 0x5) {
 		/* do nothing */
 	}
@@ -3280,6 +3433,16 @@ int mt_accdet_probe(struct platform_device *dev)
 
 	pr_info("%s() begin!\n", __func__);
 
+#if defined(CONFIG_MACH_MT6785)
+	/* get pmic accdet auxadc iio channel handler */
+	accdet_auxadc_iio = devm_iio_channel_get(&dev->dev, "pmic_accdet");
+	ret = PTR_ERR_OR_ZERO(accdet_auxadc_iio);
+	if (ret) {
+		if (ret != -EPROBE_DEFER)
+			pr_notice("%s(), Error: Get iio ch failed (%d)\n", __func__, ret);
+		return -EPROBE_DEFER;
+	}
+#endif
 	/* register char device number, Create normal device for auido use */
 	ret = alloc_chrdev_region(&accdet_devno, 0, 1, ACCDET_DEVNAME);
 	if (ret) {
@@ -3426,6 +3589,12 @@ int mt_accdet_probe(struct platform_device *dev)
 	mod_timer(&accdet_init_timer, (jiffies + ACCDET_INIT_WAIT_TIMER));
 
 	accdet_get_efuse();
+    
+#if defined(CONFIG_TYPEC_ANALOG_HEADPHONE_SUPPORT) /* Added start by Eli at 2023-10-06 20:50  */
+     typec_swicth_gpio_init(dev);
+     headset_mode = false;
+     headset_revert_flag = false;
+#endif
 
 	/* open top accdet interrupt */
 	pmic_enable_interrupt(INT_ACCDET, 1, "ACCDET");

@@ -105,7 +105,7 @@ typedef const char *(*CmdqPraseHandleErrorModByEngFlag) (
 
 typedef u64 (*CmdqMdpGetEngineGroupBits) (u32 engine_group);
 
-typedef void (*CmdqMdpEnableCommonClock) (bool enable);
+typedef s32 (*CmdqMdpEnableCommonClock) (bool enable);
 
 typedef void (*CmdqCheckHwStatus) (struct cmdqRecStruct *handle);
 

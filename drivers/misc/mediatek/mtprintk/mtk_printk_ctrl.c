@@ -51,9 +51,15 @@ bool mt_get_uartlog_status(void)
 
 void mt_disable_uart(void)
 {
+/* chage by jiangshitian for uart log[user/userdebug/eng] begin */
+#if 0//defined(CONFIG_RUNYEE_UART_LOG_OUTPUT)
+	printk_ctrl = 0;
+#else
 	/* uart print not always enable */
 	if (printk_ctrl != 2)
 		printk_ctrl = 1;
+#endif	
+/* chage by jiangshitian for uart log[user/userdebug/eng] end */
 }
 EXPORT_SYMBOL_GPL(mt_disable_uart);
 

@@ -927,6 +927,10 @@ static s32 cmdq_sec_session_send(struct cmdq_sec_context *context,
 	else
 		iwc_msg = (struct iwcCmdqMessage_t *)context->mtee_iwc_msg;
 #endif
+	if (iwc_msg == NULL) {
+		cmdq_err("iwc_msg is NULL. Skip. mtee:%d", mtee);
+		return -EFAULT;
+	}
 
 	memset(iwc_msg, 0, sizeof(*iwc_msg));
 	iwc_msg->cmd = iwc_cmd;
@@ -1032,17 +1036,16 @@ static s32 cmdq_sec_session_reply(const u32 iwc_cmd,
 	struct iwcCmdqMessage_t *iwc_msg, void *data,
 	struct cmdq_sec_task *task)
 {
-	struct iwcCmdqCancelTask_t *cancel = data;
-	struct cmdq_sec_data *sec_data = task->pkt->sec_data;
-
 	if (iwc_cmd == CMD_CMDQ_TL_SUBMIT_TASK) {
 		if (iwc_msg->rsp < 0) {
+			struct cmdq_sec_data *sec_data = task->pkt->sec_data;
 			/* submit fail case copy status */
 			memcpy(&sec_data->sec_status, &iwc_msg->secStatus,
 				sizeof(sec_data->sec_status));
 			sec_data->response = iwc_msg->rsp;
 		}
-	} else if (iwc_cmd == CMD_CMDQ_TL_CANCEL_TASK && cancel) {
+	} else if (iwc_cmd == CMD_CMDQ_TL_CANCEL_TASK && data) {
+		struct iwcCmdqCancelTask_t *cancel = data;
 		/* cancel case only copy cancel result */
 		memcpy(cancel, &iwc_msg->cancelTask, sizeof(*cancel));
 	}
@@ -1288,25 +1291,23 @@ void cmdq_sec_mbox_stop(struct cmdq_client *cl)
 	WARN_ON(clk_prepare(cmdq->clock) < 0);
 	cmdq_sec_clk_enable(cmdq);
 
+	mutex_lock(&cmdq->exec_lock);
 	task = list_first_entry_or_null(
 		&thread->task_list, struct cmdq_sec_task, list_entry);
-	if (task) {
+	if (task && task->pkt) {
 		cmdq_msg("[ IN] %s: cl:%p cmdq:%p thrd:%p idx:%u\n",
 			__func__, cl, cmdq, thread, thread->idx);
 
-		mutex_lock(&cmdq->exec_lock);
 		memset(&cmdq->cancel, 0, sizeof(cmdq->cancel));
 		cmdq->cancel.throwAEE = false;
 		cmdq_sec_task_submit(cmdq, task, CMD_CMDQ_TL_CANCEL_TASK,
 			thread->idx, &cmdq->cancel,
 			((struct cmdq_sec_data *)task->pkt->sec_data)->mtee);
-		mutex_unlock(&cmdq->exec_lock);
 
 		cmdq_msg("[OUT] %s: cl:%p cmdq:%p thrd:%p idx:%u\n",
 			__func__, cl, cmdq, thread, thread->idx);
 	}
 
-	spin_lock_irqsave(&thread->chan->lock, flags);
 	list_for_each_entry_safe(task, temp, &thread->task_list, list_entry) {
 		cmdq_sec_task_done(task, 0);
 
@@ -1316,7 +1317,9 @@ void cmdq_sec_mbox_stop(struct cmdq_client *cl)
 		else
 			thread->task_cnt -= 1;
 	}
+	mutex_unlock(&cmdq->exec_lock);
 
+	spin_lock_irqsave(&thread->chan->lock, flags);
 	if (list_empty(&thread->task_list)) {
 		thread->wait_cookie = 0;
 		thread->next_cookie = 0;
@@ -1759,7 +1762,7 @@ static int __init cmdq_sec_init(void)
 	return err;
 }
 
-#ifdef CMDQ_GP_SUPPORT
+#if defined(CMDQ_GP_SUPPORT) || defined(CMDQ_SECURE_MTEE_SUPPORT)
 static s32 cmdq_sec_late_init_wsm(void *data)
 {
 	struct cmdq_sec *cmdq;

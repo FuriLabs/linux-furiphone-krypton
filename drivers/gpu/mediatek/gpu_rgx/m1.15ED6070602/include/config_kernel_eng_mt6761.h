@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0 */
 /*
- * Copyright (C) 2022 MediaTek Inc.
+ * Copyright (C) 2024 MediaTek Inc.
  */
 
 #define PVRSRV_APPHINT_FIRMWARE_HEAP_POLICY 5
@@ -141,9 +141,11 @@
 #else
 #define PVR_LINUX_KMALLOC_ALLOCATION_THRESHOLD 16384
 #endif
+#define SUPPORT_PMR_DEFERRED_FREE
 #define SUPPORT_NATIVE_FENCE_SYNC
 #define PVRSRV_STALLED_CCB_ACTION
 #define UPDATE_FENCE_CHECKPOINT_COUNT 1
+#define RGX_MAX_CONTEXT_DEFER_LIMIT 2
 #define PVR_DRM_NAME "pvr"
 #if defined(__arm64__) || defined(__aarch64__)
 #define DEVICE_MEMSETCPY_ALIGN_IN_BYTES 16

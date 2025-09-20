@@ -23,9 +23,12 @@
 #include <linux/of_irq.h>
 #include <linux/of_gpio.h>
 #include <linux/of_address.h>
+#include <linux/arm-smccc.h>
+#include <linux/soc/mediatek/mtk_sip_svc.h>
 #include "ccci_config.h"
 #include "ccci_common_config.h"
 
+#define TRNG_MAGIC		0x74726e67
 #ifdef FEATURE_INFORM_NFC_VSIM_CHANGE
 #include <mach/mt6605.h>
 #endif
@@ -190,29 +193,6 @@ static int get_md_gpio_info(char *gpio_name,
 	}
 	gpio_id = get_gpio_id_from_dt(node, gpio_name, md_view_gpio_id);
 	return gpio_id;
-}
-
-static void md_drdi_gpio_status_scan(void)
-{
-	int i;
-	int size;
-	int gpio_id;
-	int gpio_md_view;
-	char *curr;
-	int val;
-
-	CCCI_BOOTUP_LOG(0, RPC, "scan didr gpio status\n");
-	for (i = 0; i < ARRAY_SIZE(gpio_mapping_table); i++) {
-		curr = gpio_mapping_table[i].gpio_name_from_md;
-		size = strlen(curr) + 1;
-		gpio_md_view = -1;
-		gpio_id = get_md_gpio_info(curr, size, &gpio_md_view);
-		if (gpio_id >= 0) {
-			val = get_md_gpio_val(gpio_id);
-			CCCI_BOOTUP_LOG(0, RPC, "GPIO[%s]%d(%d@md),val:%d\n",
-					curr, gpio_id, gpio_md_view, val);
-		}
-	}
 }
 
 static int get_dram_type_clk(int *clk, int *type)
@@ -1169,6 +1149,33 @@ static void ccci_rpc_work_helper(struct port_t *port, struct rpc_pkt *pkt,
 		CCCI_NORMAL_LOG(md_id, RPC,
 			"enter QUERY CARD_TYPE operation in ccci_rpc_work\n");
 		break;
+	case IPC_RPC_TRNG:
+		{
+			struct arm_smccc_res res = {0};
+
+			if (pkt_num != 1) {
+				CCCI_ERROR_LOG(md_id, RPC,
+					"invalid parameter for [0x%X]: pkt_num=%d!\n",
+					p_rpc_buf->op_id, pkt_num);
+				tmp_data[0] = FS_PARAM_ERROR;
+				pkt_num = 0;
+				pkt[pkt_num].len = sizeof(unsigned int);
+				pkt[pkt_num++].buf = (void *)&tmp_data[0];
+				pkt[pkt_num].len = sizeof(unsigned int);
+				pkt[pkt_num++].buf = (void *)&tmp_data[0];
+				break;
+			}
+			arm_smccc_smc(MTK_SIP_KERNEL_GET_RND,
+				TRNG_MAGIC, 0, 0, 0, 0, 0, 0, &res);
+			pkt_num = 0;
+			tmp_data[0] = 0;
+			tmp_data[1] = res.a0;
+			pkt[pkt_num].len = sizeof(unsigned int);
+			pkt[pkt_num++].buf = (void *)&tmp_data[0];
+			pkt[pkt_num].len = sizeof(unsigned int);
+			pkt[pkt_num++].buf = (void *)&tmp_data[1];
+			break;
+		}
 	case IPC_RPC_IT_OP:
 		{
 			int i;
@@ -1377,7 +1384,6 @@ static int port_rpc_init(struct port_t *port)
 	if (first_init) {
 		get_dtsi_eint_node(port->md_id);
 		get_md_dtsi_debug();
-		md_drdi_gpio_status_scan();
 		first_init = 0;
 	}
 	return 0;

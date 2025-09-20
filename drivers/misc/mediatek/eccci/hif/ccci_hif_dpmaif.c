@@ -31,6 +31,7 @@
 #include <linux/tcp.h>
 #include <linux/ipv6.h>
 #include <net/ipv6.h>
+#include <linux/suspend.h>
 
 #include "ccci_core.h"
 #include "modem_sys.h"
@@ -68,10 +69,10 @@ struct hif_dpmaif_ctrl *dpmaif_ctrl;
 static unsigned int g_dp_uid_mask_count;
 
 
-/*static inline struct device *ccci_md_get_dev_by_id(int md_id)
+static inline struct device *ccci_dpmaif_get_dev(void)
 {
 	return &dpmaif_ctrl->plat_dev->dev;
-}*/
+}
 
 
 /* =======================================================
@@ -413,7 +414,7 @@ static void dump_drb_queue_data(unsigned int qno)
 	u64 *data_64ptr;
 	u8 *data_8ptr;
 
-	if (!dpmaif_ctrl || qno >= DPMAIF_TXQ_NUM || qno < 0) {
+	if (!dpmaif_ctrl || qno >= DPMAIF_TXQ_NUM) {
 		CCCI_ERROR_LOG(-1, TAG,
 			"[%s] error: dpmaif_ctrl = %p; qno = %d",
 			__func__, dpmaif_ctrl, qno);
@@ -632,6 +633,7 @@ struct ul_update_rec {
 	unsigned int r_id;
 	unsigned int rel_id;
 	unsigned int budget;
+	unsigned int hw_reg_before;
 	unsigned int hw_reg;
 	unsigned int add_rel;
 };
@@ -649,7 +651,8 @@ static unsigned int s_rel_drb_rec_curr[DPMAIF_TXQ_NUM];
 
 static void ul_add_wcnt_record(int qid, unsigned int cnt, int ret,
 				unsigned int w, unsigned int r,
-				unsigned int rel, unsigned int b)
+				unsigned int rel, unsigned int b,
+				unsigned int hw_reg_b)
 {
 	struct ul_update_rec *ptr;
 
@@ -663,6 +666,7 @@ static void ul_add_wcnt_record(int qid, unsigned int cnt, int ret,
 	ptr->r_id = r;
 	ptr->rel_id = rel;
 	ptr->budget = b;
+	ptr->hw_reg_before = hw_reg_b;
 	ptr->hw_reg = drv_dpmaif_ul_get_rwidx(qid);
 	ptr->add_rel = 0;
 
@@ -688,6 +692,7 @@ static void ul_rel_drb_record(int qid, unsigned int w, unsigned int r,
 	ptr->r_id = r;
 	ptr->rel_id = rel;
 	ptr->budget = b;
+	ptr->hw_reg_before = 0;
 	ptr->hw_reg = drv_dpmaif_ul_get_rwidx(qid);
 	ptr->add_rel = 1;
 
@@ -742,27 +747,27 @@ static void dump_drb_record_by_que(unsigned int qno)
 						a = 0;
 				}
 				DPMA_DRB_LOG(
-					"[%lld] ret:%d ac:%u w:%u r:%u(0x%x) rel:%u b:%u reg:0x%x f:%d\n",
+					"[%lld] ret:%d ac:%u w:%u r:%u(0x%x) rel:%u b:%u reg_before:0x%x reg:0x%x f:%d\n",
 					ptr->tick, ptr->ret, ptr->add_cnt,
 					ptr->w_id, ptr->r_id, ptr->r_id << 1,
-					ptr->rel_id, ptr->budget, ptr->hw_reg,
-					ptr->add_rel);
+					ptr->rel_id, ptr->budget,
+					ptr->hw_reg_before, ptr->hw_reg, ptr->add_rel);
 			} else if (n) {
 				ptr = &s_add_drb_history[qno][a];
 				DPMA_DRB_LOG(
-					"[%lld] ret:%d ac:%u w:%u r:%u(0x%x) rel:%u b:%u reg:0x%x f:%d\n",
+					"[%lld] ret:%d ac:%u w:%u r:%u(0x%x) rel:%u b:%u reg_before:0x%x reg:0x%x f:%d\n",
 					ptr->tick, ptr->ret, ptr->add_cnt,
 					ptr->w_id, ptr->r_id, ptr->r_id << 1,
-					ptr->rel_id, ptr->budget, ptr->hw_reg,
-					ptr->add_rel);
+					ptr->rel_id, ptr->budget,
+					ptr->hw_reg_before, ptr->hw_reg, ptr->add_rel);
 			} else {
 				ptr = &s_rel_drb_history[qno][r];
 				DPMA_DRB_LOG(
-					"[%lld] ret:%d ac:%u w:%u r:%u(0x%x) rel:%u b:%u reg:0x%x f:%d\n",
+					"[%lld] ret:%d ac:%u w:%u r:%u(0x%x) rel:%u b:%u reg_before:0x%x reg:0x%x f:%d\n",
 					ptr->tick, ptr->ret, ptr->add_cnt,
 					ptr->w_id, ptr->r_id, ptr->r_id << 1,
-					ptr->rel_id, ptr->budget, ptr->hw_reg,
-					ptr->add_rel);
+					ptr->rel_id, ptr->budget,
+					ptr->hw_reg_before, ptr->hw_reg, ptr->add_rel);
 			}
 		}
 	}
@@ -927,7 +932,12 @@ static int dpmaif_net_rx_push_thread(void *arg)
 #endif
 #ifndef CCCI_KMODULE_ENABLE
 #ifdef CCCI_SKB_TRACE
-		per_md_data->netif_rx_profile[6] = sched_clock();
+		if (per_md_data == NULL)
+			per_md_data = ccci_get_per_md_data(hif_ctrl->md_id);
+
+		if (per_md_data)
+			per_md_data->netif_rx_profile[6] = sched_clock();
+
 		if (count > 0)
 			skb->tstamp = sched_clock();
 #endif
@@ -964,10 +974,12 @@ static int dpmaif_net_rx_push_thread(void *arg)
 #endif
 #ifndef CCCI_KMODULE_ENABLE
 #ifdef CCCI_SKB_TRACE
-		per_md_data->netif_rx_profile[6] = sched_clock() -
-			per_md_data->netif_rx_profile[6];
-		per_md_data->netif_rx_profile[5] = count;
-		trace_ccci_skb_rx(per_md_data->netif_rx_profile);
+		if (per_md_data) {
+			per_md_data->netif_rx_profile[6] = sched_clock() -
+				per_md_data->netif_rx_profile[6];
+			per_md_data->netif_rx_profile[5] = count;
+			trace_ccci_skb_rx(per_md_data->netif_rx_profile);
+		}
 #endif
 #endif
 	}
@@ -1095,9 +1107,9 @@ static int dpmaif_alloc_rx_frag(struct dpmaif_bat_request *bat_req,
 
 		/* Get physical address of the RB */
 		data_base_addr = dma_map_page(
-			ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+			ccci_dpmaif_get_dev(),
 			page, offset, bat_req->pkt_buf_sz, DMA_FROM_DEVICE);
-		if (dma_mapping_error(ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+		if (dma_mapping_error(ccci_dpmaif_get_dev(),
 			data_base_addr)) {
 			CCCI_ERROR_LOG(dpmaif_ctrl->md_id, TAG,
 				"error dma mapping\n");
@@ -1153,7 +1165,7 @@ static int dpmaif_set_rx_frag_to_skb(struct dpmaif_rx_queue *rxq,
 
 	/* rx current frag data unmapping */
 	dma_unmap_page(
-		ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+		ccci_dpmaif_get_dev(),
 		cur_page_info->data_phy_addr, cur_page_info->data_len,
 		DMA_FROM_DEVICE);
 	if (!page) {
@@ -1429,10 +1441,10 @@ fast_retry:
 
 		data_base_addr =
 			dma_map_single(
-				ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+				ccci_dpmaif_get_dev(),
 				new_skb->data, skb_data_size(new_skb),
 				DMA_FROM_DEVICE);
-		if (dma_mapping_error(ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+		if (dma_mapping_error(ccci_dpmaif_get_dev(),
 			data_base_addr)) {
 			ccci_free_skb(new_skb);
 			CCCI_ERROR_LOG(dpmaif_ctrl->md_id, TAG,
@@ -1487,7 +1499,7 @@ static int dpmaif_rx_set_data_to_skb(struct dpmaif_rx_queue *rxq,
 	unsigned int *temp_u32 = NULL;
 
 	/* rx current skb data unmapping */
-	dma_unmap_single(ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+	dma_unmap_single(ccci_dpmaif_get_dev(),
 		cur_skb_info->data_phy_addr, cur_skb_info->data_len,
 		DMA_FROM_DEVICE);
 
@@ -2333,7 +2345,7 @@ static unsigned short dpmaif_relase_tx_buffer(unsigned char q_num,
 				((struct dpmaif_drb_skb *)txq->drb_skb_base +
 				cur_idx);
 			dma_unmap_single(
-				ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+				ccci_dpmaif_get_dev(),
 				cur_drb_skb->phy_addr, cur_drb_skb->data_len,
 				DMA_TO_DEVICE);
 			skb_free = cur_drb_skb->skb;
@@ -2377,7 +2389,7 @@ static unsigned short dpmaif_relase_tx_buffer(unsigned char q_num,
 			cur_drb_skb = ((struct dpmaif_drb_skb *)
 				txq->drb_skb_base + cur_idx);
 			dma_unmap_single(
-				ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+				ccci_dpmaif_get_dev(),
 				cur_drb_skb->phy_addr, cur_drb_skb->data_len,
 				DMA_TO_DEVICE);
 		}
@@ -2475,6 +2487,7 @@ static int dpmaif_wait_resume_done(void)
 			CCCI_NORMAL_LOG(-1, TAG,
 				"[%s] warning: suspend_flag = 1; (cnt: %d)",
 				__func__, cnt);
+			pm_system_wakeup();
 			return -1;
 		}
 	}
@@ -2531,6 +2544,14 @@ int dpmaif_tx_done_kernel_thread(void *arg)
 				__func__, txq->index);
 			continue;
 		}
+
+		if (dpmaif_wait_resume_done()) {
+			//if resume not done, will waiting 1ms
+			hrtimer_start(&txq->tx_done_timer,
+				ktime_set(0, 1000000), HRTIMER_MODE_REL);
+			continue;
+		}
+
 		if (atomic_read(&txq->tx_resume_done)) {
 			CCCI_ERROR_LOG(dpmaif_ctrl->md_id, TAG,
 				"txq%d done/resume: 0x%x, 0x%x, 0x%x\n",
@@ -2751,6 +2772,12 @@ static void record_drb_skb(unsigned char q_num, unsigned short cur_idx,
 	unsigned int *temp;
 #endif
 
+	if (drb_skb == NULL) {
+		CCCI_ERROR_LOG(dpmaif_ctrl->md_id, TAG,
+			"%s idx=%u,drb_skb is NULL\n", __func__, cur_idx);
+		return;
+	}
+
 	drb_skb->skb = skb;
 	drb_skb->phy_addr = phy_addr;
 	drb_skb->data_len = data_len;
@@ -2795,8 +2822,6 @@ static inline int cs_type(struct sk_buff *skb)
 			skb->ip_summed);
 		return 0;
 	} else if (packet_type == IPV4_VERSION) {
-		if (iph->check == 0)
-			return 0; /* No HW check sum */
 		if (skb->ip_summed == CHECKSUM_NONE ||
 			skb->ip_summed == CHECKSUM_UNNECESSARY ||
 			skb->ip_summed == CHECKSUM_COMPLETE)
@@ -2834,6 +2859,7 @@ static int dpmaif_tx_send_skb(unsigned char hif_id, int qno,
 	int total_size = 0;
 #endif
 	short cs_ipv4 = 0, cs_l4 = 0;
+	unsigned int hw_reg_before = 0;
 
 	/* 1. parameters check*/
 	if (!skb)
@@ -3038,10 +3064,10 @@ retry:
 		}
 		/* tx mapping */
 		phy_addr = dma_map_single(
-			ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+			ccci_dpmaif_get_dev(),
 				data_addr, data_len, DMA_TO_DEVICE);
 		if (dma_mapping_error(
-			ccci_md_get_dev_by_id(dpmaif_ctrl->md_id), phy_addr)) {
+			ccci_dpmaif_get_dev(), phy_addr)) {
 			CCCI_ERROR_LOG(dpmaif_ctrl->md_id, TAG,
 				"error dma mapping\n");
 			ret = -1;
@@ -3079,12 +3105,13 @@ retry:
 			drv_dpmaif_ul_get_rwidx(3));
 		atomic_set(&txq->tx_resume_tx, 0);
 	}
+
+	hw_reg_before = drv_dpmaif_ul_get_rwidx(txq->index);
 	ret = drv_dpmaif_ul_add_wcnt(txq->index,
 		send_cnt * DPMAIF_UL_DRB_ENTRY_WORD);
 	ul_add_wcnt_record(txq->index, send_cnt * DPMAIF_UL_DRB_ENTRY_WORD,
-			ret, txq->drb_wr_idx, txq->drb_rd_idx,
-			txq->drb_rel_rd_idx,
-			atomic_read(&txq->tx_budget));
+			ret, txq->drb_wr_idx, txq->drb_rd_idx, txq->drb_rel_rd_idx,
+			atomic_read(&txq->tx_budget), hw_reg_before);
 
 	if (ret == HW_REG_CHK_FAIL) {
 		tx_force_md_assert("HW_REG_CHK_FAIL");
@@ -3239,6 +3266,25 @@ static void dpmaif_irq_cb(struct hif_dpmaif_ctrl *hif_ctrl)
 		CCCI_DEBUG_LOG(hif_ctrl->md_id, TAG,
 			"DPMAIF IRQ L2(%x/%x)(%x/%x)!\n",
 			L2TISAR0, L2RISAR0, L2TIMR0, L2RIMR0);
+#ifdef MT6297
+	/* check UL&DL mask status register */
+	if (((L2TIMR0 & AP_UL_L2INTR_Msk_Check) != AP_UL_L2INTR_Msk_Check) ||
+		((L2RIMR0 & AP_DL_L2INTR_Msk_Check) != AP_DL_L2INTR_Msk_Check)) {
+		/* if has error bit, set mask */
+		DPMA_WRITE_AO_UL(NRL2_DPMAIF_AO_UL_AP_L2TIMSR0, ~(AP_UL_L2INTR_En_Msk));
+		/* use msk to clear dummy interrupt */
+		DPMA_WRITE_PD_MISC(DPMAIF_PD_AP_UL_L2TISAR0, ~(AP_UL_L2INTR_En_Msk));
+
+		/* if has error bit, set mask */
+		DPMA_WRITE_AO_UL(NRL2_DPMAIF_AO_UL_APDL_L2TIMSR0, ~(AP_DL_L2INTR_En_Msk));
+		/* use msk to clear dummy interrupt */
+		DPMA_WRITE_PD_MISC(DPMAIF_PD_AP_DL_L2TISAR0, ~(AP_DL_L2INTR_En_Msk));
+		CCCI_NORMAL_LOG(0, TAG, "[%s]mask:dl=0x%x(0x%x) ul=0x%x(0x%x)\n",
+			__func__,
+			DPMA_READ_AO_UL(NRL2_DPMAIF_AO_UL_APDL_L2TIMR0), L2RIMR0,
+			DPMA_READ_AO_UL(NRL2_DPMAIF_AO_UL_AP_L2TIMR0), L2TIMR0);
+	}
+#endif
 
 	/* TX interrupt */
 	if (L2TISAR0) {
@@ -3385,6 +3431,7 @@ static int dpmaif_bat_init(struct dpmaif_bat_request *bat_req,
 {
 	int sw_buf_size = buf_type ? sizeof(struct dpmaif_bat_page_t) :
 		sizeof(struct dpmaif_bat_skb_t);
+	int retry = 0;
 
 	bat_req->bat_size_cnt = DPMAIF_DL_BAT_ENTRY_SIZE;
 	bat_req->skb_pkt_cnt = bat_req->bat_size_cnt;
@@ -3393,7 +3440,7 @@ static int dpmaif_bat_init(struct dpmaif_bat_request *bat_req,
 	/* alloc buffer for HW && AP SW */
 #if (DPMAIF_DL_BAT_SIZE > PAGE_SIZE)
 	 bat_req->bat_base = dma_alloc_coherent(
-		ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+		ccci_dpmaif_get_dev(),
 		(bat_req->bat_size_cnt * sizeof(struct dpmaif_bat_t)),
 		&bat_req->bat_phy_addr, GFP_KERNEL);
 #ifdef DPMAIF_DEBUG_LOG
@@ -3408,8 +3455,13 @@ static int dpmaif_bat_init(struct dpmaif_bat_request *bat_req,
 #endif
 	/* alloc buffer for AP SW to record skb information */
 
-	bat_req->bat_skb_ptr = kzalloc((bat_req->skb_pkt_cnt *
-		sw_buf_size), GFP_KERNEL);
+	for (retry = 0; retry < 5; retry++) {
+		bat_req->bat_skb_ptr = kzalloc((bat_req->skb_pkt_cnt *
+		sw_buf_size), GFP_KERNEL|__GFP_RETRY_MAYFAIL);
+		if (bat_req->bat_skb_ptr)
+			break;
+		CCCI_ERROR_LOG(-1, TAG, "alloc BAT memory fail retry%d\n", retry);
+	}
 	if (!bat_req->bat_base || !bat_req->bat_skb_ptr) {
 		CCCI_ERROR_LOG(-1, TAG, "bat request fail\n");
 		return LOW_MEMORY_BAT;
@@ -3422,14 +3474,16 @@ static int dpmaif_bat_init(struct dpmaif_bat_request *bat_req,
 static int dpmaif_rx_buf_init(struct dpmaif_rx_queue *rxq)
 {
 	int ret = 0;
-
+#ifdef PIT_USING_CACHE_MEM
+	int retry;
+#endif
 	/* PIT buffer init */
 	rxq->pit_size_cnt = DPMAIF_DL_PIT_ENTRY_SIZE;
 	/* alloc buffer for HW && AP SW */
 #ifndef PIT_USING_CACHE_MEM
 #if (DPMAIF_DL_PIT_SIZE > PAGE_SIZE)
 	rxq->pit_base = dma_alloc_coherent(
-		ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+		ccci_dpmaif_get_dev(),
 		(rxq->pit_size_cnt * sizeof(struct dpmaifq_normal_pit)),
 		&rxq->pit_phy_addr, GFP_KERNEL);
 #ifdef DPMAIF_DEBUG_LOG
@@ -3448,8 +3502,13 @@ static int dpmaif_rx_buf_init(struct dpmaif_rx_queue *rxq)
 	}
 #else
 	CCCI_BOOTUP_LOG(-1, TAG, "Using cacheable PIT memory\r\n");
-	rxq->pit_base = kmalloc((rxq->pit_size_cnt
-			* sizeof(struct dpmaifq_normal_pit)), GFP_KERNEL);
+	for (retry = 0; retry < 5; retry++) {
+		rxq->pit_base = kmalloc((rxq->pit_size_cnt
+			* sizeof(struct dpmaifq_normal_pit)), GFP_KERNEL|__GFP_RETRY_MAYFAIL);
+		if (rxq->pit_base)
+			break;
+		CCCI_ERROR_LOG(-1, TAG, "alloc PIT memory fail %d\n", retry);
+	}
 	if (!rxq->pit_base) {
 		CCCI_ERROR_LOG(-1, TAG, "alloc PIT memory fail\r\n");
 		return LOW_MEMORY_PIT;
@@ -3622,13 +3681,14 @@ static int dpmaif_rxq_init(struct dpmaif_rx_queue *queue)
 static int dpmaif_tx_buf_init(struct dpmaif_tx_queue *txq)
 {
 	int ret = 0;
+	unsigned int retry;
 
 	/* DRB buffer init */
 	txq->drb_size_cnt = DPMAIF_UL_DRB_ENTRY_SIZE;
 	/* alloc buffer for HW && AP SW */
 #if (DPMAIF_UL_DRB_SIZE > PAGE_SIZE)
 	txq->drb_base = dma_alloc_coherent(
-		ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+		ccci_dpmaif_get_dev(),
 		(txq->drb_size_cnt * sizeof(struct dpmaif_drb_pd)),
 		&txq->drb_phy_addr, GFP_KERNEL);
 #ifdef DPMAIF_DEBUG_LOG
@@ -3647,14 +3707,22 @@ static int dpmaif_tx_buf_init(struct dpmaif_tx_queue *txq)
 		return LOW_MEMORY_DRB;
 	}
 	memset(txq->drb_base, 0, DPMAIF_UL_DRB_SIZE);
+
 	/* alloc buffer for AP SW */
-	txq->drb_skb_base =
-		kzalloc((txq->drb_size_cnt * sizeof(struct dpmaif_drb_skb)),
-				GFP_KERNEL);
+	for (retry = 0; retry < 5; retry++) {
+		txq->drb_skb_base =
+			kzalloc((txq->drb_size_cnt * sizeof(struct dpmaif_drb_skb)),
+			GFP_KERNEL|__GFP_RETRY_MAYFAIL);
+		if (txq->drb_skb_base)
+			break;
+		CCCI_ERROR_LOG(-1, TAG, "alloc txq->drb_skb_base fail %u\n", retry);
+	}
+
 	if (!txq->drb_skb_base) {
 		CCCI_ERROR_LOG(-1, TAG, "drb skb buffer request fail\n");
 		return LOW_MEMORY_DRB;
 	}
+
 	return ret;
 }
 
@@ -3769,13 +3837,18 @@ int dpmaif_late_init(unsigned char hif_id)
 			dpmaif_ctrl->dpmaif_irq_id, ret);
 		return ret;
 	}
+	ret = irq_set_irq_wake(dpmaif_ctrl->dpmaif_irq_id, 1);
+	if (ret)
+		CCCI_ERROR_LOG(dpmaif_ctrl->md_id, TAG,
+			"irq_set_irq_wake dpmaif irq(%d) error %d\n",
+			dpmaif_ctrl->dpmaif_irq_id, ret);
 	atomic_set(&dpmaif_ctrl->dpmaif_irq_enabled, 1); /* init */
 	dpmaif_disable_irq(dpmaif_ctrl);
 
 	/* rx rx */
 #if !(DPMAIF_DL_PIT_SIZE > PAGE_SIZE)
 	dpmaif_ctrl->rx_pit_dmapool = dma_pool_create("dpmaif_pit_req_DMA",
-		ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+		ccci_dpmaif_get_dev(),
 		(DPMAIF_DL_PIT_ENTRY_SIZE*sizeof(struct dpmaifq_normal_pit)),
 		64, 0);
 #ifdef DPMAIF_DEBUG_LOG
@@ -3785,7 +3858,7 @@ int dpmaif_late_init(unsigned char hif_id)
 
 #if !(DPMAIF_DL_BAT_SIZE > PAGE_SIZE)
 	dpmaif_ctrl->rx_bat_dmapool = dma_pool_create("dpmaif_bat_req_DMA",
-		ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+		ccci_dpmaif_get_dev(),
 		(DPMAIF_DL_BAT_ENTRY_SIZE*sizeof(struct dpmaif_bat_t)), 64, 0);
 #ifdef DPMAIF_DEBUG_LOG
 	CCCI_HISTORY_LOG(dpmaif_ctrl->md_id, TAG, "bat dma pool\n");
@@ -3794,14 +3867,16 @@ int dpmaif_late_init(unsigned char hif_id)
 	for (i = 0; i < DPMAIF_RXQ_NUM; i++) {
 		rx_q = &dpmaif_ctrl->rxq[i];
 		rx_q->index = i;
-		dpmaif_rxq_init(rx_q);
+		ret = dpmaif_rxq_init(rx_q);
+		if (ret < 0)
+			return ret;
 		rx_q->skb_idx = -1;
 	}
 
 	/* tx tx */
 #if !(DPMAIF_UL_DRB_SIZE > PAGE_SIZE)
 	dpmaif_ctrl->tx_drb_dmapool = dma_pool_create("dpmaif_drb_req_DMA",
-		ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+		ccci_dpmaif_get_dev(),
 		(DPMAIF_UL_DRB_ENTRY_SIZE*sizeof(struct dpmaif_drb_pd)), 64, 0);
 #ifdef DPMAIF_DEBUG_LOG
 	CCCI_HISTORY_LOG(dpmaif_ctrl->md_id, TAG, "drb dma pool\n");
@@ -3810,7 +3885,9 @@ int dpmaif_late_init(unsigned char hif_id)
 	for (i = 0; i < DPMAIF_TXQ_NUM; i++) {
 		tx_q = &dpmaif_ctrl->txq[i];
 		tx_q->index = i;
-		dpmaif_txq_init(tx_q);
+		ret = dpmaif_txq_init(tx_q);
+		if (ret < 0)
+			return ret;
 	}
 
 	/* wakeup source init */
@@ -3871,11 +3948,7 @@ int dpmaif_start(unsigned char hif_id)
 
 	if (dpmaif_ctrl->dpmaif_state == HIFDPMAIF_STATE_PWRON)
 		return 0;
-	else if (dpmaif_ctrl->dpmaif_state == HIFDPMAIF_STATE_MIN) {
-		ret = dpmaif_late_init(hif_id);
-		if (ret < 0)
-			return ret;
-	}
+
 #ifdef DPMAIF_DEBUG_LOG
 	CCCI_HISTORY_TAG_LOG(-1, TAG, "dpmaif:start\n");
 #endif
@@ -4029,8 +4102,8 @@ void dpmaif_stop_hw(void)
 {
 	struct dpmaif_rx_queue *rxq = NULL;
 	struct dpmaif_tx_queue *txq = NULL;
-	unsigned int que_cnt, ret;
-	int count;
+	unsigned int que_cnt;
+	int count, ret;
 
 #ifdef DPMAIF_DEBUG_LOG
 	CCCI_HISTORY_TAG_LOG(-1, TAG, "dpmaif:stop hw\n");
@@ -4218,7 +4291,7 @@ static int dpmaif_stop_rxq(struct dpmaif_rx_queue *rxq)
 		if (skb) {
 			/* rx unmapping */
 			dma_unmap_single(
-				ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+				ccci_dpmaif_get_dev(),
 				cur_skb->data_phy_addr, cur_skb->data_len,
 				DMA_FROM_DEVICE);
 			ccci_free_skb(skb);
@@ -4233,7 +4306,7 @@ static int dpmaif_stop_rxq(struct dpmaif_rx_queue *rxq)
 		if (page) {
 			/* rx unmapping */
 			dma_unmap_page(
-				ccci_md_get_dev_by_id(dpmaif_ctrl->md_id),
+				ccci_dpmaif_get_dev(),
 				cur_page->data_phy_addr, cur_page->data_len,
 				DMA_FROM_DEVICE);
 			put_page(page);
@@ -4296,10 +4369,9 @@ void dpmaif_hw_reset(unsigned char md_id)
 
 	/* pre- DPMAIF HW reset: bus-protect */
 #ifdef MT6297
-	regmap_read(dpmaif_ctrl->plat_val.infra_ao_base, 0, &reg_value);
+	reg_value = ccci_read32(infra_ao_mem_base, 0);
 	reg_value &= ~INFRA_PROT_DPMAIF_BIT;
-	regmap_write(dpmaif_ctrl->plat_val.infra_ao_base,
-		0,reg_value);
+	ccci_write32(infra_ao_mem_base, 0, reg_value);
 	CCCI_REPEAT_LOG(md_id, TAG, "%s:set prot:0x%x\n", __func__, reg_value);
 #else
 	regmap_write(dpmaif_ctrl->plat_val.infra_ao_base,
@@ -4320,6 +4392,8 @@ void dpmaif_hw_reset(unsigned char md_id)
 	CCCI_NORMAL_LOG(md_id, TAG,
 		"infra_topaxi_protecten_1: 0x%x\n", reg_value);
 #endif
+	udelay(500);
+
 	/* DPMAIF HW reset */
 	CCCI_DEBUG_LOG(md_id, TAG, "%s:rst dpmaif\n", __func__);
 	/* reset dpmaif hw: AO Domain */
@@ -4333,6 +4407,8 @@ void dpmaif_hw_reset(unsigned char md_id)
 #endif
 	regmap_write(dpmaif_ctrl->plat_val.infra_ao_base,
 		INFRA_RST0_REG_AO, reg_value);
+	udelay(500);
+
 	CCCI_BOOTUP_LOG(md_id, TAG, "%s:clear reset\n", __func__);
 	/* reset dpmaif clr */
 #ifndef MT6297
@@ -4344,6 +4420,8 @@ void dpmaif_hw_reset(unsigned char md_id)
 	regmap_write(dpmaif_ctrl->plat_val.infra_ao_base,
 		INFRA_RST1_REG_AO, reg_value);
 	CCCI_BOOTUP_LOG(md_id, TAG, "%s:done\n", __func__);
+
+	udelay(500);
 
 	/* reset dpmaif hw: PD Domain */
 #ifdef MT6297
@@ -4357,6 +4435,9 @@ void dpmaif_hw_reset(unsigned char md_id)
 	regmap_write(dpmaif_ctrl->plat_val.infra_ao_base,
 		INFRA_RST0_REG_PD, reg_value);
 	CCCI_BOOTUP_LOG(md_id, TAG, "%s:clear reset\n", __func__);
+
+	udelay(500);
+
 	/* reset dpmaif clr */
 #ifndef MT6297
 	reg_value = regmap_read(dpmaif_ctrl->plat_val.infra_ao_base,
@@ -4400,17 +4481,10 @@ int dpmaif_stop(unsigned char hif_id)
 	/* stop debug mechnism */
 	del_timer(&dpmaif_ctrl->traffic_monitor);
 
-#ifdef MT6297
 	/* CG set */
 	ccci_hif_dpmaif_set_clk(0);
 	/* 3. todo: reset IP */
 	dpmaif_hw_reset(dpmaif_ctrl->md_id);
-#else
-	/* 3. todo: reset IP */
-	dpmaif_hw_reset(dpmaif_ctrl->md_id);
-	/* CG set */
-	ccci_hif_dpmaif_set_clk(0);
-#endif
 
 #ifdef DPMAIF_DEBUG_LOG
 	CCCI_HISTORY_LOG(-1, TAG, "dpmaif:stop end\n");
@@ -4454,6 +4528,22 @@ static int dpmaif_resume(unsigned char hif_id)
 		CCCI_DEBUG_LOG(0, TAG, "sys_resume no need restore\n");
 	} else {
 		/*IP power down before and need to restore*/
+		#ifdef MT6297
+		/* DL set mask */
+		DPMA_WRITE_AO_UL(NRL2_DPMAIF_AO_UL_APDL_L2TIMSR0, ~(AP_DL_L2INTR_En_Msk));
+		/* use msk to clear dummy interrupt */
+		DPMA_WRITE_PD_MISC(DPMAIF_PD_AP_DL_L2TISAR0, ~(AP_DL_L2INTR_En_Msk));
+
+		/* UL set mask */
+		DPMA_WRITE_AO_UL(NRL2_DPMAIF_AO_UL_AP_L2TIMSR0, ~(AP_UL_L2INTR_En_Msk));
+		/* use msk to clear dummy interrupt */
+		DPMA_WRITE_PD_MISC(DPMAIF_PD_AP_UL_L2TISAR0, ~(AP_UL_L2INTR_En_Msk));
+
+		CCCI_NORMAL_LOG(0, TAG, "[%s]mask:dl=0x%x ul=0x%x\n",
+			__func__,
+			DPMA_READ_AO_UL(NRL2_DPMAIF_AO_UL_APDL_L2TIMR0),
+			DPMA_READ_AO_UL(NRL2_DPMAIF_AO_UL_AP_L2TIMR0));
+		#endif
 		CCCI_NORMAL_LOG(0, TAG,
 			"sys_resume need to restore(0x%x, 0x%x, 0x%x)\n",
 			drv_dpmaif_ul_get_rwidx(0),
@@ -4556,6 +4646,11 @@ static int dpmaif_pre_stop(unsigned char hif_id)
 {
 	if (hif_id != DPMAIF_HIF_ID)
 		return -1;
+
+	if (dpmaif_ctrl->dpmaif_state == HIFDPMAIF_STATE_PWROFF
+		|| dpmaif_ctrl->dpmaif_state == HIFDPMAIF_STATE_MIN)
+		return 0;
+
 	dpmaif_stop_hw();
 	return 0;
 }
@@ -4812,12 +4907,24 @@ int ccci_hif_dpmaif_probe(struct platform_device *pdev)
 {
 	int ret;
 
+	if (!get_modem_is_enabled(MD_SYS1)) {
+		CCCI_ERROR_LOG(-1, TAG,
+			"modem 1 not enable, exit\n");
+		return -1;
+	}
+
 	ret = ccci_dpmaif_hif_init(&pdev->dev);
 	if (ret < 0) {
 		CCCI_ERROR_LOG(-1, TAG, "ccci dpmaif init fail");
 		return ret;
 	}
 	dpmaif_ctrl->plat_dev = pdev;
+
+	ret = dpmaif_late_init(1 << DPMAIF_HIF_ID);
+	if (ret < 0)
+		return ret;
+	CCCI_NORMAL_LOG(-1, TAG,
+		"dpmaif_late_init done, ret=%d\n", ret);
 
 	return 0;
 }

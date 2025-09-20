@@ -1277,13 +1277,14 @@ static inline void proxy_setup_channel_mapping(struct port_proxy *proxy_p)
 	for (i = 0; i < proxy_p->port_number; i++) {
 		port = proxy_p->ports + i;
 
-		if (port->rx_ch < CCCI_MAX_CH_NUM)
+		if (port->rx_ch >= 0 && port->rx_ch < CCCI_MAX_CH_NUM)
 			port_list[port->rx_ch] = port;
-		if (port->tx_ch < CCCI_MAX_CH_NUM)
+		if (port->tx_ch >= 0 && port->tx_ch < CCCI_MAX_CH_NUM)
 			port_list[port->tx_ch] = port;
 
 		/*setup RX_CH=>port list mapping*/
-		list_add_tail(&port->entry, &proxy_p->rx_ch_ports[port->rx_ch]);
+		if (port->rx_ch < CCCI_MAX_CH_NUM)
+			list_add_tail(&port->entry, &proxy_p->rx_ch_ports[port->rx_ch]);
 
 		/* skip no data transmission port,
 		 * such as CCCI_DUMMY_CH type port
@@ -1582,17 +1583,30 @@ static inline void proxy_dispatch_md_status(struct port_proxy *proxy_p,
 static inline void proxy_dump_status(struct port_proxy *proxy_p)
 {
 	struct port_t *port = NULL;
-	/* hardcode, port number should not be larger than 64 */
-	unsigned long long port_full = 0;
-	unsigned int i;
+	unsigned int port_full_sum = 0;
+	unsigned int i, full_len;
+	/* the worst is all port full */
+	char port_full[352];
+	int ret = 0;
 
+	if (!proxy_p || !proxy_p->ports) {
+		CCCI_ERROR_LOG(0, TAG, "proxy_p or proxy_p->ports is NULL\n");
+		return;
+	}
+
+	full_len = sizeof(port_full);
+	memset(port_full, 0, full_len);
 	for (i = 0; i < proxy_p->port_number; i++) {
 		port = proxy_p->ports + i;
-		if (port->flags & PORT_F_RX_FULLED)
-			port_full |= (1LL << i);
+		if (port->flags & PORT_F_RX_FULLED) {
+			port_full_sum++;
+			ret += scnprintf(port_full + ret, full_len - ret, "%d ",
+				port->rx_ch);
+			if (ret >= full_len)
+				break;
+		}
 		if (port->tx_busy_count != 0 || port->rx_busy_count != 0) {
-			CCCI_REPEAT_LOG(proxy_p->md_id, TAG,
-				"port %s busy count %d/%d\n", port->name,
+			CCCI_REPEAT_LOG(0, TAG, "port %s busy count %d/%d\n", port->name,
 				port->tx_busy_count, port->rx_busy_count);
 			port->tx_busy_count = 0;
 			port->rx_busy_count = 0;
@@ -1600,9 +1614,9 @@ static inline void proxy_dump_status(struct port_proxy *proxy_p)
 		if (port->ops->dump_info)
 			port->ops->dump_info(port, 0);
 	}
-	if (port_full)
-		CCCI_ERROR_LOG(proxy_p->md_id, TAG,
-			"port_full status=%llx\n", port_full);
+	if (port_full_sum)
+		CCCI_ERROR_LOG(0, TAG, "port_full sum = %u, rx_ch: %s\n",
+			port_full_sum, port_full);
 }
 
 static inline int proxy_register_char_dev(struct port_proxy *proxy_p)
@@ -2027,6 +2041,8 @@ void ccci_port_queue_status_notify(int md_id, int hif_id, int qno,
 	CHECK_HIF_ID(hif_id);
 	CHECK_QUEUE_ID(qno);
 	proxy_p = GET_PORT_PROXY(md_id);
+	if (proxy_p == NULL)
+		return;
 	proxy_dispatch_queue_status(proxy_p, hif_id, qno,
 		dir, (unsigned int)state);
 }
