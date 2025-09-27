@@ -537,7 +537,7 @@ static int mt6660_chip_power_on(
 			ret = mt6660_i2c_update_bits(chip,
 				MT6660_REG_SYSTEM_CTRL, 0x01, 0x00);
 			val = mt6660_i2c_read(chip, MT6660_REG_IRQ_STATUS1);
-			dev_info(chip->dev,
+			dev_dbg(chip->dev,
 				"%s reg0x05 = 0x%x\n", __func__, val);
 		}
 		chip->pwr_cnt++;
@@ -588,7 +588,7 @@ static int mt6660_component_set_bias_level(struct snd_soc_component *component,
 	case SND_SOC_BIAS_OFF:
 		dev_dbg(component->dev, "enter low power mode\n");
 		val = mt6660_i2c_read(chip, MT6660_REG_IRQ_STATUS1);
-		dev_info(component->dev,
+		dev_dbg(component->dev,
 			"%s reg0x05 = 0x%x\n", __func__, val);
 		ret = mt6660_chip_power_on(component, 0);
 		if (ret < 0) {
@@ -1055,7 +1055,7 @@ int mt6660_i2c_probe(struct i2c_client *client, const struct i2c_device_id *id)
 		goto probe_fail;
 	}
 	dev_set_name(chip->dev, "MT6660_MT_0");
-	dev_info(chip->dev, "%s--dev name:MT6660_MT_0\n", __func__);
+	dev_dbg(chip->dev, "%s--dev name:MT6660_MT_0\n", __func__);
 	return snd_soc_register_component(chip->dev,
 		&mt6660_component_driver, &mt6660_codec_dai, 1);
 probe_fail:
