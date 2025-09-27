@@ -44,7 +44,7 @@ static int mm8013_write_reg(struct i2c_client *client, u8 reg, u16 value)
 	mdelay(4);
 	ret = i2c_smbus_write_word_data(client, reg, value);
 	if (ret < 0)
-		dev_info(&client->dev, "%s: err %d\n", __func__, ret);
+		dev_dbg(&client->dev, "%s: err %d\n", __func__, ret);
 	mutex_unlock(&chip->i2c_rw_lock);
 
 	return ret;
@@ -59,7 +59,7 @@ static int mm8013_read_reg(struct i2c_client *client, u8 reg)
 	mdelay(4);
 	ret = i2c_smbus_read_word_data(client, reg);
 	if (ret < 0)
-		dev_info(&client->dev, "%s: err %d\n", __func__, ret);
+		dev_dbg(&client->dev, "%s: err %d\n", __func__, ret);
 	mutex_unlock(&chip->i2c_rw_lock);
 
 	return ret;
@@ -152,21 +152,21 @@ static int mm8013_fgstatus(struct mm8013_chip *chip)
 	//Full Charge bit check
 	ret = mm8013_read_reg(chip->client, REG_FLAGS);
 	if (ret < 0) {
-		dev_info(&chip->client->dev, "[%s] get REG_FLAGS failed!\n", __func__);
+		dev_dbg(&chip->client->dev, "[%s] get REG_FLAGS failed!\n", __func__);
 		return ret;
 	}
 	st = ret & 0x0200;
-	dev_info(&chip->client->dev, "[%s] get REG_FLAGS<%.4x>!\n", __func__, st);
+	dev_dbg(&chip->client->dev, "[%s] get REG_FLAGS<%.4x>!\n", __func__, st);
 	if (st != 0x0200)
 		return ret;
 
 	//Rtc battery maintain flag check
 	//ret = rtc_get_bat_maintain(&bat_maintain);
 	//if (ret) {
-	//	dev_info(&chip->client->dev, "[%s] get RTC bat maintain flag failed!\n", __func__);
+	//	dev_dbg(&chip->client->dev, "[%s] get RTC bat maintain flag failed!\n", __func__);
 	//	return ret;
 	//}
-	//dev_info(&chip->client->dev, "[%s] bat maintain flag<%d/%s>!\n", __func__,
+	//dev_dbg(&chip->client->dev, "[%s] bat maintain flag<%d/%s>!\n", __func__,
 	//		bat_maintain, bat_maintain?"enable":"disable");
 	//if (!bat_maintain) {
 	//	return 0;
@@ -174,20 +174,20 @@ static int mm8013_fgstatus(struct mm8013_chip *chip)
 	//CycleCount check
 	ret = mm8013_read_reg(chip->client, REG_CYCLECOUNT);
 	if (ret < 0) {
-		dev_info(&chip->client->dev, "[%s] get REG_CYCLECOUNT failed!\n", __func__);
+		dev_dbg(&chip->client->dev, "[%s] get REG_CYCLECOUNT failed!\n", __func__);
 		return ret;
 	}
 	cycle = ret;
-	dev_info(&chip->client->dev, "[%s] get REG_CYCLECOUNT<%d>!\n", __func__, cycle);
+	dev_dbg(&chip->client->dev, "[%s] get REG_CYCLECOUNT<%d>!\n", __func__, cycle);
 
 	//ChargeVoltage check
 	ret = mm8013_read_reg(chip->client, REG_CHARGEVOLT);
 	if (ret < 0) {
-		dev_info(&chip->client->dev, "[%s] get REG_CHARGEVOLT failed!\n", __func__);
+		dev_dbg(&chip->client->dev, "[%s] get REG_CHARGEVOLT failed!\n", __func__);
 		return ret;
 	}
 	volt = ret;
-	dev_info(&chip->client->dev, "[%s] get REG_CHARGEVOLT<%d>!\n", __func__, ret);
+	dev_dbg(&chip->client->dev, "[%s] get REG_CHARGEVOLT<%d>!\n", __func__, ret);
 
 	if (cycle < 150) {
 		if (volt != 4430)
@@ -203,17 +203,17 @@ static int mm8013_fgstatus(struct mm8013_chip *chip)
 	if (req != 0) {
 		ret = mm8013_write_reg(chip->client, REG_CHARGEVOLT, req);
 		if (ret < 0) {
-			dev_info(&chip->client->dev, "[%s] set REG_CHARGEVOLT<%d> failed!\n",
+			dev_dbg(&chip->client->dev, "[%s] set REG_CHARGEVOLT<%d> failed!\n",
 					__func__, ret);
 			return ret;
 		}
 		ret = mm8013_read_reg(chip->client, REG_CHARGEVOLT);
 		if (ret < 0) {
-			dev_info(&chip->client->dev, "[%s] get REG_CHARGEVOLT<%d> failed!\n",
+			dev_dbg(&chip->client->dev, "[%s] get REG_CHARGEVOLT<%d> failed!\n",
 				__func__, ret);
 			return ret;
 		}
-		dev_info(&chip->client->dev, "[%s] update REG_CHARGEVOLT<req:%d ret:%d>!\n",
+		dev_dbg(&chip->client->dev, "[%s] update REG_CHARGEVOLT<req:%d ret:%d>!\n",
 				__func__, req, ret);
 		if (ret != req)
 			return ret;
@@ -244,7 +244,7 @@ static int mm8013_checkdevice(struct mm8013_chip *chip)
 		ret = 0;
 	}
 
-	dev_info(&chip->client->dev, "%s battery id:%d\n", __func__, ret);
+	dev_dbg(&chip->client->dev, "%s battery id:%d\n", __func__, ret);
 	return ret;
 }
 
@@ -432,10 +432,10 @@ static int mm8013_probe(struct i2c_client *client,
 	struct mm8013_chip *chip;
 	int ret;
 
-	dev_info(&client->dev, "[%s] enter, start\n", __func__);
+	dev_dbg(&client->dev, "[%s] enter, start\n", __func__);
 
 	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_WORD_DATA)) {
-		dev_info(&client->dev, "[%s] not support i2c word ops!\n", __func__);
+		dev_dbg(&client->dev, "[%s] not support i2c word ops!\n", __func__);
 		return -EIO;
 	}
 	chip = kzalloc(sizeof(*chip), GFP_KERNEL);
@@ -449,20 +449,20 @@ static int mm8013_probe(struct i2c_client *client,
 
 	ret = mm8013_checkdevice(chip);
 	if (ret < 0) {
-		dev_info(&client->dev, "[%s] failed to access\n", __func__);
+		dev_dbg(&client->dev, "[%s] failed to access\n", __func__);
 		if (ret == -EREMOTEIO)
 			ret = -EPROBE_DEFER;
 		return ret;
 	}
 	switch (ret) {
 	case 1:
-		dev_info(&client->dev, "%s battery id:1\n", __func__);
+		dev_dbg(&client->dev, "%s battery id:1\n", __func__);
 		break;
 	case 2:
-		dev_info(&client->dev, "%s battery id:2\n", __func__);
+		dev_dbg(&client->dev, "%s battery id:2\n", __func__);
 		break;
 	default:
-		dev_info(&client->dev, "%s battery id:0\n", __func__);
+		dev_dbg(&client->dev, "%s battery id:0\n", __func__);
 		break;
 	}
 
@@ -470,7 +470,7 @@ static int mm8013_probe(struct i2c_client *client,
 	INIT_DELAYED_WORK(&chip->battery_update_work, mm8013_battery_update_work);
 	schedule_delayed_work(&chip->battery_update_work, msecs_to_jiffies(5*1000));
 
-	dev_info(&client->dev, "%s ok\n", __func__);
+	dev_dbg(&client->dev, "%s ok\n", __func__);
 	return 0;
 }
 
@@ -491,7 +491,7 @@ static void mm8013_shutdown(struct i2c_client *client)
 	if (ret < 0)
 		return;
 
-	dev_info(&client->dev, "%s shutdown\n", __func__, ret);
+	dev_dbg(&client->dev, "%s shutdown\n", __func__, ret);
 }
 static const struct i2c_device_id mm8013_id[] = {
 	{ "mm8013", 0 },

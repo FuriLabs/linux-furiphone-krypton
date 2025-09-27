@@ -154,7 +154,7 @@ unsigned int charging_value_to_parameter(const unsigned int
 	if (val < array_size)
 		return parameter[val];
 
-	pr_info("Can't find the parameter\n");
+	pr_debug("Can't find the parameter\n");
 	return parameter[0];
 
 }
@@ -172,7 +172,7 @@ unsigned int charging_parameter_to_value(const unsigned int
 			return i;
 	}
 
-	pr_info("NO register value match\n");
+	pr_debug("NO register value match\n");
 	/* TODO: ASSERT(0);    // not find the value */
 	return 0;
 }
@@ -199,7 +199,7 @@ static unsigned int bmt_find_closest_level(const unsigned int *pList,
 			}
 		}
 
-		pr_info("Can't find closest level\n");
+		pr_debug("Can't find closest level\n");
 		return pList[0];
 		/* return CHARGE_CURRENT_0_00_MA; */
 	} else {
@@ -209,7 +209,7 @@ static unsigned int bmt_find_closest_level(const unsigned int *pList,
 				return pList[i];
 		}
 
-		pr_info("Can't find closest level\n");
+		pr_debug("Can't find closest level\n");
 		return pList[number - 1];
 		/* return CHARGE_CURRENT_0_00_MA; */
 	}
@@ -326,7 +326,7 @@ unsigned int sgm41516d_read_byte(struct sgm41516d_info *info, unsigned char cmd,
 		ret = i2c_transfer(info->client->adapter, msgs, xfers);
 
 		if (ret == -ENXIO) {
-			pr_info("skipping non-existent adapter %s\n",
+			pr_debug("skipping non-existent adapter %s\n",
 				info->client->adapter->name);
 			break;
 		}
@@ -366,7 +366,7 @@ unsigned int sgm41516d_write_byte(struct sgm41516d_info *info, unsigned char cmd
 		ret = i2c_transfer(info->client->adapter, msgs, xfers);
 
 		if (ret == -ENXIO) {
-			pr_info("skipping non-existent adapter %s\n",
+			pr_debug("skipping non-existent adapter %s\n",
 				info->client->adapter->name);
 			break;
 		}
@@ -393,14 +393,14 @@ unsigned int sgm41516d_read_interface(struct sgm41516d_info *info, unsigned char
 
 	ret = sgm41516d_read_byte(info, RegNum, &sgm41516d_reg);
 	if (ret < 0)
-		pr_info("[%s] read Reg[%x] failed ret = %d\n", __func__, RegNum, ret);
+		pr_debug("[%s] read Reg[%x] failed ret = %d\n", __func__, RegNum, ret);
 
-	pr_info("[%s] Reg[%x]=0x%x\n", __func__, RegNum, sgm41516d_reg);
+	pr_debug("[%s] Reg[%x]=0x%x\n", __func__, RegNum, sgm41516d_reg);
 
 	sgm41516d_reg &= (MASK << SHIFT);
 	*val = (sgm41516d_reg >> SHIFT);
 
-	pr_info("[%s] val=0x%x\n", __func__, *val);
+	pr_debug("[%s] val=0x%x\n", __func__, *val);
 	mutex_unlock(&info->sgm41516d_access_lock);
 
 	return ret;
@@ -418,7 +418,7 @@ unsigned int sgm41516d_config_interface(struct sgm41516d_info *info, unsigned ch
 
 	ret = sgm41516d_read_byte(info, RegNum, &sgm41516d_reg);
 	if (ret < 0)
-		pr_info("[%s] read Reg[%x] failed ret = %d\n", __func__, RegNum, ret);
+		pr_debug("[%s] read Reg[%x] failed ret = %d\n", __func__, RegNum, ret);
 
 	sgm41516d_reg_ori = sgm41516d_reg;
 	sgm41516d_reg &= ~(MASK << SHIFT);
@@ -427,10 +427,10 @@ unsigned int sgm41516d_config_interface(struct sgm41516d_info *info, unsigned ch
 
 	ret = sgm41516d_write_byte(info, RegNum, sgm41516d_reg);
 	if (ret < 0)
-		pr_info("[%s] write Reg[%x] failed ret = %d\n", __func__, RegNum, ret);
+		pr_debug("[%s] write Reg[%x] failed ret = %d\n", __func__, RegNum, ret);
 
 	mutex_unlock(&info->sgm41516d_access_lock);
-	pr_info("[%s] write Reg[%x]=0x%x from 0x%x\n", __func__,
+	pr_debug("[%s] write Reg[%x]=0x%x from 0x%x\n", __func__,
 			     RegNum,
 			     sgm41516d_reg, sgm41516d_reg_ori);
 
@@ -446,7 +446,7 @@ unsigned char g_reg_value_sgm41516d;
 static ssize_t show_sgm41516d_access(struct device *dev,
 				   struct device_attribute *attr, char *buf)
 {
-	pr_info("[%s] 0x%x\n", __func__, g_reg_value_sgm41516d);
+	pr_debug("[%s] 0x%x\n", __func__, g_reg_value_sgm41516d);
 	return sprintf(buf, "0x%x\n", (unsigned int)g_reg_value_sgm41516d);
 }
 
@@ -460,10 +460,10 @@ static ssize_t store_sgm41516d_access(struct device *dev,
 	unsigned int reg_address = 0;
 	struct sgm41516d_info *info = dev_get_drvdata(dev);
 
-	pr_info("[%s]\n", __func__);
+	pr_debug("[%s]\n", __func__);
 
 	if (buf != NULL && size != 0) {
-		pr_info("[%s] buf is %s and size is %zu\n", __func__, buf,
+		pr_debug("[%s] buf is %s and size is %zu\n", __func__, buf,
 			size);
 
 		pvalue = (char *)buf;
@@ -478,7 +478,7 @@ static ssize_t store_sgm41516d_access(struct device *dev,
 		if (size > 5) {
 			val = strsep(&pvalue, " ");
 			ret = kstrtou32(val, 16, (unsigned int *)&reg_value);
-			pr_info(
+			pr_debug(
 			"[%s] write sgm41516d reg 0x%x with value 0x%x !\n",
 			__func__,
 			(unsigned int) reg_address, reg_value);
@@ -488,11 +488,11 @@ static ssize_t store_sgm41516d_access(struct device *dev,
 				reg_value, 0xFF, 0x0);
 		} else {
 			ret = sgm41516d_read_byte(info, reg_address, &g_reg_value_sgm41516d);
-			pr_info(
+			pr_debug(
 			"[%s] read sgm41516d reg 0x%x with value 0x%x !\n",
 			__func__,
 			(unsigned int) reg_address, g_reg_value_sgm41516d);
-			pr_info(
+			pr_debug(
 			"[%s] use \"cat sgm41516d_access\" to get value\n",
 			__func__);
 		}
@@ -1069,14 +1069,14 @@ static int sgm41516d_dump_register(struct charger_device *chg_dev)
 	unsigned int ret = 0;
 	unsigned char sgm41516d_reg[sgm41516d_REG_NUM] = { 0 };
 
-	pr_info("[sgm41516d] ");
+	pr_debug("[sgm41516d] ");
 	for (i = 0; i < sgm41516d_REG_NUM; i++) {
 		ret = sgm41516d_read_byte(info, i, &sgm41516d_reg[i]);
 		if (ret == 0) {
-			pr_info("[sgm41516d] i2c transfor error\n");
+			pr_debug("[sgm41516d] i2c transfor error\n");
 			return 1;
 		}
-		pr_info("[0x%x]=0x%x ", i, sgm41516d_reg[i]);
+		pr_debug("[0x%x]=0x%x ", i, sgm41516d_reg[i]);
 	}
 	pr_debug("\n");
 
@@ -1097,8 +1097,8 @@ static int sgm41516d_enable_charging(struct charger_device *chg_dev,
 	int status = 0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
-	pr_info("pass value = %d\n", en);
+	pr_debug("%s enter!\n", __func__);
+	pr_debug("pass value = %d\n", en);
 	if (en) {
 		/* enable charging */
 		sgm41516d_set_en_hiz(info, false);
@@ -1106,7 +1106,7 @@ static int sgm41516d_enable_charging(struct charger_device *chg_dev,
 	} else {
 		/* disable charging */
 		sgm41516d_set_chg_config(info, en);
-		pr_info("[charging_enable] under test mode: disable charging\n");
+		pr_debug("[charging_enable] under test mode: disable charging\n");
 	}
 
 	return status;
@@ -1119,8 +1119,8 @@ static int sgm41516d_get_current(struct charger_device *chg_dev,
 	unsigned int ret = 0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
-	pr_info("pass value = %d\n", *ichg);
+	pr_debug("%s enter!\n", __func__);
+	pr_debug("pass value = %d\n", *ichg);
 	/* Get current level */
 	ret=sgm41516d_read_interface(info, sgm41516d_CON2, &ret_val, CON2_ICHG_MASK,
 			       CON2_ICHG_SHIFT);
@@ -1140,16 +1140,16 @@ static int sgm41516d_set_current(struct charger_device *chg_dev,
 	unsigned int register_value;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
-	pr_info("&&&& charge_current_value = %d\n", current_value);
+	pr_debug("%s enter!\n", __func__);
+	pr_debug("&&&& charge_current_value = %d\n", current_value);
 	current_value /= 10;
 	array_size = GETARRAYNUM(CS_VTH);
 	set_chr_current = bmt_find_closest_level(CS_VTH, array_size,
 			  current_value);
 	register_value = charging_parameter_to_value(CS_VTH, array_size,
 			 set_chr_current);
-	//pr_info("&&&& charge_register_value = %d\n",register_value);
-	pr_info("&&&& %s register_value = %d\n", __func__,
+	//pr_debug("&&&& charge_register_value = %d\n",register_value);
+	pr_debug("&&&& %s register_value = %d\n", __func__,
 		register_value);
 	sgm41516d_set_ichg(info, register_value);
 
@@ -1163,11 +1163,11 @@ static int sgm41516d_get_input_current(struct charger_device *chg_dev,
 	unsigned char val = 0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
+	pr_debug("%s enter!\n", __func__);
 	ret=sgm41516d_read_interface(info, sgm41516d_CON0, &val, CON0_IINLIM_MASK,
 			       CON0_IINLIM_SHIFT);
 	*aicr = INPUT_CS_VTH[val]*10;
-	pr_info("read value = %d\n", *aicr);
+	pr_debug("read value = %d\n", *aicr);
 	return ret;
 }
 
@@ -1181,16 +1181,16 @@ static int sgm41516d_set_input_current(struct charger_device *chg_dev,
 	unsigned int register_value;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
-	pr_info("pass value = %d\n", current_value);
+	pr_debug("%s enter!\n", __func__);
+	pr_debug("pass value = %d\n", current_value);
 	current_value /= 10;
-	pr_info("&&&& current_value = %d\n", current_value);
+	pr_debug("&&&& current_value = %d\n", current_value);
 	array_size = GETARRAYNUM(INPUT_CS_VTH);
 	set_chr_current = bmt_find_closest_level(INPUT_CS_VTH, array_size,
 			  current_value);
 	register_value = charging_parameter_to_value(INPUT_CS_VTH, array_size,
 			 set_chr_current);
-	pr_info("&&&& %s register_value = %d\n", __func__,
+	pr_debug("&&&& %s register_value = %d\n", __func__,
 		register_value);
 	sgm41516d_set_iinlim(info, register_value);
 
@@ -1207,8 +1207,8 @@ static int sgm41516d_set_cv_voltage(struct charger_device *chg_dev,
 	unsigned int smg41516_fine=0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
-	pr_info("pass value = %d\n", cv);
+	pr_debug("%s enter!\n", __func__);
+	pr_debug("pass value = %d\n", cv);
 
 	array_size = GETARRAYNUM(VBAT_CV_VTH);
 	set_cv_voltage = bmt_find_closest_level(VBAT_CV_VTH, array_size, cv);
@@ -1246,7 +1246,7 @@ out:
 
 	if (g_chg_info == SGM41516 || g_chg_info == SGM41516D)
 		sgm41516d_set_cv_fine_tuning(info, smg41516_fine);
-	pr_info("cv reg value = %d %d %d smg41516_fine=%d\n", register_value,
+	pr_debug("cv reg value = %d %d %d smg41516_fine=%d\n", register_value,
 			cv, set_cv_voltage, smg41516_fine);
 
 	return status;
@@ -1258,7 +1258,7 @@ static int sgm41516d_reset_watch_dog_timer(struct charger_device
 	unsigned int status = true;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("charging_reset_watch_dog_timer\n");
+	pr_debug("charging_reset_watch_dog_timer\n");
 
 	sgm41516d_set_wdt_rst(info, true);	/* Kick watchdog */
 
@@ -1275,8 +1275,8 @@ static int sgm41516d_set_vindpm_voltage(struct charger_device *chg_dev,
 	unsigned int set_value=0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
-	pr_info("pass value = %d\n", vindpm);
+	pr_debug("%s enter!\n", __func__);
+	pr_debug("pass value = %d\n", vindpm);
 
 	if(g_chg_info!=SGM41516 && g_chg_info!=SGM41516D)
 		return status;
@@ -1335,7 +1335,7 @@ static int sgm41516d_set_vindpm_voltage(struct charger_device *chg_dev,
 	default:
 		return false;
 	}
-	pr_info("%s vindpm =%d vindpm_os=%d set_value=%d\r\n", __func__,
+	pr_debug("%s vindpm =%d vindpm_os=%d set_value=%d\r\n", __func__,
 			vindpm, vindpm_os, set_value);
 
 	sgm41516d_set_vindpm_os(info, vindpm_os);
@@ -1350,7 +1350,7 @@ static int sgm41516d_get_mivr_state(struct charger_device *chg_dev, bool *in_loo
 	const int retry_count = 5;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
+	pr_debug("%s enter!\n", __func__);
 
 	for (i = 0;i < retry_count; i++){
 		ret = sgm41516d_read_interface(info, (unsigned char) (sgm41516d_CON10),
@@ -1361,7 +1361,7 @@ static int sgm41516d_get_mivr_state(struct charger_device *chg_dev, bool *in_loo
 		if (val == 0x1)
 			is_in_vindpm++;
 	}
-	pr_info("pass value = 0x%x\n", val);
+	pr_debug("pass value = 0x%x\n", val);
 	if (is_in_vindpm >= retry_count-1)
 		return 1;
 	else
@@ -1399,7 +1399,7 @@ static int sgm41516d_get_mivr(struct charger_device *chg_dev, u32 *uV)
 	};
 
 	*uV=(vindpm_offset+VINDPM_OS_MIVR_STEP*vindpm_bit)*1000;
-	pr_info("%s val =%d vindpm_bit=%d vindpm_offset=%d *uV=%d\r\n",
+	pr_debug("%s val =%d vindpm_bit=%d vindpm_offset=%d *uV=%d\r\n",
 			__func__, val,vindpm_bit,vindpm_offset,*uV);
 	return true;
 }
@@ -1431,7 +1431,7 @@ static int sgm41516d_enable_otg(struct charger_device *chg_dev, bool en)
 	int ret = 0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s en = %d\n", __func__, en);
+	pr_debug("%s en = %d\n", __func__, en);
 	if (en) {
 		sgm41516d_set_chg_config(info, false);
 		sgm41516d_set_otg_config(info, en);
@@ -1455,8 +1455,8 @@ static int sgm41516d_set_boost_current_limit(struct charger_device
 	u8 boost_reg = 0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
-	pr_info("pass value = %d\n", uA);
+	pr_debug("%s enter!\n", __func__);
+	pr_debug("pass value = %d\n", uA);
 	uA /= 1000;
 	array_size = ARRAY_SIZE(BOOST_CURRENT_LIMIT);
 	boost_ilimit = bmt_find_closest_level(BOOST_CURRENT_LIMIT, array_size,
@@ -1474,8 +1474,8 @@ static int sgm41516d_enable_safetytimer(struct charger_device *chg_dev,
 	int status = 0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
-	pr_info("pass value = %d\n", en);
+	pr_debug("%s enter!\n", __func__);
+	pr_debug("pass value = %d\n", en);
 	if (en)
 		sgm41516d_set_en_timer(info, 0x1);
 	else
@@ -1489,11 +1489,11 @@ static int sgm41516d_get_is_safetytimer_enable(struct charger_device
 	unsigned char val = 0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
+	pr_debug("%s enter!\n", __func__);
 	sgm41516d_read_interface(info, sgm41516d_CON5, &val, CON5_EN_TIMER_MASK,
 							CON5_EN_TIMER_SHIFT);
 	*en = (bool)val;
-	pr_info("pass value = %d\n", val);
+	pr_debug("pass value = %d\n", val);
 	return val;
 }
 
@@ -1527,26 +1527,26 @@ static int mtk_ext_chgdet(struct charger_device *chg_dev)
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
 	sgm41516d_dump_register(chg_dev);
-	pr_info( "kernel_sgm41516d_chg_type detect]\n");
+	pr_debug( "kernel_sgm41516d_chg_type detect]\n");
 	Charger_Detect_Init();
 
 	bq_chg_type = CHARGER_UNKNOWN;
 
 	sgm41516d_force_dpdm_enable(info, 1);
 	//usb_status = sgm41516d_get_vbus_stat();
-	//pr_info("%s: usb_stats1 = 0x%X\n", __func__, usb_status);
+	//pr_debug("%s: usb_stats1 = 0x%X\n", __func__, usb_status);
 	do{
 		msleep(50);
 		iidet_bit =sgm41516d_get_iidet_status(info);
 		bq_detect_count++;
-		pr_info("%s: count_max=%d,iidet_bit=%d,usb_status =%d\n",
+		pr_debug("%s: count_max=%d,iidet_bit=%d,usb_status =%d\n",
 				__func__,bq_detect_count,iidet_bit,
 				sgm41516d_get_vbus_stat(info));
 		if(bq_detect_count>BQ_DET_COUNT_MAX)
 			iidet_bit = 0;
 	}while (iidet_bit);
 	usb_status = sgm41516d_get_vbus_stat(info);
-	pr_info("%s: usb_stats2 = 0x%X\n", __func__, usb_status);
+	pr_debug("%s: usb_stats2 = 0x%X\n", __func__, usb_status);
 
 	switch (usb_status) {
 	case SGM41516D_CHG_TYPE_SDP:
@@ -1568,7 +1568,7 @@ static int mtk_ext_chgdet(struct charger_device *chg_dev)
 		bq_chg_type = CHARGER_UNKNOWN;
 		break;
 	}
-	pr_info("%s: bq_chg_type = %d\n", __func__, bq_chg_type);
+	pr_debug("%s: bq_chg_type = %d\n", __func__, bq_chg_type);
 	Charger_Detect_Release();
 	return bq_chg_type;
 }
@@ -1578,8 +1578,8 @@ static int sgm41516d_set_term_current(struct charger_device *chg_dev, u32 curren
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 	unsigned int iterm_reg = 0x2;
 
-	pr_info("%s enter!\n", __func__);
-	pr_info("pass value = %d\n", current_value);
+	pr_debug("%s enter!\n", __func__);
+	pr_debug("pass value = %d\n", current_value);
 	if (current_value > 960000)
 		iterm_reg = 0xF; /*Termination current = 960ma */
 	else if (current_value < 60000)
@@ -1618,7 +1618,7 @@ static unsigned int charging_hw_init(struct sgm41516d_info *info)
 #endif
 	sgm41516d_set_boostv(info,0x3);
 
-	pr_info("%s: hw_init down!\n", __func__);
+	pr_debug("%s: hw_init down!\n", __func__);
 	return status;
 }
 
@@ -1629,34 +1629,34 @@ static int sgm41516d_parse_dt(struct sgm41516d_info *info,
 	struct device_node *np = dev->of_node;
 	//int sgm41516d_en_pin = 0;
 
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 	if (!np) {
-		pr_info("%s: no of node\n", __func__);
+		pr_debug("%s: no of node\n", __func__);
 		return -ENODEV;
 	}
 
 	if (of_property_read_string(np, "charger_name",
 								&info->chg_dev_name) < 0) {
 		info->chg_dev_name = "primary_chg";
-		pr_info("%s: no charger name\n", __func__);
+		pr_debug("%s: no charger name\n", __func__);
 	}
 
 	if (of_property_read_string(np, "alias_name",
 				&(info->chg_props.alias_name)) < 0) {
 		info->chg_props.alias_name = "sgm41516d";
-		pr_info("%s: no alias name\n", __func__);
+		pr_debug("%s: no alias name\n", __func__);
 	}
 
 	if (strcmp(info->chg_dev_name, "primary_chg") == 0) {
 		led_ctl_gpio = of_get_named_gpio(np, "led_ctl_gpio", 0);
 		if (led_ctl_gpio < 0) {
 			led_ctl_gpio = U32_MAX;
-			pr_info("%s led_ctl_gpio=%d get fail\n", __func__,led_ctl_gpio);
+			pr_debug("%s led_ctl_gpio=%d get fail\n", __func__,led_ctl_gpio);
 		}
 		if(led_ctl_gpio != U32_MAX) {
 			ret = gpio_request(led_ctl_gpio, "led_ctl_gpio");
 			if (ret < 0)
-				pr_info("[%s]:led gpio request failed!\n", __func__);
+				pr_debug("[%s]:led gpio request failed!\n", __func__);
 			gpio_direction_output(led_ctl_gpio, 1);
 		}
 	}
@@ -1670,7 +1670,7 @@ static int sgm41516d_do_event(struct charger_device *chg_dev, u32 event,
 	if (chg_dev == NULL)
 		return -EINVAL;
 
-	pr_info("%s: event = %d\n", __func__, event);
+	pr_debug("%s: event = %d\n", __func__, event);
 	switch (event) {
 	case EVENT_EOC:
 		charger_dev_notify(chg_dev, CHARGER_DEV_NOTIFY_EOC);
@@ -1815,8 +1815,8 @@ int sgm41516d_enable_hiz_mode(struct charger_device *chg_dev, bool enable)
 	int status = 0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
-	pr_info("pass value = %d\n", enable);
+	pr_debug("%s enter!\n", __func__);
+	pr_debug("pass value = %d\n", enable);
 	sgm41516d_set_en_hiz(info, enable);
 	return status;
 }
@@ -1836,7 +1836,7 @@ int sgm41516d_get_dev_id(struct sgm41516d_info *info)
 
 static int sgm41516d_reset_ta(struct charger_device *chg_dev)
 {
-	pr_info("%s enter!\n", __func__);
+	pr_debug("%s enter!\n", __func__);
 	sgm41516d_set_current(chg_dev,800000); //512mA
 
 	sgm41516d_set_input_current(chg_dev,0);
@@ -1851,12 +1851,12 @@ static int sgm41516d_plug_in(struct charger_device *chg_dev)
 	int ret = 0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
+	pr_debug("%s enter!\n", __func__);
 	sgm41516d_set_watchdog(info, WDT_160S);
 
 	ret = sgm41516d_enable_charging(chg_dev, true);
 	if (ret < 0) {
-		pr_info( "%s en fail(%d)\n", __func__, ret);
+		pr_debug( "%s en fail(%d)\n", __func__, ret);
 		return ret;
 	}
 	return 0;
@@ -1867,17 +1867,17 @@ static int sgm41516d_plug_out(struct charger_device *chg_dev)
 	int ret = 0;
 	struct sgm41516d_info *info = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("%s enter!\n", __func__);
+	pr_debug("%s enter!\n", __func__);
 	/* Disable charging */
 	ret = sgm41516d_enable_charging(chg_dev, false);
 	if (ret < 0) {
-		pr_info("%s en chg fail(%d)\n", __func__, ret);
+		pr_debug("%s en chg fail(%d)\n", __func__, ret);
 		return ret;
 	}
 
 	ret = sgm41516d_enable_hiz_mode(chg_dev, false);
 	if (ret < 0)
-		pr_info("%s en hz fail(%d)\n", __func__, ret);
+		pr_debug("%s en hz fail(%d)\n", __func__, ret);
 
 	/* Disable WDT */
 	sgm41516d_set_watchdog(info, DISABLE_WDT);
@@ -1892,7 +1892,7 @@ static int sgm41516d_plug_out(struct charger_device *chg_dev)
 #if defined(CONFIG_MTK_PUMP_EXPRESS_50_SUPPORT)
 static int sgm41516d_get_pwr_rdy_status(struct charger_device *chg_dev)
 {
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 	return true;
 }
 #endif
@@ -1955,7 +1955,7 @@ static int sgm41516d_hw_component_detect(struct sgm41516d_info *info)
 	unsigned char vendor_id = 0;
 
 	vendor_id = sgm41516d_get_dev_id(info);
-	pr_info("sgm41516d vendor_id=%d!!!\r\n",vendor_id);
+	pr_debug("sgm41516d vendor_id=%d!!!\r\n",vendor_id);
 	switch (vendor_id) {
 	case bq25600d_VENDOR_ID:
 		g_chg_info=BQ25601D;
@@ -1972,7 +1972,7 @@ static int sgm41516d_hw_component_detect(struct sgm41516d_info *info)
 	default:
 			return false;
 	}
-	pr_info("sgm41516d g_chg_info=%d!!!\r\n",g_chg_info);
+	pr_debug("sgm41516d g_chg_info=%d!!!\r\n",g_chg_info);
 	return true;
 }
 static int sgm41516d_driver_probe(struct i2c_client *client,
@@ -1981,7 +1981,7 @@ static int sgm41516d_driver_probe(struct i2c_client *client,
 	int ret = 0;
 	struct sgm41516d_info *info = NULL;
 
-	pr_info("[%s]\n", __func__);
+	pr_debug("[%s]\n", __func__);
 
 	info = devm_kzalloc(&client->dev, sizeof(struct sgm41516d_info),
 			    GFP_KERNEL);
@@ -1999,7 +1999,7 @@ static int sgm41516d_driver_probe(struct i2c_client *client,
 		goto err_parse_dt;
 
 	if(!sgm41516d_hw_component_detect(info)){
-		pr_info("sgm41516d component not exist!!!\r\n");
+		pr_debug("sgm41516d component not exist!!!\r\n");
 		goto err_parse_dt;
 	}
 
@@ -2013,13 +2013,13 @@ static int sgm41516d_driver_probe(struct i2c_client *client,
 						&sgm41516d_chg_ops,
 						&info->chg_props);
 	if (IS_ERR_OR_NULL(info->chg_dev)) {
-		pr_info("%s: register charger device  failed\n", __func__);
+		pr_debug("%s: register charger device  failed\n", __func__);
 		ret = PTR_ERR(info->chg_dev);
 		goto err_register_chg_dev;
 	}
 	ret = device_create_file(&client->dev, &dev_attr_sgm41516d_access);
 	if (ret < 0) {
-		pr_info( "%s create file fail(%d)\n",
+		pr_debug( "%s create file fail(%d)\n",
 				      __func__, ret);
 		goto err_create_file;
 	}
@@ -2067,17 +2067,17 @@ static int __init sgm41516d_init(void)
 
 	/* i2c registeration using DTS instead of boardinfo*/
 #ifdef CONFIG_OF
-	pr_info("[%s] init start with i2c DTS", __func__);
+	pr_debug("[%s] init start with i2c DTS", __func__);
 #else
-	pr_info("[%s] init start. ch=%d\n", __func__, sgm41516d_BUSNUM);
+	pr_debug("[%s] init start. ch=%d\n", __func__, sgm41516d_BUSNUM);
 	i2c_register_board_info(sgm41516d_BUSNUM, &i2c_sgm41516d, 1);
 #endif
 	if (i2c_add_driver(&sgm41516d_driver) != 0) {
-		pr_info(
+		pr_debug(
 			"[%s] failed to register sgm41516d i2c driver.\n",
 			__func__);
 	} else {
-		pr_info(
+		pr_debug(
 			"[%s] Success to register sgm41516d i2c driver.\n",
 			__func__);
 	}

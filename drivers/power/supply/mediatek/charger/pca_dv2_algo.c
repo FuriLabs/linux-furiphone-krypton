@@ -4175,7 +4175,7 @@ static int dv2_algo_probe(struct platform_device *pdev)
 	struct dv2_algo_info *info;
 	struct dv2_algo_data *data;
 
-	dev_info(&pdev->dev, "%s(%s)\n", __func__, PCA_DV2_ALGO_VERSION);
+	dev_dbg(&pdev->dev, "%s(%s)\n", __func__, PCA_DV2_ALGO_VERSION);
 
 	info = devm_kzalloc(&pdev->dev, sizeof(*info), GFP_KERNEL);
 	if (!info)
@@ -4216,7 +4216,7 @@ static int dv2_algo_probe(struct platform_device *pdev)
 		goto err;
 	}
 	device_init_wakeup(info->dev, true);
-	dev_info(info->dev, "%s successfully\n", __func__);
+	dev_dbg(info->dev, "%s successfully\n", __func__);
 	return 0;
 
 err:
@@ -4252,7 +4252,7 @@ static int __maybe_unused dv2_algo_suspend(struct device *dev)
 	struct dv2_algo_info *info = platform_get_drvdata(pdev);
 	struct dv2_algo_data *data = info->data;
 
-	dev_info(dev, "%s\n", __func__);
+	dev_dbg(dev, "%s\n", __func__);
 	mutex_lock(&data->lock);
 	return 0;
 }
@@ -4263,7 +4263,7 @@ static int __maybe_unused dv2_algo_resume(struct device *dev)
 	struct dv2_algo_info *info = platform_get_drvdata(pdev);
 	struct dv2_algo_data *data = info->data;
 
-	dev_info(dev, "%s\n", __func__);
+	dev_dbg(dev, "%s\n", __func__);
 	mutex_unlock(&data->lock);
 	return 0;
 }

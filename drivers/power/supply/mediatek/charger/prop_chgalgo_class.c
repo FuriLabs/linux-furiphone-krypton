@@ -541,7 +541,7 @@ static void pca_device_release(struct device *dev)
 {
 	struct prop_chgalgo_device *pca = to_pca_device(dev);
 
-	dev_info(dev, "%s\n", __func__);
+	dev_dbg(dev, "%s\n", __func__);
 	devm_kfree(dev->parent, pca);
 }
 
@@ -556,7 +556,7 @@ prop_chgalgo_device_register(struct device *parent,
 	if (!desc || !parent)
 		return ERR_PTR(-EINVAL);
 
-	dev_info(parent, "%s (%s)\n", __func__, desc->name);
+	dev_dbg(parent, "%s (%s)\n", __func__, desc->name);
 	pca = devm_kzalloc(parent, sizeof(*pca), GFP_KERNEL);
 	if (!pca)
 		return ERR_PTR(-ENOMEM);
@@ -580,7 +580,7 @@ prop_chgalgo_device_register(struct device *parent,
 		devm_kfree(parent, pca);
 		return ERR_PTR(ret);
 	}
-	dev_info(parent, "%s (%s) successfully\n", __func__, pca->desc->name);
+	dev_dbg(parent, "%s (%s) successfully\n", __func__, pca->desc->name);
 	return pca;
 }
 EXPORT_SYMBOL(prop_chgalgo_device_register);
@@ -637,22 +637,22 @@ static SIMPLE_DEV_PM_OPS(prop_chgalgo_class_pm_ops,
 
 static int __init pca_class_init(void)
 {
-	pr_info("%s (%s)\n", __func__, PROP_CHGALGO_CLASS_VERSION);
+	pr_debug("%s (%s)\n", __func__, PROP_CHGALGO_CLASS_VERSION);
 
 	pca_class = class_create(THIS_MODULE, "prop_chgalgo_class");
 	if (IS_ERR(pca_class)) {
-		pr_info("%s fail(%ld)\n", __func__, PTR_ERR(pca_class));
+		pr_debug("%s fail(%ld)\n", __func__, PTR_ERR(pca_class));
 		return PTR_ERR(pca_class);
 	}
 	pca_class->dev_groups = pca_device_groups;
 	pca_class->pm = &prop_chgalgo_class_pm_ops;
-	pr_info("%s successfully\n", __func__);
+	pr_debug("%s successfully\n", __func__);
 	return 0;
 }
 
 static void __exit pca_class_exit(void)
 {
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 	class_destroy(pca_class);
 }
 

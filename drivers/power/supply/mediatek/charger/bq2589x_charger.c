@@ -184,7 +184,7 @@ static int bq2589x_plug_in(struct charger_device *chg_dev)
 
 	ret = bq2589x_enable_charging(chg_dev, true);
 	if (ret < 0)
-		pr_info("Failed to enable charging:%d\n", ret);
+		pr_debug("Failed to enable charging:%d\n", ret);
 
 	return ret;
 }
@@ -195,7 +195,7 @@ static int bq2589x_plug_out(struct charger_device *chg_dev)
 
 	ret = bq2589x_enable_charging(chg_dev, false);
 	if (ret < 0)
-		pr_info("Failed to disable charging:%d\n", ret);
+		pr_debug("Failed to disable charging:%d\n", ret);
 
 	return ret;
 }
@@ -237,7 +237,7 @@ static int bq2589x_set_icl(struct charger_device *chg_dev, u32 curr)
 	ret = bq2589x_set_input_current_limit(bq, curr);
 
 	if (ret < 0)
-		dev_info(bq->dev, "%s:Failed to set charge current:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:Failed to set charge current:%d\n", __func__, ret);
 	return 0;
 }
 
@@ -248,7 +248,7 @@ static int bq2589x_get_icl(struct charger_device *chg_dev, u32 *curr)
 
 	ret = bq2589x_get_input_current_limit(bq, curr);
 	if (ret < 0)
-		dev_info(bq->dev, "%s:Failed to get charge current limit:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:Failed to get charge current limit:%d\n", __func__, ret);
 
 	return 0;
 }
@@ -262,7 +262,7 @@ static int bq2589x_set_ichg(struct charger_device *chg_dev, u32 curr)
 	ret = bq2589x_set_chargecurrent(bq, curr);
 
 	if (ret < 0)
-		dev_info(bq->dev, "%s:Failed to set charge current limit:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:Failed to set charge current limit:%d\n", __func__, ret);
 	return 0;
 }
 
@@ -290,7 +290,7 @@ static int bq2589x_set_vchg(struct charger_device *chg_dev, u32 volt)
 	volt = volt/1000;
 	ret = bq2589x_set_chargevoltage(bq, volt);
 	if (ret < 0)
-		dev_info(bq->dev, "%s:Failed to set charge voltage:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:Failed to set charge voltage:%d\n", __func__, ret);
 
 	return ret;
 }
@@ -305,7 +305,7 @@ static int bq2589x_set_ivl(struct charger_device *chg_dev, u32 volt)
 {
 	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
 
-	pr_info("limit volt = %d\n", volt);
+	pr_debug("limit volt = %d\n", volt);
 
 	return bq2589x_set_input_volt_limit(bq, volt/1000);
 }
@@ -391,7 +391,7 @@ static int bq2589x_enable_charging(struct charger_device *chg_dev, bool enable)
 	else
 		ret = bq2589x_disable_charger(bq);
 
-	pr_info("%s charger %s\n",
+	pr_debug("%s charger %s\n",
 		enable ? "enable":"disable", !ret ? "successfully":"failed");
 
 	if (!ret)
@@ -409,7 +409,7 @@ static void bq2589x_dump_regs(struct bq2589x *bq)
 		msleep(20);
 		ret = bq2589x_read_byte(bq, &val, addr);
 		if (!ret)
-			pr_info("Reg[%.2x] = 0x%.2x\n", addr, val);
+			pr_debug("Reg[%.2x] = 0x%.2x\n", addr, val);
 	}
 }
 
@@ -435,7 +435,7 @@ static int bq2589x_read_byte(struct bq2589x *bq, u8 *data, u8 reg)
 	mutex_lock(&bq2589x_i2c_lock);
 	ret = i2c_smbus_read_byte_data(bq->client, reg);
 	if (ret < 0) {
-		dev_info(bq->dev, "failed to read 0x%.2x\n", reg);
+		dev_dbg(bq->dev, "failed to read 0x%.2x\n", reg);
 		mutex_unlock(&bq2589x_i2c_lock);
 		return ret;
 	}
@@ -532,7 +532,7 @@ static int bq2589x_set_otg_current(struct charger_device *chg_dev, unsigned int 
 	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
 	u8 temp;
 
-	pr_info("set otg current %d\n", curr);
+	pr_debug("set otg current %d\n", curr);
 	if (curr == 500)
 		temp = BQ2589X_BOOST_LIM_500MA;
 	else if (curr == 700)
@@ -589,7 +589,7 @@ int bq2589x_adc_start(struct bq2589x *bq, bool oneshot)
 
 	ret = bq2589x_read_byte(bq, &val, BQ2589X_REG_02);
 	if (ret < 0) {
-		dev_info(bq->dev, "%s failed to read register 0x02:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s failed to read register 0x02:%d\n", __func__, ret);
 		return ret;
 	}
 
@@ -619,7 +619,7 @@ int bq2589x_adc_read_battery_volt(struct bq2589x *bq)
 
 	ret = bq2589x_read_byte(bq, &val, BQ2589X_REG_0E);
 	if (ret < 0) {
-		dev_info(bq->dev, "read battery voltage failed :%d\n", ret);
+		dev_dbg(bq->dev, "read battery voltage failed :%d\n", ret);
 		return ret;
 	}
 
@@ -640,7 +640,7 @@ int bq2589x_adc_read_sys_volt(struct bq2589x *bq)
 
 	ret = bq2589x_read_byte(bq, &val, BQ2589X_REG_0F);
 	if (ret < 0) {
-		dev_info(bq->dev, "read system voltage failed :%d\n", ret);
+		dev_dbg(bq->dev, "read system voltage failed :%d\n", ret);
 		return ret;
 	}
 
@@ -660,7 +660,7 @@ int bq2589x_adc_read_vbus_volt(struct bq2589x *bq)
 
 	ret = bq2589x_read_byte(bq, &val, BQ2589X_REG_11);
 	if (ret < 0) {
-		dev_info(bq->dev, "read vbus voltage failed :%d\n", ret);
+		dev_dbg(bq->dev, "read vbus voltage failed :%d\n", ret);
 		return ret;
 	}
 	volt = BQ2589X_VBUSV_BASE
@@ -679,7 +679,7 @@ int bq2589x_adc_read_temperature(struct bq2589x *bq)
 
 	ret = bq2589x_read_byte(bq, &val, BQ2589X_REG_10);
 	if (ret < 0) {
-		dev_info(bq->dev, "read temperature failed :%d\n", ret);
+		dev_dbg(bq->dev, "read temperature failed :%d\n", ret);
 		return ret;
 	}
 	temp = BQ2589X_TSPCT_BASE
@@ -698,7 +698,7 @@ int bq2589x_adc_read_charge_current(struct bq2589x *bq)
 
 	ret = bq2589x_read_byte(bq, &val, BQ2589X_REG_12);
 	if (ret < 0) {
-		dev_info(bq->dev, "read charge current failed :%d\n", ret);
+		dev_dbg(bq->dev, "read charge current failed :%d\n", ret);
 		return ret;
 	}
 	volt = (int)(BQ2589X_ICHGR_BASE
@@ -809,7 +809,7 @@ int bq2589x_get_charging_status(struct bq2589x *bq)
 
 	ret = bq2589x_read_byte(bq, &val, BQ2589X_REG_0B);
 	if (ret < 0) {
-		dev_info(bq->dev, "%s Failed to read register 0x0b:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s Failed to read register 0x0b:%d\n", __func__, ret);
 		return ret;
 	}
 	val &= BQ2589X_CHRG_STAT_MASK;
@@ -823,17 +823,17 @@ int bq2589x_set_otg(struct charger_device *chg_dev, bool enable)
 	struct bq2589x *bq = dev_get_drvdata(&chg_dev->dev);
 	int ret;
 
-	pr_info("set otg %d\n", enable);
+	pr_debug("set otg %d\n", enable);
 	if (enable) {
 		ret = bq2589x_enable_otg(bq);
 		if (ret < 0) {
-			dev_info(bq->dev, "%s:Failed to enable otg-%d\n", __func__, ret);
+			dev_dbg(bq->dev, "%s:Failed to enable otg-%d\n", __func__, ret);
 			return ret;
 		}
 	} else {
 		ret = bq2589x_disable_otg(bq);
 		if (ret < 0) {
-			dev_info(bq->dev, "%s:Failed to disable otg-%d\n", __func__, ret);
+			dev_dbg(bq->dev, "%s:Failed to disable otg-%d\n", __func__, ret);
 			return ret;
 		}
 	}
@@ -1127,7 +1127,7 @@ static int bq2589x_read_idpm_limit(struct bq2589x *bq)
 
 	ret = bq2589x_read_byte(bq, &val, BQ2589X_REG_13);
 	if (ret < 0) {
-		dev_info(bq->dev, "read vbus voltage failed :%d\n", ret);
+		dev_dbg(bq->dev, "read vbus voltage failed :%d\n", ret);
 		return ret;
 	}
 
@@ -1145,7 +1145,7 @@ static bool bq2589x_is_charge_done(struct bq2589x *bq)
 
 	ret = bq2589x_read_byte(bq, &val, BQ2589X_REG_0B);
 	if (ret < 0) {
-		dev_info(bq->dev, "%s:read REG0B failed :%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:read REG0B failed :%d\n", __func__, ret);
 		return false;
 	}
 	val &= BQ2589X_CHRG_STAT_MASK;
@@ -1177,7 +1177,7 @@ static int bq2589x_enable_shipping_mode(struct charger_device *chg_dev, bool val
 	if (val) {
 		temp = BQ2589X_BATFET_OFF << BQ2589X_BATFET_DIS_SHIFT;
 		ret = bq2589x_update_bits(bq, BQ2589X_REG_09, BQ2589X_BATFET_DIS_MASK, temp);
-		dev_info(bq->dev, "%s: enable shipping mode,dump registers\n", __func__);
+		dev_dbg(bq->dev, "%s: enable shipping mode,dump registers\n", __func__);
 		bq2589x_dump_regs(bq);
 	}
 	return ret;
@@ -1196,7 +1196,7 @@ static int bq2589x_update_chg_type(struct charger_device *chg_dev, bool en)
 
 	chrdet_psy = power_supply_get_by_name("charger");
 	if (!chrdet_psy) {
-		pr_notice("[%s]: get power supply failed\n", __func__);
+		pr_debug("[%s]: get power supply failed\n", __func__);
 		return -EINVAL;
 	}
 
@@ -1205,17 +1205,17 @@ static int bq2589x_update_chg_type(struct charger_device *chg_dev, bool en)
 		if (first_connect) {
 			while (wait_cdp_cnt >= 0) {
 				if (is_usb_rdy()) {
-					pr_info("CDP, PASS\n");
+					pr_debug("CDP, PASS\n");
 					break;
 				}
-				pr_info("CDP, block\n");
+				pr_debug("CDP, block\n");
 				msleep(100);
 				wait_cdp_cnt--;
 			}
 			if (wait_cdp_cnt <= 0)
-				pr_info("CDP, timeout\n");
+				pr_debug("CDP, timeout\n");
 			else
-				pr_info("CDP, free\n");
+				pr_debug("CDP, free\n");
 		}
 		Charger_Detect_Init();
 		while (wait_plugin_cnt >= 0) {
@@ -1263,11 +1263,11 @@ static int bq2589x_update_chg_type(struct charger_device *chg_dev, bool en)
 	//if (chg_type!=CHARGER_UNKNOWN && bq->cfg.use_absolute_vindpm)
 	//	bq2589x_adjust_absolute_vindpm(bq);
 
-	pr_info("[%s] en:%d vbus_type:%d chg_type:%d\n", __func__, en, bq->vbus_type, chg_type);
+	pr_debug("[%s] en:%d vbus_type:%d chg_type:%d\n", __func__, en, bq->vbus_type, chg_type);
 	ret = power_supply_get_property(chrdet_psy,
 			POWER_SUPPLY_PROP_CHARGE_TYPE, &propval);
 	if (ret < 0) {
-		pr_info("[%s]: get charge type failed, ret = %d\n", __func__, ret);
+		pr_debug("[%s]: get charge type failed, ret = %d\n", __func__, ret);
 		mutex_unlock(&bq2589x_type_det_lock);
 		return ret;
 	}
@@ -1278,7 +1278,7 @@ static int bq2589x_update_chg_type(struct charger_device *chg_dev, bool en)
 		ret = power_supply_set_property(chrdet_psy,
 				POWER_SUPPLY_PROP_CHARGE_TYPE, &propval);
 		if (ret < 0) {
-			pr_info("[%s]: set charge type failed, ret = %d\n", __func__, ret);
+			pr_debug("[%s]: set charge type failed, ret = %d\n", __func__, ret);
 			mutex_unlock(&bq2589x_type_det_lock);
 			return ret;
 		}
@@ -1288,7 +1288,7 @@ static int bq2589x_update_chg_type(struct charger_device *chg_dev, bool en)
 	ret = power_supply_set_property(chrdet_psy,
 			POWER_SUPPLY_PROP_CHARGE_TYPE, &propval);
 	if (ret < 0) {
-		pr_info("[%s]: set charge type failed, ret = %d\n", __func__, ret);
+		pr_debug("[%s]: set charge type failed, ret = %d\n", __func__, ret);
 		mutex_unlock(&bq2589x_type_det_lock);
 		return ret;
 	}
@@ -1308,7 +1308,7 @@ static int bq2589x_run_aicl(struct charger_device *chg_dev, u32 *uA)
 	if (!ret) {
 		if (status & BQ2589X_VDPM_STAT_MASK) {
 			bq->status |= BQ2589X_STATUS_VINDPM;
-			dev_info(bq->dev, "%s:VINDPM occurred\n", __func__);
+			dev_dbg(bq->dev, "%s:VINDPM occurred\n", __func__);
 		} else {
 			bq->status &= ~BQ2589X_STATUS_VINDPM;
 		}
@@ -1318,7 +1318,7 @@ static int bq2589x_run_aicl(struct charger_device *chg_dev, u32 *uA)
 	if (bq->status & BQ2589X_STATUS_VINDPM) {
 		ret = bq2589x_force_ico(bq);
 		if (ret < 0) {
-			dev_info(bq->dev, "%s:ICO command issued failed:%d\n", __func__, ret);
+			dev_dbg(bq->dev, "%s:ICO command issued failed:%d\n", __func__, ret);
 			return ret;
 		}
 		while (wait_ico_cnt >= 0) {
@@ -1329,7 +1329,7 @@ static int bq2589x_run_aicl(struct charger_device *chg_dev, u32 *uA)
 					*uA = ((status & BQ2589X_IDPM_LIM_MASK))
 						* BQ2589X_IDPM_LIM_LSB
 						+ BQ2589X_IDPM_LIM_BASE * 1000;
-					dev_info(bq->dev, "%s:ICO done, result is:%d uA\n",
+					dev_dbg(bq->dev, "%s:ICO done, result is:%d uA\n",
 							__func__, *uA);
 				}
 				return ret;
@@ -1364,37 +1364,37 @@ static int bq2589x_init_device(struct bq2589x *bq)
 
 	ret = bq2589x_set_vindpm_offset(bq, 600);
 	if (ret < 0) {
-		dev_info(bq->dev, "%s:Failed to set vindpm offset:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:Failed to set vindpm offset:%d\n", __func__, ret);
 		return ret;
 	}
 
 	ret = bq2589x_set_term_current(bq, bq->cfg.term_current);
 	if (ret < 0) {
-		dev_info(bq->dev, "%s:Failed to set termination current:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:Failed to set termination current:%d\n", __func__, ret);
 		return ret;
 	}
 
 	ret = bq2589x_set_chargevoltage(bq, bq->cfg.charge_voltage);
 	if (ret < 0) {
-		dev_info(bq->dev, "%s:Failed to set charge voltage:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:Failed to set charge voltage:%d\n", __func__, ret);
 		return ret;
 	}
 
 	ret = bq2589x_set_input_current_limit(bq, 1500);
 	if (ret < 0) {
-		dev_info(bq->dev, "%s:Failed to set charge current:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:Failed to set charge current:%d\n", __func__, ret);
 		return ret;
 	}
 
 	ret = bq2589x_set_chargecurrent(bq, bq->cfg.charge_current);
 	if (ret < 0) {
-		dev_info(bq->dev, "%s:Failed to set charge current:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:Failed to set charge current:%d\n", __func__, ret);
 		return ret;
 	}
 
 	ret = bq2589x_enable_charger(bq);
 	if (ret < 0) {
-		dev_info(bq->dev, "%s:Failed to enable charger:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:Failed to enable charger:%d\n", __func__, ret);
 		return ret;
 	}
 
@@ -1402,7 +1402,7 @@ static int bq2589x_init_device(struct bq2589x *bq)
 
 	ret = bq2589x_pumpx_enable(bq, 1);
 	if (ret) {
-		dev_info(bq->dev, "%s:Failed to enable pumpx:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:Failed to enable pumpx:%d\n", __func__, ret);
 		return ret;
 	}
 
@@ -1488,7 +1488,7 @@ static int bq2589x_psy_register(struct bq2589x *bq)
 	bq->usb_psy = power_supply_register(bq->dev, &bq->usb, &bq->usb_cfg);
 	if (IS_ERR(bq->usb_psy)) {
 		ret = PTR_ERR(bq->usb_psy);
-		dev_info(bq->dev, "%s:failed to register usb psy:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:failed to register usb psy:%d\n", __func__, ret);
 		return ret;
 	}
 
@@ -1509,19 +1509,19 @@ static int bq2589x_parse_dt(struct device *dev, struct bq2589x *bq)
 
 	boot_node = of_parse_phandle(dev->of_node, "bootmode", 0);
 	if (!boot_node) {
-		dev_info(bq->dev, "%s: failed to get boot mode phandle\n", __func__);
+		dev_dbg(bq->dev, "%s: failed to get boot mode phandle\n", __func__);
 	} else {
 		tag = (struct tag_bootmode *)of_get_property(boot_node, "atag,boot", NULL);
 		if (!tag)
-			dev_info(bq->dev, "%s: failed to get atag,boot\n", __func__);
+			dev_dbg(bq->dev, "%s: failed to get atag,boot\n", __func__);
 		else
 			bq->bootmode = tag->bootmode;
 	}
-	dev_info(bq->dev, "%s: bq->bootmode = %d\n", __func__, bq->bootmode);
+	dev_dbg(bq->dev, "%s: bq->bootmode = %d\n", __func__, bq->bootmode);
 
 	if (of_property_read_string(np, "charger_name", &bq->chg_dev_name) < 0) {
 		bq->chg_dev_name = "primary_chg";
-		dev_info(bq->dev, "%s:failed to read charger name\n", __func__);
+		dev_dbg(bq->dev, "%s:failed to read charger name\n", __func__);
 	}
 	ret = of_property_read_u32(np, "ti,bq2589x,vbus-volt-high-level", &pe.high_volt_level);
 	if (ret)
@@ -1593,7 +1593,7 @@ static void bq2589x_adjust_absolute_vindpm(struct bq2589x *bq)
 
 	ret = bq2589x_disable_charger(bq);
 	if (ret < 0) {
-		dev_info(bq->dev, "%s:failed to disable charger\n", __func__);
+		dev_dbg(bq->dev, "%s:failed to disable charger\n", __func__);
 		//return;
 	}
 	//wait for new adc data
@@ -1601,7 +1601,7 @@ static void bq2589x_adjust_absolute_vindpm(struct bq2589x *bq)
 	vbus_volt = bq2589x_adc_read_vbus_volt(bq);
 	ret = bq2589x_enable_charger(bq);
 	if (ret < 0) {
-		dev_info(bq->dev, "%s:failed to enable charger\n", __func__);
+		dev_dbg(bq->dev, "%s:failed to enable charger\n", __func__);
 		return;
 	}
 
@@ -1611,10 +1611,10 @@ static void bq2589x_adjust_absolute_vindpm(struct bq2589x *bq)
 		vindpm_volt = vbus_volt - 1200;
 	ret = bq2589x_set_input_volt_limit(bq, vindpm_volt);
 	if (ret < 0)
-		dev_info(bq->dev, "%s:Set absolute vindpm threshold %d Failed:%d\n",
+		dev_dbg(bq->dev, "%s:Set absolute vindpm threshold %d Failed:%d\n",
 		__func__, vindpm_volt, ret);
 	else
-		dev_info(bq->dev, "%s:Set absolute vindpm threshold %d successfully\n",
+		dev_dbg(bq->dev, "%s:Set absolute vindpm threshold %d successfully\n",
 		__func__, vindpm_volt);
 
 }
@@ -1633,16 +1633,16 @@ static void bq2589x_adapter_in_workfunc(struct work_struct *work)
 		ret = power_supply_set_property(chrdet_psy,
 				POWER_SUPPLY_PROP_ONLINE, &propval);
 		if (ret) {
-			dev_info(bq->dev, "[%s] set chr_online failed:%d\n", __func__, ret);
+			dev_dbg(bq->dev, "[%s] set chr_online failed:%d\n", __func__, ret);
 			return;
 		}
 		ret = bq2589x_update_chg_type(bq->chg_dev, true);
 		if (ret)
-			dev_info(bq->dev, "[%s] update chr_type failed:%d\n", __func__, ret);
+			dev_dbg(bq->dev, "[%s] update chr_type failed:%d\n", __func__, ret);
 
 		bq2589x_set_hz(bq, 0);
 	} else {
-		dev_info(bq->dev, "[%s] get chrdet_psy failed:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "[%s] get chrdet_psy failed:%d\n", __func__, ret);
 	}
 	if (pe.enable)
 		schedule_delayed_work(&bq->monitor_work, 0);
@@ -1657,9 +1657,9 @@ static void bq2589x_adapter_out_workfunc(struct work_struct *work)
 
 	ret = bq2589x_set_input_volt_limit(bq, 4600);
 	if (ret < 0)
-		dev_info(bq->dev, "%s:reset vindpm threshold to 4400 failed:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s:reset vindpm threshold to 4400 failed:%d\n", __func__, ret);
 	else
-		dev_info(bq->dev, "%s:reset vindpm threshold to 4400 successfully\n", __func__);
+		dev_dbg(bq->dev, "%s:reset vindpm threshold to 4400 successfully\n", __func__);
 
 	if (pe.enable)
 		cancel_delayed_work_sync(&bq->monitor_work);
@@ -1674,14 +1674,14 @@ static void bq2589x_adapter_out_workfunc(struct work_struct *work)
 		ret = power_supply_set_property(chrdet_psy,
 				POWER_SUPPLY_PROP_CHARGE_TYPE, &propval);
 		if (ret)
-			dev_info(bq->dev, "[%s] reset chr_type failed:%d\n", __func__, ret);
+			dev_dbg(bq->dev, "[%s] reset chr_type failed:%d\n", __func__, ret);
 		propval.intval = 0;
 		ret = power_supply_set_property(chrdet_psy,
 				POWER_SUPPLY_PROP_ONLINE, &propval);
 		if (ret)
-			dev_info(bq->dev, "[%s] reset chr_online failed:%d\n", __func__, ret);
+			dev_dbg(bq->dev, "[%s] reset chr_online failed:%d\n", __func__, ret);
 	} else {
-		dev_info(bq->dev, "[%s] get chrdet_psy failed:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "[%s] get chrdet_psy failed:%d\n", __func__, ret);
 	}
 }
 
@@ -1697,11 +1697,11 @@ static void bq2589x_ico_workfunc(struct work_struct *work)
 		ret = bq2589x_force_ico(bq);
 		if (ret < 0) {
 			schedule_delayed_work(&bq->ico_work, HZ); /* retry 1 second later*/
-			dev_info(bq->dev, "%s:ICO command issued failed:%d\n", __func__, ret);
+			dev_dbg(bq->dev, "%s:ICO command issued failed:%d\n", __func__, ret);
 		} else {
 			ico_issued = true;
 			schedule_delayed_work(&bq->ico_work, 3 * HZ);
-			dev_info(bq->dev, "%s:ICO command issued successfully\n", __func__);
+			dev_dbg(bq->dev, "%s:ICO command issued successfully\n", __func__);
 		}
 	} else {
 		ico_issued = false;
@@ -1711,7 +1711,7 @@ static void bq2589x_ico_workfunc(struct work_struct *work)
 			if (ret == 0) {
 				idpm = ((status & BQ2589X_IDPM_LIM_MASK) >> BQ2589X_IDPM_LIM_SHIFT);
 				idpm *= BQ2589X_IDPM_LIM_LSB + BQ2589X_IDPM_LIM_BASE;
-				dev_info(bq->dev, "%s:ICO done, result is:%d mA\n", __func__, idpm);
+				dev_dbg(bq->dev, "%s:ICO done, result is:%d mA\n", __func__, idpm);
 			}
 		}
 	}
@@ -1729,10 +1729,10 @@ static void bq2589x_check_pe_tuneup_workfunc(struct work_struct *work)
 	bq->vbat_volt = bq2589x_adc_read_battery_volt(bq);
 	bq->rsoc = bq2589x_read_batt_rsoc(bq);
 
-	dev_info(bq->dev, "%s:vbat = %d, bq->rsoc = %d, high_volt_level = %d\n",
+	dev_dbg(bq->dev, "%s:vbat = %d, bq->rsoc = %d, high_volt_level = %d\n",
 			__func__, bq->vbat_volt, bq->rsoc, pe.high_volt_level);
 	if (bq->vbat_volt > pe.vbat_min_volt) {
-		dev_info(bq->dev, "%s:trying to tune up vbus voltage\n", __func__);
+		dev_dbg(bq->dev, "%s:trying to tune up vbus voltage\n", __func__);
 		pe.target_volt = 12000;
 		pe.tune_up_volt = true;
 		pe.tune_down_volt = false;
@@ -1767,7 +1767,7 @@ static void bq2589x_report_fchg_type(struct bq2589x *bq)
 			POWER_SUPPLY_PROP_CHARGE_TYPE, &propval);
 	if (ret)
 		return;
-	dev_info(bq->dev, "%s:charge_type:%d, vbus:%d\n", __func__,
+	dev_dbg(bq->dev, "%s:charge_type:%d, vbus:%d\n", __func__,
 			propval.intval, bq->vbus_volt);
 #ifdef CONFIG_CUSTOMER_SUPPORT
 	if (bq->vbus_volt >= 11500 && propval.intval != CHARGER_PE_12V
@@ -1798,12 +1798,12 @@ static void bq2589x_tune_volt_workfunc(struct work_struct *work)
 	}
 	bq2589x_dump_regs(bq);
 	bq->vbus_volt = bq2589x_adc_read_vbus_volt(bq);
-	dev_info(bq->dev, "%s:count:%d, vbus:%d,target:%d\n", __func__, pe.tune_count,
+	dev_dbg(bq->dev, "%s:count:%d, vbus:%d,target:%d\n", __func__, pe.tune_count,
 			bq->vbus_volt, pe.target_volt);
 	if ((pe.tune_up_volt && bq->vbus_volt >= (pe.target_volt-200)) ||
 	    (pe.tune_down_volt && bq->vbus_volt <= (pe.target_volt+200))) {
 
-		dev_info(bq->dev, "%s:voltage tune successfully\n", __func__);
+		dev_dbg(bq->dev, "%s:voltage tune successfully\n", __func__);
 		//bq2589x_adjust_absolute_vindpm(bq);
 
 		//if (pe.tune_up_volt)
@@ -1816,7 +1816,7 @@ static void bq2589x_tune_volt_workfunc(struct work_struct *work)
 	}
 
 	if (pe.tune_count > 10) {
-		dev_info(bq->dev, "%s:voltage tune failed,reach max retry count\n", __func__);
+		dev_dbg(bq->dev, "%s:voltage tune failed,reach max retry count\n", __func__);
 		//bq2589x_adjust_absolute_vindpm(bq);
 
 
@@ -1832,17 +1832,17 @@ static void bq2589x_tune_volt_workfunc(struct work_struct *work)
 	if (!pumpx_cmd_issued) {
 		ret = 0;
 		if (pe.tune_up_volt && (bq->vbus_volt < pe.target_volt)) {
-			dev_info(bq->dev, "%s:pumpx_increase_volt\n", __func__);
+			dev_dbg(bq->dev, "%s:pumpx_increase_volt\n", __func__);
 			ret = bq2589x_pumpx_increase_volt(bq);
 		} else if (pe.tune_down_volt && bq->vbus_volt > pe.target_volt) {
-			dev_info(bq->dev, "%s:pumpx_decrease_volt\n", __func__);
+			dev_dbg(bq->dev, "%s:pumpx_decrease_volt\n", __func__);
 			ret =  bq2589x_pumpx_decrease_volt(bq);
 		}
 		if (ret) {
-			dev_info(bq->dev, "%s: reschedule tune work\n", __func__);
+			dev_dbg(bq->dev, "%s: reschedule tune work\n", __func__);
 			schedule_delayed_work(&bq->pe_volt_tune_work, 4*HZ);
 		} else {
-			dev_info(bq->dev, "%s:pumpx command issued.\n", __func__);
+			dev_dbg(bq->dev, "%s:pumpx command issued.\n", __func__);
 			pumpx_cmd_issued = true;
 			pe.tune_count++;
 			schedule_delayed_work(&bq->pe_volt_tune_work, 3*HZ);
@@ -1853,7 +1853,7 @@ static void bq2589x_tune_volt_workfunc(struct work_struct *work)
 		else if (pe.tune_down_volt)
 			ret = bq2589x_pumpx_decrease_volt_done(bq);
 		if (!ret) {
-			dev_info(bq->dev, "%s:pumpx command finishedd!\n", __func__);
+			dev_dbg(bq->dev, "%s:pumpx command finishedd!\n", __func__);
 			//bq2589x_adjust_absolute_vindpm(bq);
 			pumpx_cmd_issued = 0;
 		}
@@ -1882,7 +1882,7 @@ static void bq2589x_monitor_workfunc(struct work_struct *work)
 	bq->vbat_volt = bq2589x_adc_read_battery_volt(bq);
 	chg_current = bq2589x_adc_read_charge_current(bq);
 
-	dev_info(bq->dev, "%s:vbus volt:%d,vbat volt:%d,charge current:%d\n", __func__,
+	dev_dbg(bq->dev, "%s:vbus volt:%d,vbat volt:%d,charge current:%d\n", __func__,
 				bq->vbus_volt,
 				bq->vbat_volt,
 				chg_current);
@@ -1891,13 +1891,13 @@ static void bq2589x_monitor_workfunc(struct work_struct *work)
 	if (!ret) {
 		if (status & BQ2589X_VDPM_STAT_MASK) {
 			bq->status |= BQ2589X_STATUS_VINDPM;
-			dev_info(bq->dev, "%s:VINDPM occurred\n", __func__);
+			dev_dbg(bq->dev, "%s:VINDPM occurred\n", __func__);
 		} else {
 			bq->status &= ~BQ2589X_STATUS_VINDPM;
 		}
 		if (status & BQ2589X_IDPM_STAT_MASK) {
 			bq->status |= BQ2589X_STATUS_IINDPM;
-			dev_info(bq->dev, "%s:IINDPM occurred\n", __func__);
+			dev_dbg(bq->dev, "%s:IINDPM occurred\n", __func__);
 		} else {
 			bq->status &= ~BQ2589X_STATUS_IINDPM;
 		}
@@ -1950,19 +1950,19 @@ static void bq2589x_charger_irq_workfunc(struct work_struct *work)
 	bq->vbus_type = (status & BQ2589X_VBUS_STAT_MASK) >> BQ2589X_VBUS_STAT_SHIFT;
 
 	bq2589x_dump_regs(bq);
-	dev_info(bq->dev, "%s:bq status = %.2x, bq->vbus_type = %.2x\n",
+	dev_dbg(bq->dev, "%s:bq status = %.2x, bq->vbus_type = %.2x\n",
 			__func__, bq->status, bq->vbus_type);
 	if (!(temp & BQ2589X_VBUS_GD_MASK) && (bq->status & BQ2589X_STATUS_PLUGIN)) {
-		dev_info(bq->dev, "%s:adapter removed\n", __func__);
+		dev_dbg(bq->dev, "%s:adapter removed\n", __func__);
 		bq->status &= ~BQ2589X_STATUS_PLUGIN;
-		dev_info(bq->dev, "%s:bq->bootmode = %d\n", __func__, bq->bootmode);
+		dev_dbg(bq->dev, "%s:bq->bootmode = %d\n", __func__, bq->bootmode);
 		if (bq->bootmode != KERNEL_POWER_OFF_CHARGING_BOOT &&
 			bq->bootmode != LOW_POWER_OFF_CHARGING_BOOT) {
 			schedule_work(&bq->adapter_out_work);
-			dev_info(bq->dev, "%s:adapter_out_work\n", __func__);
+			dev_dbg(bq->dev, "%s:adapter_out_work\n", __func__);
 		}
 	} else if ((temp & BQ2589X_VBUS_GD_MASK) && !(bq->status & BQ2589X_STATUS_PLUGIN)) {
-		dev_info(bq->dev, "%s:adapter plugged in\n", __func__);
+		dev_dbg(bq->dev, "%s:adapter plugged in\n", __func__);
 		bq->status |= BQ2589X_STATUS_PLUGIN;
 		schedule_work(&bq->adapter_in_work);
 	}
@@ -1979,16 +1979,16 @@ static void bq2589x_charger_irq_workfunc(struct work_struct *work)
 
 	charge_status = (status & BQ2589X_CHRG_STAT_MASK) >> BQ2589X_CHRG_STAT_SHIFT;
 	if (charge_status == BQ2589X_CHRG_STAT_IDLE)
-		dev_info(bq->dev, "%s:not charging\n", __func__);
+		dev_dbg(bq->dev, "%s:not charging\n", __func__);
 	else if (charge_status == BQ2589X_CHRG_STAT_PRECHG)
-		dev_info(bq->dev, "%s:precharging\n", __func__);
+		dev_dbg(bq->dev, "%s:precharging\n", __func__);
 	else if (charge_status == BQ2589X_CHRG_STAT_FASTCHG)
-		dev_info(bq->dev, "%s:fast charging\n", __func__);
+		dev_dbg(bq->dev, "%s:fast charging\n", __func__);
 	else if (charge_status == BQ2589X_CHRG_STAT_CHGDONE)
-		dev_info(bq->dev, "%s:charge done!\n", __func__);
+		dev_dbg(bq->dev, "%s:charge done!\n", __func__);
 
 	if (fault)
-		dev_info(bq->dev, "%s:charge fault:%02x\n", __func__, fault);
+		dev_dbg(bq->dev, "%s:charge fault:%02x\n", __func__, fault);
 }
 
 
@@ -1996,7 +1996,7 @@ static irqreturn_t bq2589x_charger_interrupt(int irq, void *data)
 {
 	struct bq2589x *bq = data;
 
-	dev_info(bq->dev, "in %s\n", __func__);
+	dev_dbg(bq->dev, "in %s\n", __func__);
 	schedule_work(&bq->irq_work);
 	return IRQ_HANDLED;
 }
@@ -2067,10 +2067,10 @@ static int bq2589x_charger_probe(struct i2c_client *client,
 	ret = bq2589x_detect_device(bq);
 	if (!ret) {
 		bq->status |= BQ2589X_STATUS_EXIST;
-		dev_info(bq->dev, "%s: charger device bq25890 detected, revision:%d\n",
+		dev_dbg(bq->dev, "%s: charger device bq25890 detected, revision:%d\n",
 			__func__, bq->revision);
 	} else {
-		dev_info(bq->dev, "%s: no bq25890 charger device found:%d\n", __func__, ret);
+		dev_dbg(bq->dev, "%s: no bq25890 charger device found:%d\n", __func__, ret);
 		return -ENODEV;
 	}
 
@@ -2089,31 +2089,31 @@ static int bq2589x_charger_probe(struct i2c_client *client,
 	bq->chg_dev = charger_device_register(bq->chg_dev_name,
 	&client->dev, bq, &bq2589x_chg_ops, &bq->chg_props);
 	if (IS_ERR_OR_NULL(bq->chg_dev)) {
-		dev_info(bq->dev, "%s: Register charger device failed\n", __func__);
+		dev_dbg(bq->dev, "%s: Register charger device failed\n", __func__);
 		ret = PTR_ERR(bq->chg_dev);
 		return ret;
 	}
 
 	ret = bq2589x_init_device(bq);
 	if (ret) {
-		dev_info(bq->dev, "device init failure: %d\n", ret);
+		dev_dbg(bq->dev, "device init failure: %d\n", ret);
 		goto err_0;
 	}
 
 	bq2589x_irq = of_get_named_gpio(client->dev.of_node, "bq2589x_irq", 0);
 	if (bq2589x_irq < 0)
-		dev_info(bq->dev, "%s: %d get gpio failed\n", __func__, bq2589x_irq);
+		dev_dbg(bq->dev, "%s: %d get gpio failed\n", __func__, bq2589x_irq);
 
 	ret = gpio_request(bq2589x_irq, "bq2589x irq pin");
 	if (ret) {
-		dev_info(bq->dev, "%s: %d gpio request failed\n", __func__, bq2589x_irq);
+		dev_dbg(bq->dev, "%s: %d gpio request failed\n", __func__, bq2589x_irq);
 		goto err_0;
 	}
 	gpio_direction_input(bq2589x_irq);
 
 	irqn = gpio_to_irq(bq2589x_irq);
 	if (irqn < 0) {
-		dev_info(bq->dev, "%s:%d gpio_to_irq failed\n", __func__, irqn);
+		dev_dbg(bq->dev, "%s:%d gpio_to_irq failed\n", __func__, irqn);
 		ret = irqn;
 		goto err_1;
 	}
@@ -2135,10 +2135,10 @@ static int bq2589x_charger_probe(struct i2c_client *client,
 	ret = request_irq(client->irq, bq2589x_charger_interrupt,
 		IRQF_TRIGGER_FALLING | IRQF_ONESHOT, "bq2589x_charger1_irq", bq);
 	if (ret) {
-		dev_info(bq->dev, "%s:Request IRQ %d failed: %d\n", __func__, client->irq, ret);
+		dev_dbg(bq->dev, "%s:Request IRQ %d failed: %d\n", __func__, client->irq, ret);
 		goto err_irq;
 	} else {
-		dev_info(bq->dev, "%s:irq = %d\n", __func__, client->irq);
+		dev_dbg(bq->dev, "%s:irq = %d\n", __func__, client->irq);
 	}
 
 	pe.enable = true;
@@ -2170,7 +2170,7 @@ static void bq2589x_charger_shutdown(struct i2c_client *client)
 {
 	struct bq2589x *bq = i2c_get_clientdata(client);
 
-	dev_info(bq->dev, "%s: shutdown\n", __func__);
+	dev_dbg(bq->dev, "%s: shutdown\n", __func__);
 
 	bq2589x_psy_unregister(bq);
 

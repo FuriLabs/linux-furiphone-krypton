@@ -824,20 +824,20 @@ int charger_dev_event(struct notifier_block *nb, unsigned long event, void *v)
 	switch (event) {
 	case CHARGER_DEV_NOTIFY_EOC:
 		charger_manager_notifier(info, CHARGER_NOTIFY_EOC);
-		pr_info("%s: end of charge\n", __func__);
+		pr_debug("%s: end of charge\n", __func__);
 		break;
 	case CHARGER_DEV_NOTIFY_RECHG:
 #ifdef CONFIG_TCPC_CLASS
 		if (mt_check_cable_in() > 0) {
 			charger_manager_notifier(info, CHARGER_NOTIFY_START_CHARGING);
-			pr_info("%s: recharge\n", __func__);
+			pr_debug("%s: recharge\n", __func__);
 			break;
 		}
-		pr_info("%s: cable not in, cannot recharge\n", __func__);
+		pr_debug("%s: cable not in, cannot recharge\n", __func__);
 		break;
 #else
 		charger_manager_notifier(info, CHARGER_NOTIFY_START_CHARGING);
-		pr_info("%s: recharge\n", __func__);
+		pr_debug("%s: recharge\n", __func__);
 		break;
 #endif
 	case CHARGER_DEV_NOTIFY_SAFETY_TIMEOUT:

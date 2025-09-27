@@ -25,7 +25,7 @@ static int __sgm4151x_read_byte(struct sgm4151x_device *sgm, u8 reg, u8 *data)
 
 	ret = i2c_smbus_read_byte_data(sgm->client, reg);
 	if (ret < 0) {
-		pr_info("i2c read fail: can't read from reg 0x%02X\n", reg);
+		pr_debug("i2c read fail: can't read from reg 0x%02X\n", reg);
 		return ret;
 	}
 
@@ -40,7 +40,7 @@ static int __sgm4151x_write_byte(struct sgm4151x_device *sgm, int reg, u8 val)
 
 	ret = i2c_smbus_write_byte_data(sgm->client, reg, val);
 	if (ret < 0) {
-		pr_info("i2c write fail: can't write 0x%02X to reg 0x%02X: %d\n",
+		pr_debug("i2c write fail: can't write 0x%02X to reg 0x%02X: %d\n",
 				val, reg, ret);
 		return ret;
 	}
@@ -67,7 +67,7 @@ static int sgm4151x_update_bits(struct sgm4151x_device *sgm, u8 reg,
 	mutex_lock(&sgm->i2c_rw_lock);
 	ret = __sgm4151x_read_byte(sgm, reg, &tmp);
 	if (ret) {
-		pr_info("Failed: reg=%02X, ret=%d\n", reg, ret);
+		pr_debug("Failed: reg=%02X, ret=%d\n", reg, ret);
 		goto out;
 	}
 
@@ -76,7 +76,7 @@ static int sgm4151x_update_bits(struct sgm4151x_device *sgm, u8 reg,
 
 	ret = __sgm4151x_write_byte(sgm, reg, tmp);
 	if (ret)
-		pr_info("Failed: reg=%02X, ret=%d\n", reg, ret);
+		pr_debug("Failed: reg=%02X, ret=%d\n", reg, ret);
 
 out:
 	mutex_unlock(&sgm->i2c_rw_lock);
@@ -96,15 +96,15 @@ static int sgm4151x_check_pn(struct charger_device *chg_dev)
 	switch (pn) {
 	case 0x2:
 		//hardwareinfo_set_prop(HARDWARE_CHARGER_IC_INFO, "SGM41511");
-		dev_info(sgm->dev, "[%s] pn:0010 ic:SGM41511\n", __func__);
+		dev_dbg(sgm->dev, "[%s] pn:0010 ic:SGM41511\n", __func__);
 		break;
 	case 0x9:
 		//hardwareinfo_set_prop(HARDWARE_CHARGER_IC_INFO, "SY6974");
-		dev_info(sgm->dev, "[%s] pn:1001 ic:SY6974\n", __func__);
+		dev_dbg(sgm->dev, "[%s] pn:1001 ic:SY6974\n", __func__);
 		break;
 	default:
 		//hardwareinfo_set_prop(HARDWARE_CHARGER_IC_INFO, "UNKNOWN");
-		dev_info(sgm->dev, "[%s] pn:0x%02x ic:UNKNOWN\n", __func__, pn);
+		dev_dbg(sgm->dev, "[%s] pn:0x%02x ic:UNKNOWN\n", __func__, pn);
 		break;
 	}
 	return 0;
@@ -132,7 +132,7 @@ static int sgm4151x_set_ichrg_curr(struct charger_device *chg_dev, unsigned int 
 	int reg_val;
 	struct sgm4151x_device *sgm = charger_get_data(chg_dev);
 
-	dev_info(sgm->dev, "set_ichrg_curr = %d\n", chrg_curr);
+	dev_dbg(sgm->dev, "set_ichrg_curr = %d\n", chrg_curr);
 	if (chrg_curr < SGM4151x_ICHRG_I_MIN_uA)
 		chrg_curr = SGM4151x_ICHRG_I_MIN_uA;
 
@@ -217,15 +217,15 @@ static int sgm4151x_enable_shipping_mode(struct charger_device *chg_dev, bool en
 	int ret;
 
 	if (en) {
-		dev_info(sgm->dev, "%s:%d", __func__, en);
+		dev_dbg(sgm->dev, "%s:%d", __func__, en);
 		ret = sgm4151x_update_bits(sgm, SGM4151x_CHRG_CTRL_7, 0x04, 0);
 		if (ret) {
-			dev_info(sgm->dev, "[%s] set batfet_dly failed:%d", __func__, ret);
+			dev_dbg(sgm->dev, "[%s] set batfet_dly failed:%d", __func__, ret);
 			return ret;
 		}
 		ret = sgm4151x_update_bits(sgm, SGM4151x_CHRG_CTRL_7, 0x20, 0x20);
 		if (ret) {
-			dev_info(sgm->dev, "[%s] set batfet_dis failed:%d", __func__, ret);
+			dev_dbg(sgm->dev, "[%s] set batfet_dis failed:%d", __func__, ret);
 			return ret;
 		}
 	} else {
@@ -243,7 +243,7 @@ static int sgm4151x_dump_register(struct charger_device *chg_dev)
 
 	for (i = 0; i <= SGM4151x_CHRG_CTRL_B; i++) {
 		sgm4151x_read_reg(sgm, i, &reg);
-		pr_info("%s REG%02x  %02x\n", __func__, i, reg);
+		pr_debug("%s REG%02x  %02x\n", __func__, i, reg);
 	}
 	return 0;
 }
@@ -345,30 +345,30 @@ static int sgm4151x_parse_dt(struct sgm4151x_device *sgm)
 
 	irq_gpio = of_get_named_gpio(sgm->dev->of_node, "sgm,irq-gpio", 0);
 	if (!gpio_is_valid(irq_gpio)) {
-		dev_info(sgm->dev, "%s: %d gpio get failed\n", __func__, irq_gpio);
+		dev_dbg(sgm->dev, "%s: %d gpio get failed\n", __func__, irq_gpio);
 		return -EINVAL;
 	}
 	ret = gpio_request(irq_gpio, "sgm4151x irq pin");
 	if (ret) {
-		dev_info(sgm->dev, "%s: %d gpio request failed\n", __func__, irq_gpio);
+		dev_dbg(sgm->dev, "%s: %d gpio request failed\n", __func__, irq_gpio);
 		return ret;
 	}
 	gpio_direction_input(irq_gpio);
 	irqn = gpio_to_irq(irq_gpio);
 	if (irqn < 0) {
-		dev_info(sgm->dev, "%s:%d gpio_to_irq failed\n", __func__, irqn);
+		dev_dbg(sgm->dev, "%s:%d gpio_to_irq failed\n", __func__, irqn);
 		return irqn;
 	}
 	sgm->client->irq = irqn;
 
 	chg_en_gpio = of_get_named_gpio(sgm->dev->of_node, "sgm,chg-en-gpio", 0);
 	if (!gpio_is_valid(chg_en_gpio)) {
-		dev_info(sgm->dev, "%s: %d gpio get failed\n", __func__, chg_en_gpio);
+		dev_dbg(sgm->dev, "%s: %d gpio get failed\n", __func__, chg_en_gpio);
 		return -EINVAL;
 	}
 	ret = gpio_request(chg_en_gpio, "sgm chg en pin");
 	if (ret) {
-		dev_info(sgm->dev, "%s: %d gpio request failed\n", __func__, chg_en_gpio);
+		dev_dbg(sgm->dev, "%s: %d gpio request failed\n", __func__, chg_en_gpio);
 		return ret;
 	}
 	/* default enable charge */
@@ -395,7 +395,7 @@ static int sgm4151x_probe(struct i2c_client *client,
 	int ret = 0;
 	struct sgm4151x_device *sgm;
 
-	pr_info("sgm4151x start probe\n");
+	pr_debug("sgm4151x start probe\n");
 	sgm = devm_kzalloc(&client->dev, sizeof(struct sgm4151x_device), GFP_KERNEL);
 	if (!sgm)
 		return -ENOMEM;
@@ -409,7 +409,7 @@ static int sgm4151x_probe(struct i2c_client *client,
 	// Customer customization
 	ret = sgm4151x_parse_dt(sgm);
 	if (ret) {
-		dev_info(sgm->dev, "Failed to read device tree properties<errno:%d>\n", ret);
+		dev_dbg(sgm->dev, "Failed to read device tree properties<errno:%d>\n", ret);
 		return ret;
 	}
 
@@ -418,20 +418,20 @@ static int sgm4151x_probe(struct i2c_client *client,
 	sgm->chg_dev = charger_device_register("primary_divider_chg",
 			sgm->dev, sgm, &sgm4151x_chg_ops, &sgm->sgm4151x_chg_props);
 	if (IS_ERR_OR_NULL(sgm->chg_dev)) {
-		pr_info("%s: register charger device  failed\n", __func__);
+		pr_debug("%s: register charger device  failed\n", __func__);
 		ret = PTR_ERR(sgm->chg_dev);
 		return ret;
 	}
 
 	ret = sgm4151x_power_supply_init(sgm, sgm->dev);
 	if (ret) {
-		dev_info(sgm->dev, "Failed to init power supply\n");
+		dev_dbg(sgm->dev, "Failed to init power supply\n");
 		return ret;
 	}
 
 	ret = sgm4151x_hw_init(sgm);
 	if (ret) {
-		dev_info(sgm->dev, "Cannot initialize the chip.\n");
+		dev_dbg(sgm->dev, "Cannot initialize the chip.\n");
 		return ret;
 	}
 
