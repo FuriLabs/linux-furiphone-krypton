@@ -1598,7 +1598,7 @@ int mtk_nanohub_set_cmd_to_hub(uint8_t sensor_id,
 
 	err = mtk_nanohub_req_send(&req);
 	if (err < 0) {
-		pr_err("set_cust fail!\n");
+		pr_debug("set_cust fail!\n");
 		return -1;
 	}
 	if (sensor_id != req.get_data_rsp.sensorType
@@ -1674,7 +1674,7 @@ static void mtk_nanohub_get_devinfo(void)
 		info.sensor_type = sensor;
 		if (mtk_nanohub_set_cmd_to_hub(id,
 				CUST_ACTION_GET_SENSOR_INFO, &hubinfo) < 0) {
-			pr_err("type(%d) not registered\n", sensor);
+			pr_debug("type(%d) not registered\n", sensor);
 			find_sensor = false;
 		} else {
 			find_sensor = true;
