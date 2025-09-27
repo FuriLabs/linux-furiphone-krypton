@@ -82,7 +82,7 @@ void adsp_read_status_release(const unsigned long dsp_event)
 	last_dsp_status = dsp_event;
 	if (status_update_flag == 0) {
 		status_update_flag = 1;
-		pr_info("wake up event: %lu\n", dsp_event);
+		pr_debug("wake up event: %lu\n", dsp_event);
 		wake_up_interruptible(&status_wq);
 	}
 }
@@ -95,12 +95,12 @@ static int adsp_read_status_blocked(void)
 	retval = wait_event_interruptible(status_wq,
 				 (status_update_flag > 0));
 	if (retval == -ERESTARTSYS) {
-		pr_info("query adsp status -ERESTARTSYS");
+		pr_debug("query adsp status -ERESTARTSYS");
 		status = -EINTR;
 	} else if (retval == 0) {
 		status = last_dsp_status;
 		status_update_flag = 0;
-		pr_info("query adsp status wakeup  %d\n", status);
+		pr_debug("query adsp status wakeup  %d\n", status);
 	} else
 		status = -1;
 
@@ -112,7 +112,7 @@ long adsp_driver_compat_ioctl(
 	struct file *file, unsigned int cmd, unsigned long arg)
 {
 	if (!file->f_op || !file->f_op->unlocked_ioctl) {
-		pr_notice("op null\n");
+		pr_debug("op null\n");
 		return -ENOTTY;
 	}
 	return file->f_op->unlocked_ioctl(file, cmd, arg);
@@ -152,7 +152,7 @@ long adsp_driver_ioctl(
 				 (void __user *)arg,
 				 sizeof(struct audio_dsp_reg_feature_t));
 		if (retval != 0) {
-			pr_notice("%s(), feature reg copy_from_user retval %d\n",
+			pr_debug("%s(), feature reg copy_from_user retval %d\n",
 				  __func__, retval);
 			break;
 		}

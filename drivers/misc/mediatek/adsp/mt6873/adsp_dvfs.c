@@ -56,7 +56,7 @@
 #define pr_fmt(fmt)     "[adsp_dvfs]: " fmt
 
 #define ADSP_DBG(fmt, arg...) pr_debug(fmt, ##arg)
-#define ADSP_INFO(fmt, arg...) pr_info(fmt, ##arg)
+#define ADSP_INFO(fmt, arg...) pr_debug(fmt, ##arg)
 
 #define DRV_Reg32(addr)           readl(addr)
 #define DRV_WriteReg32(addr, val) writel(val, addr)
@@ -505,12 +505,12 @@ int adsp_sram_gtable_check(void)
 		     (void *)(ADSP_A_ITCM),
 		     (size_t)ADSP_A_ITCM_SIZE);
 	if (ret) {
-		pr_notice("[%s]memcmp adsp_itcm_gtable != ITCM, ret %d\n",
+		pr_debug("[%s]memcmp adsp_itcm_gtable != ITCM, ret %d\n",
 			  __func__, ret);
 		s = (void *)(ADSP_A_ITCM);
 		for (i = 0; i < ADSP_A_ITCM_SIZE / 4; i++) {
 			if (adsp_itcm_gtable[i] != *s) {
-				pr_notice("[%s]adsp_itcm_gtable[%d](0x%x) != ITCM(0x%x)\n",
+				pr_debug("[%s]adsp_itcm_gtable[%d](0x%x) != ITCM(0x%x)\n",
 					  __func__, i, adsp_itcm_gtable[i], *s);
 				*s = adsp_itcm_gtable[i];
 			}
@@ -524,14 +524,14 @@ int adsp_sram_gtable_check(void)
 		     (void *)(ADSP_A_DTCM),
 		     (size_t)ADSP_A_DTCM_SIZE - ADSP_A_DTCM_SHARE_SIZE);
 	if (ret) {
-		pr_notice("[%s]memcmp adsp_dtcm_gtable != DTCM, ret %d\n",
+		pr_debug("[%s]memcmp adsp_dtcm_gtable != DTCM, ret %d\n",
 			  __func__, ret);
 		s = (void *)(ADSP_A_DTCM);
 		for (i = 0;
 		     i < (ADSP_A_DTCM_SIZE - ADSP_A_DTCM_SHARE_SIZE) / 4;
 		     i++) {
 			if (adsp_dtcm_gtable[i] != *s) {
-				pr_notice("[%s]adsp_dtcm_gtable[%d](0x%x) != DTCM(0x%x)\n",
+				pr_debug("[%s]adsp_dtcm_gtable[%d](0x%x) != DTCM(0x%x)\n",
 					  __func__, i, adsp_dtcm_gtable[i], *s);
 				*s = adsp_dtcm_gtable[i];
 			}
@@ -545,7 +545,7 @@ int adsp_sram_gtable_check(void)
 		     (void *)(ADSP_A_CFG),
 		     (size_t)21248);
 	if (ret) {
-		pr_notice("[%s]memcmp adsp_cfg_gtable != CFG, ret %d\n",
+		pr_debug("[%s]memcmp adsp_cfg_gtable != CFG, ret %d\n",
 			  __func__, ret);
 	}
 #endif

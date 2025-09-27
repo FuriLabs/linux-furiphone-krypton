@@ -158,7 +158,7 @@ enum adsp_ipi_status adsp_send_message(enum adsp_ipi_id id, void *buf,
 	struct adsp_priv *pdata = get_adsp_core_by_id(core_id);
 
 	if (get_adsp_state(pdata) != ADSP_RUNNING) {
-		pr_notice("%s, adsp not enabled, id=%d", __func__, id);
+		pr_debug("%s, adsp not enabled, id=%d", __func__, id);
 		return ADSP_IPI_ERROR;
 	}
 
@@ -167,7 +167,7 @@ enum adsp_ipi_status adsp_send_message(enum adsp_ipi_id id, void *buf,
 	}
 
 	if (len > (SHARE_BUF_SIZE - 16) || buf == NULL) {
-		pr_info("%s(), %s buffer error", __func__, "adsp");
+		pr_debug("%s(), %s buffer error", __func__, "adsp");
 		return ADSP_IPI_ERROR;
 	}
 #if (MTK_ADSP_HW_VER == 1)
@@ -282,7 +282,7 @@ int adsp_reset(void)
 	struct adsp_priv *pdata;
 
 	if (!is_adsp_axibus_idle()) {
-		pr_info("%s, adsp_axibus busy try again", __func__);
+		pr_debug("%s, adsp_axibus busy try again", __func__);
 		return -EAGAIN;
 	}
 
@@ -323,7 +323,7 @@ int adsp_reset(void)
 			pdata->ops->after_bootup(pdata);
 	}
 
-	pr_info("[ADSP] reset adsp done\n");
+	pr_debug("[ADSP] reset adsp done\n");
 #endif
 	return 0;
 }
@@ -360,7 +360,7 @@ static int __init adsp_init(void)
 
 	ret = create_adsp_drivers();
 	if (!ret) {
-		pr_info("%s fail\n", __func__);
+		pr_debug("%s fail\n", __func__);
 		return -ENODEV;
 	}
 	rwlock_init(&access_rwlock);
@@ -375,7 +375,7 @@ static int __init adsp_init(void)
 			      "adsp_suspend_ack");
 	adsp_timesync_init();
 
-	pr_info("%s, ret(%d)\n", __func__, ret);
+	pr_debug("%s, ret(%d)\n", __func__, ret);
 	return ret;
 }
 
@@ -427,11 +427,11 @@ static int __init adsp_module_init(void)
 	}
 
 	adsp_deregister_feature(SYSTEM_FEATURE_ID);
-	pr_info("%s done\n", __func__);
+	pr_debug("%s done\n", __func__);
 	return ret;
 
 ERROR:
-	pr_info("%s fail ret(%d)\n", __func__, ret);
+	pr_debug("%s fail ret(%d)\n", __func__, ret);
 	return ret;
 }
 
@@ -448,7 +448,7 @@ static int __init adsp_late_init(void)
 		return -ENXIO;
 
 	adsp_set_emimpu_shared_region();
-	pr_info("[ADSP] late_init done\n");
+	pr_debug("[ADSP] late_init done\n");
 
 	return 0;
 }

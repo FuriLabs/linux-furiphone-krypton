@@ -56,7 +56,7 @@ int get_adsp_semaphore(unsigned int flags)
 	 * Both adsp enter suspend/resume at the same time.
 	 */
 	if (!is_adsp_system_running()) {
-		pr_notice("%s: adsp not enabled.", __func__);
+		pr_debug("%s: adsp not enabled.", __func__);
 		return ADSP_ERROR;
 	}
 
@@ -96,7 +96,7 @@ int release_adsp_semaphore(unsigned int flags)
 	unsigned long spin_flags;
 
 	if (!is_adsp_system_running()) {
-		pr_notice("%s: adsp not enabled.", __func__);
+		pr_debug("%s: adsp not enabled.", __func__);
 		return ADSP_ERROR;
 	}
 
