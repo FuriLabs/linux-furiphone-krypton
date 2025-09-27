@@ -2050,7 +2050,7 @@ CONFIG_MTK_DTBO_FEATURE=y
 # Storage Block Tag
 #
 # CONFIG_MTK_BLOCK_TAG is not set
-CONFIG_MTK_PID_MAP=y
+# CONFIG_MTK_PID_MAP is not set
 
 #
 # Power, PMIC, Battery & Low Power
