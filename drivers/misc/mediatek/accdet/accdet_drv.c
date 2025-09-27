@@ -74,15 +74,15 @@ static int accdet_mod_init(void)
 
 	ret = platform_driver_register(&accdet_driver);
 	if (ret)
-		pr_notice("Accdet platform_driver_register error:(%d)\n", ret);
+		pr_debug("Accdet platform_driver_register error:(%d)\n", ret);
 
-	pr_info("%s() done!\n", __func__);
+	pr_debug("%s() done!\n", __func__);
 	return ret;
 }
 
 static void accdet_mod_exit(void)
 {
-	pr_info("%s()\n", __func__);
+	pr_debug("%s()\n", __func__);
 	platform_driver_unregister(&accdet_driver);
 }
 
