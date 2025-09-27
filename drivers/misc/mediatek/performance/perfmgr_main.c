@@ -8,13 +8,9 @@
 #include <linux/moduleparam.h>
 #include <linux/platform_device.h>
 
-#include "tchbst.h"
-#include "io_ctrl.h"
 #include "boost_ctrl.h"
 #include "mtk_perfmgr_internal.h"
 #include "topo_ctrl.h"
-#include "uload_ind.h"
-#include "syslimiter.h"
 
 #define API_READY 0
 
@@ -30,9 +26,6 @@ struct platform_device perfmgr_device = {
 
 static int perfmgr_suspend(struct device *dev)
 {
-#ifdef CONFIG_MTK_PERFMGR_TOUCH_BOOST
-	ktch_suspend();
-#endif
 	return 0;
 }
 
@@ -77,16 +70,9 @@ static int __init init_perfmgr(void)
 		return ret;
 
 	perfmgr_root = proc_mkdir("perfmgr", NULL);
-	pr_debug("MTK_TOUCH_BOOST function init_perfmgr_touch\n");
 
 	init_boostctrl(perfmgr_root);
-	init_tchbst(perfmgr_root);
-	init_perfctl(perfmgr_root);
-	syslimiter_init(perfmgr_root);
 
-#ifdef CONFIG_MTK_LOAD_TRACKER
-	init_uload_ind(NULL);
-#endif
 	return 0;
 }
 device_initcall(init_perfmgr);

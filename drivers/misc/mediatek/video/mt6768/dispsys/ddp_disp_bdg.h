@@ -6,7 +6,6 @@
 #ifndef _DDP_DISP_BDG_H_
 #define _DDP_DISP_BDG_H_
 
-#include "../../../spi_slave_drv/spi_slave.h"
 #include "ddp_hal.h"
 #include "ddp_info.h"
 #include "lcm_drv.h"

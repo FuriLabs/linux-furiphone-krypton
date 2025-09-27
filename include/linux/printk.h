@@ -14,10 +14,6 @@ extern const char linux_proc_banner[];
 
 #define PRINTK_MAX_SINGLE_HEADER_LEN 2
 
-#ifdef CONFIG_MTK_AEE_FEATURE
-void aee_wdt_zap_locks(void);
-#endif
-
 #ifdef CONFIG_LOG_TOO_MUCH_WARNING
 #ifndef KBUILD_MODNAME
 #define KBUILD_MODNAME "unknown module"
@@ -28,18 +24,6 @@ int get_detect_count(void);
 void set_logtoomuch_enable(int value);
 int get_logtoomuch_enable(void);
 #endif
-
-#ifdef CONFIG_PRINTK_MTK_UART_CONSOLE
-/*
- * 0: uart printk enable
- * 1: uart printk disable
- * 2: uart printk always enable
- * 2 only set in lk phase by cmline
- */
-extern int printk_disable_uart;
-#endif
-
-
 
 static inline int printk_get_level(const char *buffer)
 {

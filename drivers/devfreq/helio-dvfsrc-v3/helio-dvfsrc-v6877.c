@@ -23,7 +23,6 @@
 #include <linux/of.h>
 #include <linux/platform_device.h>
 #include <linux/sched/clock.h>
-#include <dbgtop.h>
 
 #define dvfsrc_rmw(offset, val, mask, shift) \
 	dvfsrc_write(offset, (dvfsrc_read(offset) & ~(mask << shift)) \
@@ -819,9 +818,6 @@ static void vcorefs_get_src_misc_info(void)
 
 int dvfsrc_latch_register(int enable)
 {
-#ifdef	CONFIG_MTK_DBGTOP
-	return mtk_dbgtop_cfg_dvfsrc(1);
-#endif
 	return 0;
 }
 

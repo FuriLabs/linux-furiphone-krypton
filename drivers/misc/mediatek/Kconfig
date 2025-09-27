@@ -1,6 +1,4 @@
 source "drivers/misc/mediatek/Kconfig.default"
-source "drivers/misc/mediatek/usb20/Kconfig"
-source "drivers/misc/mediatek/cqdma/Kconfig"
 
 config MTK_PLATFORM
 	string "MTK platform name"
@@ -45,11 +43,6 @@ config MTK_DTBO_FEATURE
 	  An overlay can add nodes to the tree and make changes to properties
 	  in the existing tree.
 	  If you are not sure about this, set y
-
-menu "Storage"
-source "drivers/misc/mediatek/blocktag/Kconfig"
-source "drivers/misc/mediatek/pidmap/Kconfig"
-endmenu # Storage
 
 menu "Power, PMIC, Battery & Low Power"
 
@@ -100,8 +93,6 @@ config MTK_CLKBUF_NFC
 	  this config is not set, XO_NFC will be disabled when
 	  driver is probed.
 
-source "drivers/misc/mediatek/dcm/Kconfig"
-
 config MTK_QOS_FRAMEWORK
 	tristate "MTK QOS FRAMEWORK"
 	depends on MTK_TINYSYS_SSPM_SUPPORT
@@ -111,17 +102,6 @@ config MTK_QOS_FRAMEWORK
 	  will be enabled and set EMI hardware.
 	  If unsure, say N.
 
-config MTK_SRCLKEN_RC
-	tristate "MediaTek SRCLKEN RC Support"
-	select REGMAP
-	help
-	  Say yes here to add support for the MediaTek SRCLKEN RC
-	  driver, which supports debug interface for monitoring XO 26M/
-	  DCXO/Vcore/LDO/Buck state with all subsys such as suspend/
-	  dpidle/MD/RF/BT/SCP...etc.
-	  It would also inform other subsystem/module to run suitable
-	  sw setting for srclken-rc driver.
-
 config MTK_LOW_POWER_MODULE
 	bool "Meditaek Low Power Module"
 	depends on ARCH_MEDIATEK && MTK_LPM
@@ -130,66 +110,6 @@ config MTK_LOW_POWER_MODULE
 	  For MediaTek Low Power Module, such as CPU idle,
 	  CPU suspend low power enhencement.
 	  Select "y" if you want to enable low power features.
-	  Select "n" if unsure.
-
-config MTK_POWER_THROTTLING_COMMON
-	bool "MTK power throttling common"
-	help
-	  For MediaTek power throttling. Provide common interface for MTK
-	  power throttle.
-	  Select "y" if you want to enable power throttling feature
-	  Select "n" if unsure.
-
-config PMIC_LBAT_SERVICE
-	tristate "PMIC lbat service"
-	select MTK_POWER_THROTTLING_COMMON
-	help
-	  For MediaTek PMIC lbat service.
-	  It will detect if VBAT is higher or lower some threshold and trigger
-	  interrupt to notify.
-	  Select "y" if you want to enable PMIC lbat service.
-	  Select "n" if unsure.
-
-config MTK_BATTERY_OC_POWER_THROTTLING
-	tristate "MTK battery over current throttle"
-	select MTK_POWER_THROTTLING_COMMON
-	help
-	  For MediaTek battery over current power throttling.
-	  Power throttle when battery current loading higher than some
-	  threshold.
-	  Select "y" if you want to enable battery over current power
-	  throttling feature.
-	  Select "n" if unsure.
-
-config MTK_BATTERY_PERCENTAGE_POWER_THROTTLING
-	tristate "MTK battery percentage throttle"
-	select MTK_POWER_THROTTLING_COMMON
-	help
-	  For MediaTek battery percentage power throttling.
-	  Power throttle when battery percentage lower than some threshold
-	  Select "y" if you want to enable battery percentage power throttling
-	  feature
-	  Select "n" if unsure.
-
-config MTK_LOW_BATTERY_POWER_THROTTLING
-	tristate "MTK low battery throttle"
-	select MTK_POWER_THROTTLING_COMMON
-	select PMIC_LBAT_SERVICE
-	help
-	  For MediaTek low battery power throttling.
-	  Power throttle when battery voltage lower than some threshold.
-	  Select "y" if you want to enable low battery power throttling
-	  feature.
-	  Select "n" if unsure.
-
-config MTK_DYNAMIC_LOADING_POWER_THROTTLING
-	tristate "MTK dynamic loading throttle"
-	select MTK_POWER_THROTTLING_COMMON
-	help
-	  For MediaTek dynamic loading power throttling.
-	  Dynamic loading Imix calculation for power budget management.
-	  Select "y" if you want to enable dynamic loading power throttling
-	  feature.
 	  Select "n" if unsure.
 
 config MTK_PTPOD
@@ -217,7 +137,6 @@ config MTK_UNIFY_POWER
 	  If unsure, say Y.
 
 source "drivers/misc/mediatek/lpm/Kconfig"
-source "drivers/misc/mediatek/ppm_v3/Kconfig"
 source "drivers/misc/mediatek/apusys/Kconfig"
 source "drivers/misc/mediatek/base/power/Kconfig"
 source "drivers/misc/mediatek/pmic/Kconfig"
@@ -303,8 +222,6 @@ source "drivers/misc/mediatek/lcm/Kconfig"
 source "drivers/misc/mediatek/sync/Kconfig"
 source "drivers/misc/mediatek/video/Kconfig"
 source "drivers/misc/mediatek/vdec_fmt/Kconfig"
-source "drivers/misc/mediatek/iommu/Kconfig"
-source "drivers/misc/mediatek/m4u/Kconfig"
 source "drivers/misc/mediatek/pseudo_m4u/Kconfig"
 source "drivers/misc/mediatek/flashlight/Kconfig"
 source "drivers/misc/mediatek/flashlight/richtek/Kconfig"
@@ -313,7 +230,6 @@ source "drivers/misc/mediatek/lens/Kconfig"
 source "drivers/misc/mediatek/cam_cal/Kconfig"
 source "drivers/misc/mediatek/cmdq/Kconfig"
 source "drivers/misc/mediatek/vpu/Kconfig"
-source "drivers/misc/mediatek/mdla/Kconfig"
 source "drivers/misc/mediatek/smi/Kconfig"
 source "drivers/misc/mediatek/jpeg/Kconfig"
 source "drivers/misc/mediatek/ccu/src/Kconfig"
@@ -366,7 +282,6 @@ config MTK_TEE_GP_SUPPORT
 
 source "drivers/misc/mediatek/trusted_mem/Kconfig"
 source "drivers/misc/mediatek/geniezone/Kconfig"
-source "drivers/misc/mediatek/tee_sanity/Kconfig"
 source "drivers/misc/mediatek/masp/Kconfig"
 endmenu # Security
 
@@ -374,12 +289,8 @@ menu "Other Peripherals"
 source "drivers/misc/mediatek/extcon/Kconfig"
 source "drivers/misc/mediatek/typec/Kconfig"
 source "drivers/misc/mediatek/leds/Kconfig"
-source "drivers/misc/mediatek/gate_ic/Kconfig"
-source "drivers/misc/mediatek/irtx/Kconfig"
 source "drivers/misc/mediatek/pwm/Kconfig"
 source "drivers/misc/mediatek/audio_ipi/Kconfig"
-source "drivers/misc/mediatek/adsp/Kconfig"
-source "drivers/misc/mediatek/uart/Kconfig"
 source "drivers/misc/mediatek/accdet/Kconfig"
 source "drivers/misc/mediatek/auxadc/Kconfig"
 source "drivers/misc/mediatek/rtc/Kconfig"
@@ -474,15 +385,6 @@ endmenu # TinySys
 
 menu "Debug, log, trace"
 
-config MTK_ATF_LOGGER
-	tristate "atf logger kernel driver"
-	depends on HAVE_ARM_SMCCC && ARCH_MEDIATEK && OF
-	default n
-	help
-	  ARM Trusted Firmwear Logger which is designed by Mediatek.
-	  The logger provide a /proc interface for reading from
-	  user space.
-
 config MTK_AMMS
 	bool "Support Mediatek AP and Modem Sharing Memory techonology"
 	help
@@ -491,14 +393,6 @@ config MTK_AMMS
 	  used. Modem should support this as well
 	  or it won't work. If you are not sure
 	  Please select "N"
-
-config MTK_ICE_DEBUG
-	bool "ICE_DEBUG"
-	default y if ARCH_MEDIATEK
-	help
-	  For Mediatek InCircuit Emulator Debug features.
-	  Select "y" if you want to use.
-	  Select "n" if you are not sure.
 
 config MTK_SPMTWAM
 	tristate "Mediatek Signal profiling tool"
@@ -529,39 +423,20 @@ config MTK_MT6382_BDG
 	  Normal project will disable it first
 	  If you are not sure about this, do not set it to y
 
-source "drivers/misc/mediatek/mtprof/Kconfig"
-source "drivers/misc/mediatek/aee/Kconfig"
-source "drivers/misc/mediatek/slbc/Kconfig"
 source "drivers/misc/mediatek/cm_mgr/Kconfig"
-source "drivers/misc/mediatek/dramc/Kconfig"
-source "drivers/misc/mediatek/emi/Kconfig"
 source "drivers/misc/mediatek/vibrator/Kconfig"
-source "drivers/misc/mediatek/emi_bwl/Kconfig"
-source "drivers/misc/mediatek/emi_mpu/Kconfig"
 source "drivers/misc/mediatek/systracker/Kconfig"
-source "drivers/misc/mediatek/monitor_hang/Kconfig"
 source "drivers/misc/mediatek/thermal/Kconfig"
 source "drivers/misc/mediatek/debug_latch/Kconfig"
-source "drivers/misc/mediatek/debug_tracer/Kconfig"
 source "drivers/misc/mediatek/cache/Kconfig"
-source "drivers/misc/mediatek/mtprintk/Kconfig"
 source "drivers/misc/mediatek/subpmic/Kconfig"
 source "drivers/misc/mediatek/cameraisp/Kconfig"
 source "drivers/misc/mediatek/mcupm/Kconfig"
 source "drivers/misc/mediatek/rt-regmap/Kconfig"
-source "drivers/misc/mediatek/selinux_warning/Kconfig"
-source "drivers/misc/mediatek/log_store/Kconfig"
-source "drivers/misc/mediatek/dfd/Kconfig"
-source "drivers/misc/mediatek/dbgtop/Kconfig"
 source "drivers/misc/mediatek/vow/Kconfig"
-source "drivers/misc/mediatek/sda/Kconfig"
-source "drivers/misc/mediatek/freqhopping/Kconfig"
 endmenu # Debug
 
 menu "Misc"
 source "drivers/misc/mediatek/ext_gic/Kconfig"
-source "drivers/misc/mediatek/cirq/Kconfig"
 source "drivers/misc/mediatek/timer/Kconfig"
 endmenu # Misc
-
-source "drivers/misc/mediatek/aw862xx_haptic/Kconfig"

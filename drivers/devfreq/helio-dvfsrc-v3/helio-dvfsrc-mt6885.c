@@ -23,9 +23,6 @@
 #include <linux/of.h>
 #include <linux/platform_device.h>
 #include <linux/sched/clock.h>
-#ifdef	CONFIG_MTK_DBGTOP
-#include <dbgtop.h>
-#endif
 
 #define DVFSRC_1600_FLOOR
 #define AUTOK_ENABLE
@@ -616,11 +613,7 @@ def CONFIG_MTK_EMI
 
 int dvfsrc_latch_register(int enable)
 {
-#ifdef	CONFIG_MTK_DBGTOP
-	return mtk_dbgtop_cfg_dvfsrc(1);
-#else
 	return 0;
-#endif
 }
 
 unsigned int *vcorefs_get_src_req(void)

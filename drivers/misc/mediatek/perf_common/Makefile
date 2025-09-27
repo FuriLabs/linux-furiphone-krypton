@@ -30,8 +30,6 @@ ccflags-$(CONFIG_MTK_CORE_CTL) += -I$(srctree)/drivers/misc/mediatek/base/power/
 ccflags-$(CONFIG_MTK_CORE_CTL) += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/
 
 obj-y += perf_common.o
-# a tracker for performance index
-obj-$(CONFIG_MTK_PERF_TRACKER) += perf_tracker.o
 # RQ stats for TLP estimation
 obj-$(CONFIG_MTK_CORE_CTL) += rq_stats.o
 obj-$(CONFIG_MTK_CORE_CTL) += sched_avg.o
