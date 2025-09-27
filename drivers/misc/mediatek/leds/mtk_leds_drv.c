@@ -110,7 +110,7 @@ int setMaxbrightness(int max_level, int enable)
 		mutex_unlock(&bl_level_limit_mutex);
 		if (current_level != 0) {
 			if (limit < last_level) {
-				pr_info
+				pr_debug
 				    ("Max brightness limit=%d\n", limit);
 				mt65xx_led_set_cust(&cust_led_list
 						    [MT65XX_LED_TYPE_LCD],
@@ -127,7 +127,7 @@ int setMaxbrightness(int max_level, int enable)
 		mutex_unlock(&bl_level_limit_mutex);
 
 		if (current_level != 0) {
-			pr_info("Control temperature close:limit=%d\n",
+			pr_debug("Control temperature close:limit=%d\n",
 				       limit);
 			mt65xx_led_set_cust(&cust_led_list[MT65XX_LED_TYPE_LCD],
 					    last_level);
@@ -135,7 +135,7 @@ int setMaxbrightness(int max_level, int enable)
 		}
 	}
 #else
-	pr_info("Set max brightness go through AAL\n");
+	pr_debug("Set max brightness go through AAL\n");
 	disp_bls_set_max_backlight(((((1 << LED_INTERNAL_LEVEL_BIT_CNT) -
 				      1) * max_level + 127) / 255));
 #endif				/* endif CONFIG_MTK_AAL_SUPPORT */
@@ -440,7 +440,7 @@ static int mt65xx_leds_probe(struct platform_device *pdev)
 	struct cust_mt65xx_led *cust_led_list = mt_get_cust_led_list();
 
 	if (!cust_led_list) {
-		pr_info("Get dts fail! Probe exit.\n");
+		pr_debug("Get dts fail! Probe exit.\n");
 		ret = -1;
 		goto err_dts;
 	}

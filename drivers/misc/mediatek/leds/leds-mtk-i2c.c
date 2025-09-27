@@ -95,7 +95,7 @@ static int __maybe_unused call_notifier(int event, struct led_conf_info *led_inf
 
 	err = mtk_leds_call_notifier(event, led_info);
 	if (err)
-		dev_info(led_info->cdev.dev, "[ERROR] notifier_call_chain error\n");
+		dev_dbg(led_info->cdev.dev, "[ERROR] notifier_call_chain error\n");
 	return err;
 }
 
@@ -114,7 +114,7 @@ static struct mtk_led_data *getLedData(char *name)
 		i++;
 	}
 	if (i == leds_desp->lens) {
-		pr_notice("can not find leds by led_desp %s", name);
+		pr_debug("can not find leds by led_desp %s", name);
 		return NULL;
 	}
 
@@ -147,7 +147,7 @@ int mt_leds_max_brightness_set(char *name, int percent, bool enable)
 	max_l = (1 << led_dat->conf.trans_bits) - 1;
 	limit_l = (percent * max_l) / 100;
 
-	dev_info(led_dat->conf.cdev.dev,
+	dev_dbg(led_dat->conf.cdev.dev,
 			"Set Led: %s, percent : %d, limit_l : %d, enable: %d",
 			led_dat->conf.cdev.name, percent, limit_l, enable);
 
@@ -165,7 +165,7 @@ int mt_leds_max_brightness_set(char *name, int percent, bool enable)
 	if (cur_l != 0)
 		led_level_i2c_set(led_dat, cur_l);
 
-	dev_info(led_dat->conf.cdev.dev,
+	dev_dbg(led_dat->conf.cdev.dev,
 			"after: name: %s, cur_l : %d\n",
 			led_dat->conf.cdev.name, cur_l);
 	return 0;
@@ -297,11 +297,11 @@ static int led_data_init(struct device *dev, struct mtk_led_data *s_led,
 
 	ret = devm_led_classdev_register(dev, &(s_led->conf.cdev));
 	if (ret < 0) {
-		dev_info(dev, "[ERROR] led class register fail!\n");
+		dev_dbg(dev, "[ERROR] led class register fail!\n");
 		return ret;
 	}
 
-	dev_info(dev, "%s devm_led_classdev_register ok, set brightness: %d!\n",
+	dev_dbg(dev, "%s devm_led_classdev_register ok, set brightness: %d!\n",
 			s_led->conf.cdev.name, level);
 
 	ret = snprintf(s_led->debug.buffer + strlen(s_led->debug.buffer),
@@ -309,7 +309,7 @@ static int led_data_init(struct device *dev, struct mtk_led_data *s_led,
 		"[Light] Set %s directly ", s_led->conf.cdev.name);
 
 	if (ret < 0 || ret >= 4096)
-		dev_info(dev, "[ERROR] print log init error!");
+		dev_dbg(dev, "[ERROR] print log init error!");
 
 	s_led->last_brightness = brightness;
 	s_led->last_level = level;
@@ -328,7 +328,7 @@ static int mtk_leds_parse_dt(struct device *dev, struct mtk_leds_info *m_leds)
 	enum led_brightness brightness;
 
 	if (!dev->of_node) {
-		pr_notice("Error load dts: node not exist!\n");
+		pr_debug("Error load dts: node not exist!\n");
 		return ret;
 	}
 
@@ -338,26 +338,26 @@ static int mtk_leds_parse_dt(struct device *dev, struct mtk_leds_info *m_leds)
 
 		ret = of_property_read_string(child, "label", &s_led->conf.cdev.name);
 		if (ret) {
-			dev_info(dev, "[ERROR] Fail to read label property\n");
+			dev_dbg(dev, "[ERROR] Fail to read label property\n");
 			goto out_led_dt;
 		}
 
 		ret = of_property_read_u32(child, "led-bits", &(s_led->conf.led_bits));
 		if (ret) {
-			dev_info(dev, "No led-bits, use default value 8\n");
+			dev_dbg(dev, "No led-bits, use default value 8\n");
 			s_led->conf.led_bits = 8;
 		}
 
 		ret = of_property_read_u32(child, "max-brightness",
 			&(s_led->conf.cdev.max_brightness));
 		if (ret) {
-			dev_info(dev, "No led-bits, use default value 8\n");
+			dev_dbg(dev, "No led-bits, use default value 8\n");
 			s_led->conf.cdev.max_brightness = (1 << s_led->conf.led_bits) - 1;
 		}
 
 		ret = of_property_read_u32(child, "trans-bits", &(s_led->conf.trans_bits));
 		if (ret) {
-			dev_info(dev, "No trans-bits, use default value 10\n");
+			dev_dbg(dev, "No trans-bits, use default value 10\n");
 			s_led->conf.trans_bits = 10;
 		}
 
@@ -374,7 +374,7 @@ static int mtk_leds_parse_dt(struct device *dev, struct mtk_leds_info *m_leds)
 		} else {
 			brightness = LED_FULL;
 		}
-		dev_info(dev, "parse %d leds dt: %s, %d, %d, %d\n",
+		dev_dbg(dev, "parse %d leds dt: %s, %d, %d, %d\n",
 						 num, s_led->conf.cdev.name,
 						 s_led->conf.led_bits,
 						 s_led->conf.trans_bits,
@@ -395,12 +395,12 @@ static int mtk_leds_parse_dt(struct device *dev, struct mtk_leds_info *m_leds)
 	}
 
 	m_leds->nums = num;
-	dev_info(dev, "%s: load dts ok, num = %d!\n", __func__, num);
+	dev_dbg(dev, "%s: load dts ok, num = %d!\n", __func__, num);
 
 	return 0;
 
 out_led_dt:
-	dev_info(dev, "[ERROR] Error load dts node!\n");
+	dev_dbg(dev, "[ERROR] Error load dts node!\n");
 	return ret;
 }
 
@@ -415,7 +415,7 @@ static int leds_i2c_probe(struct platform_device *pdev)
 	struct mtk_leds_info *leds;
 	int ret, nums;
 
-	dev_info(dev, "begin probe i2c leds\n");
+	dev_dbg(dev, "begin probe i2c leds\n");
 
 	nums = of_get_child_count(dev->of_node);
 
@@ -434,11 +434,11 @@ static int leds_i2c_probe(struct platform_device *pdev)
 
 	ret = mtk_leds_parse_dt(&(pdev->dev), leds);
 	if (ret) {
-		dev_info(dev, "[ERROR] Failed to parse devicetree!\n");
+		dev_dbg(dev, "[ERROR] Failed to parse devicetree!\n");
 		return ret;
 	}
 
-	dev_info(dev, "probe i2c leds end\n");
+	dev_dbg(dev, "probe i2c leds end\n");
 
 	return ret;
 }
@@ -462,7 +462,7 @@ static void leds_i2c_shutdown(struct platform_device *pdev)
 	int i;
 	struct mtk_leds_info *m_leds = dev_get_platdata(&pdev->dev);
 
-	pr_info("Turn off backlight\n");
+	pr_debug("Turn off backlight\n");
 
 	for (i = 0; m_leds && i < m_leds->nums; i++) {
 #ifdef CONFIG_LEDS_BRIGHTNESS_CHANGED
@@ -492,11 +492,11 @@ static int __init mtk_leds_init(void)
 {
 	int ret;
 
-	pr_info("Leds init\n");
+	pr_debug("Leds init\n");
 	ret = platform_driver_register(&i2c_leds_driver);
 
 	if (ret) {
-		pr_info("driver register error: %d\n", ret);
+		pr_debug("driver register error: %d\n", ret);
 		return ret;
 	}
 

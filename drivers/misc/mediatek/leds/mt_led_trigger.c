@@ -39,7 +39,7 @@ static ssize_t mt_led_register_attr_show(struct device *dev,
 	cmd = attr - mt_led_register_mode_attrs;
 	buf[0] = '\0';
 
-	dev_info(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
+	dev_dbg(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
 	switch (cmd) {
 	case REGISTER_MODE_ATTR_SFSTR:
 		ret = info->ops->get_current_step(info, &value);
@@ -69,7 +69,7 @@ static ssize_t mt_led_register_attr_store(struct device *dev,
 	if (ret < 0)
 		return ret;
 
-	dev_info(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
+	dev_dbg(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
 	switch (cmd) {
 	case REGISTER_MODE_ATTR_SFSTR:
 		ret = info->ops->set_current_step(info, value);
@@ -165,7 +165,7 @@ static ssize_t mt_led_pwm_attr_show(struct device *dev,
 
 	buf[0] = '\0';
 
-	dev_info(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
+	dev_dbg(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
 	switch (cmd) {
 	case PWM_MODE_ATTR_DIM_DUTY:
 		ret = info->ops->get_pwm_dim_duty(info, &dim_duty);
@@ -208,7 +208,7 @@ static ssize_t mt_led_pwm_attr_store(struct device *dev,
 	if (ret < 0)
 		return ret;
 
-	dev_info(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
+	dev_dbg(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
 	switch (cmd) {
 	case PWM_MODE_ATTR_DIM_DUTY:
 		ret = info->ops->set_pwm_dim_duty(info, value);
@@ -307,7 +307,7 @@ static ssize_t mt_led_breath_attr_show(struct device *dev,
 
 	buf[0] = '\0';
 
-	dev_info(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
+	dev_dbg(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
 	switch (cmd) {
 	case BREATH_MODE_ATTR_TR1:
 		ret = info->ops->get_breath_tr1(info, &value);
@@ -350,7 +350,7 @@ static ssize_t mt_led_breath_attr_store(struct device *dev,
 	if (ret < 0)
 		return ret;
 
-	dev_info(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
+	dev_dbg(led_cdev->dev, "%s cmd = %d\n", __func__, (int)cmd);
 	switch (cmd) {
 	case BREATH_MODE_ATTR_TR1:
 		ret = info->ops->set_breath_tr1(info, value);
@@ -506,14 +506,14 @@ int mt_led_trigger_register(struct mt_led_ops *ops)
 
 	ret = mt_led_check_ops(ops);
 	if (ret < 0) {
-		pr_notice("%s all ops need to be implment\n", __func__);
+		pr_debug("%s all ops need to be implment\n", __func__);
 		return -EINVAL;
 	}
 
 	for (i = 0; i < ARRAY_SIZE(mt_led_trigger); i++) {
 		ret = led_trigger_register(&mt_led_trigger[i]);
 		if (ret < 0) {
-			pr_notice("%s register led %d fail\n", __func__, i);
+			pr_debug("%s register led %d fail\n", __func__, i);
 			goto out_led_trigger;
 		}
 	}

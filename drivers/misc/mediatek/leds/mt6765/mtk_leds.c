@@ -110,13 +110,13 @@ static void backlight_debug_log(int level, int mappingLevel)
 	count++;
 
 	if (ret < 0 || ret >= 4096) {
-		pr_info("print log error!");
+		pr_debug("print log error!");
 		count = 5;
 	}
 
 	if (level == 0 || count >= 5 ||
 		(current_t - last_time) > 1000000000) {
-		pr_info("%s", buffer);
+		pr_debug("%s", buffer);
 		count = 0;
 		buffer[strlen("[BL] Set Backlight directly ")] = '\0';
 	}
@@ -191,7 +191,7 @@ struct cust_mt65xx_led *get_cust_led_dtsi(void)
 
 		if (strlen(node_name) + strlen(leds_name[i]) + 1 >
 				sizeof(node_name)) {
-			pr_info("buffer for %s%s not enough\n",
+			pr_debug("buffer for %s%s not enough\n",
 				node_name, leds_name[i]);
 			pled_dtsi[i].mode = 0;
 			pled_dtsi[i].data = -1;
@@ -214,12 +214,12 @@ struct cust_mt65xx_led *get_cust_led_dtsi(void)
 						 &mode);
 			if (!ret) {
 				pled_dtsi[i].mode = mode;
-				pr_info
+				pr_debug
 				    ("The %s's led mode is : %d\n",
 				     pled_dtsi[i].name,
 				     pled_dtsi[i].mode);
 			} else {
-				pr_info
+				pr_debug
 				    ("led dts can not get led mode");
 				pled_dtsi[i].mode = 0;
 			}
@@ -229,12 +229,12 @@ struct cust_mt65xx_led *get_cust_led_dtsi(void)
 						 &data);
 			if (!ret) {
 				pled_dtsi[i].data = data;
-				pr_info
+				pr_debug
 				    ("The %s's led data is : %ld\n",
 				     pled_dtsi[i].name,
 				     pled_dtsi[i].data);
 			} else {
-				pr_info
+				pr_debug
 				    ("led dts can not get led data");
 				pled_dtsi[i].data = -1;
 			}
@@ -262,7 +262,7 @@ struct cust_mt65xx_led *get_cust_led_dtsi(void)
 				    pwm_config[4];
 
 			} else
-				pr_info
+				pr_debug
 				    ("led dts can't get pwm config\n");
 
 			switch (pled_dtsi[i].mode) {
@@ -270,19 +270,19 @@ struct cust_mt65xx_led *get_cust_led_dtsi(void)
 #if defined(CONFIG_BACKLIGHT_SUPPORT_LM3697)
 				pled_dtsi[i].data =
 				   (long)chargepump_set_backlight_level;
-				pr_info
+				pr_debug
 				    ("BL set by chargepump\n");
 #else
 				pled_dtsi[i].data =
 				    (long)mtkfb_set_backlight_level;
 #endif /* CONFIG_BACKLIGHT_SUPPORT_LM3697 */
-				pr_info
+				pr_debug
 				    ("kernel:the BL hw mode is LCM.\n");
 				break;
 			case MT65XX_LED_MODE_CUST_BLS_PWM:
 				pled_dtsi[i].data =
 				    (long)disp_bls_set_backlight;
-				pr_info
+				pr_debug
 				    ("kernel:the BL hw mode is BLS.\n");
 				break;
 			default:
@@ -557,13 +557,13 @@ unsigned int mt_show_pwm_register(unsigned int addr)
 int mt_brightness_set_pmic(enum mt65xx_led_pmic pmic_type,
 	u32 level, u32 div)
 {
-	pr_info("not support set brightness by pmic: PMIC#%d:%d\n", pmic_type, level);
+	pr_debug("not support set brightness by pmic: PMIC#%d:%d\n", pmic_type, level);
 	return -1;
 }
 int mt_led_blink_pmic(enum mt65xx_led_pmic pmic_type, struct nled_setting *led)
 {
 
-	pr_info("not support set blink by pmic: pmic_type=%d\n", pmic_type);
+	pr_debug("not support set blink by pmic: pmic_type=%d\n", pmic_type);
 	return -1;
 }
 
