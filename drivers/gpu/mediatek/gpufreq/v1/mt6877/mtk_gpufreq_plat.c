@@ -63,7 +63,7 @@
 extern GED_LOG_BUF_HANDLE gpufreq_ged_log;
 #endif
 
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 #include "dbgtop.h"
 #endif
 
@@ -1021,7 +1021,7 @@ static void mt_gpufreq_buck_control(enum mt_power_state power)
 
 void mt_gpufreq_software_trigger_dfd(void)
 {
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 	unsigned int val;
 
 	val = readl(g_dbgtop + 0x040) | (0x95 << 24) | 0x10;
@@ -1048,7 +1048,7 @@ void mt_gpufreq_software_trigger_dfd(void)
  */
 static void __mt_gpufreq_dfd_debug_exception(void)
 {
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 	unsigned int status = readl(g_infracfg_ao + 0x600);
 
 	//0x1000700C WDT_STA
@@ -1066,7 +1066,7 @@ static void __mt_gpufreq_dfd_debug_exception(void)
 
 static int __mt_gpufreq_is_dfd_triggered(void)
 {
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 	unsigned int status = readl(g_infracfg_ao + 0x600);
 
 #if MT_GPUFREQ_DFD_DEBUG
@@ -1081,7 +1081,7 @@ static int __mt_gpufreq_is_dfd_triggered(void)
 
 static int __mt_gpufreq_is_dfd_completed(void)
 {
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 	unsigned int status = readl(g_infracfg_ao + 0x600);
 
 #if MT_GPUFREQ_DFD_DEBUG
@@ -1097,7 +1097,7 @@ static int __mt_gpufreq_is_dfd_completed(void)
 
 static void __mt_gpufreq_dbgtop_pwr_on(bool enable)
 {
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 	unsigned int rgu_pwr;
 	int ret;
 	int retry = 10;
@@ -1120,7 +1120,7 @@ static void __mt_gpufreq_dbgtop_pwr_on(bool enable)
 
 static void __mt_gpufreq_config_dfd(bool enable)
 {
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 	if (enable) {
 		// debug monitor
 		if (mt_gpufreq_is_dfd_force_dump())
@@ -1224,7 +1224,7 @@ void mt_gpufreq_power_control(enum mt_power_state power, enum mt_cg_state cg,
 		if (g_power_count == 1)
 			__mt_gpufreq_switch_to_clksrc(CLOCK_MAIN);
 
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 		__mt_gpufreq_config_dfd(true);
 #endif
 
@@ -1233,7 +1233,7 @@ void mt_gpufreq_power_control(enum mt_power_state power, enum mt_cg_state cg,
 		mtk_notify_gpu_power_change(1);
 #endif
 	} else {
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 		__mt_gpufreq_config_dfd(false);
 #endif
 #ifdef CONFIG_MTK_GPU_SUPPORT
@@ -2188,7 +2188,7 @@ static int mt_gpufreq_dfd_test_proc_show(struct seq_file *m, void *v)
 
 static int mt_gpufreq_dfd_force_dump_proc_show(struct seq_file *m, void *v)
 {
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 	seq_puts(m, "[0] disable\n");
 	seq_puts(m, "[1] force dump + debug log\n");
 	seq_puts(m, "[2] dump\n");
@@ -2206,7 +2206,7 @@ static ssize_t mt_gpufreq_dfd_force_dump_proc_write(
 		size_t count, loff_t *data)
 {
 	int ret = -EFAULT;
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 	char buf[64];
 	unsigned int len = 0;
 	unsigned int value = 0;
@@ -4018,7 +4018,7 @@ static int __mt_gpufreq_pdrv_probe(struct platform_device *pdev)
 	if (!node)
 		gpufreq_pr_info("@%s: find GPU node failed\n", __func__);
 
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 	if (mtk_dbgtop_mfg_pwr_en(1)) {
 		gpufreq_pr_info("[GPU_DFD] wait dbgtop ready\n");
 		return -EPROBE_DEFER;
@@ -4040,7 +4040,7 @@ static int __mt_gpufreq_pdrv_probe(struct platform_device *pdev)
 	/* init opp table */
 	__mt_gpufreq_init_table();
 
-#if MT_GPUFREQ_DFD_ENABLE
+#if MT_GPUFREQ_DFD_ENABLE_NOPE
 	__mt_gpufreq_dbgtop_pwr_on(true);
 #endif
 

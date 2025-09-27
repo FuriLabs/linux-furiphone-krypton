@@ -15,11 +15,12 @@
 #include <mt-plat/mtk_platform_debug.h>
 #include "dfd.h"
 
-static struct dfd_drv *drv;
+// static struct dfd_drv *drv;
 
 /* return -1 for error indication */
 int dfd_setup(int version)
 {
+#if 0
 	int ret;
 	int dfd_doe;
 	struct arm_smccc_res res;
@@ -62,9 +63,11 @@ int dfd_setup(int version)
 
 		return ret;
 	} else
+#endif
 		return -1;
 }
 
+#if 0
 static int __init fdt_get_chosen(unsigned long node, const char *uname,
 		int depth, void *data)
 {
@@ -75,9 +78,11 @@ static int __init fdt_get_chosen(unsigned long node, const char *uname,
 	*(unsigned long *)data = node;
 	return 1;
 }
+#endif
 
 static int __init dfd_init(void)
 {
+#if 0
 	struct device_node *dev_node, *infra_node, *rgu_node;
 	unsigned long node;
 	const void *prop;
@@ -170,6 +175,11 @@ static int __init dfd_init(void)
 	if (drv->enabled == 0)
 		return 0;
 
+#else
+	if (1) return 0;
+#endif
+
+#if 0
 	of_scan_flat_dt(fdt_get_chosen, &node);
 	if (node) {
 		prop = of_get_flat_dt_prop(node, "dfd,base_addr_msb", NULL);
@@ -217,6 +227,7 @@ error_get_dts:
 	kfree(drv);
 	drv = NULL;
 	return ret;
+#endif
 }
 
 core_initcall(dfd_init);
