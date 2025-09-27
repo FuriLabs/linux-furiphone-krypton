@@ -21,9 +21,10 @@
 #include <dt-bindings/reset/ti-syscon.h>
 
 / {
-	model = "MT6877";
-	compatible = "mediatek,MT6877";
+	model = "FuriPhone FLX1s";
+	compatible = "furilabs,flx1s", "mediatek,MT6877";
 	interrupt-parent = <&gic>;
+	chassis-type = "handset";
 	#address-cells = <2>;
 	#size-cells = <2>;
 
