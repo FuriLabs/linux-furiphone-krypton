@@ -297,12 +297,12 @@ int battery_get_boot_mode(void)
 	if (dev != NULL) {
 		boot_node = of_parse_phandle(dev->of_node, "bootmode", 0);
 		if (!boot_node) {
-			bm_err("%s: failed to get boot mode phandle\n", __func__);
+			bm_debug("%s: failed to get boot mode phandle\n", __func__);
 		} else {
 			tag = (struct tag_bootmode *)of_get_property(boot_node,
 								"atag,boot", NULL);
 			if (!tag)
-				bm_err("%s: failed to get atag,boot\n", __func__);
+				bm_debug("%s: failed to get atag,boot\n", __func__);
 			else {
 				boot_mode = tag->bootmode;
 				gm.boot_mode = tag->bootmode;
@@ -336,13 +336,13 @@ int dump_pseudo100(enum CHARGE_SEL select)
 {
 	int i = 0;
 
-	bm_err("%s:select=%d\n", __func__, select);
+	bm_debug("%s:select=%d\n", __func__, select);
 
 	if (select > MAX_CHARGE_RDC || select < 0)
 		return 0;
 
 	for (i = 0; i < MAX_TABLE; i++) {
-		bm_err("%6d\n",
+		bm_debug("%6d\n",
 			fg_table_cust_data.fg_profile[i].r_pseudo100.pseudo[select]);
 	}
 
@@ -1237,7 +1237,7 @@ static ssize_t proc_write(
 		return -EFAULT;
 	}
 
-	bm_err("%s success %d\n",
+	bm_debug("%s success %d\n",
 		__func__, cmd);
 	return count;
 }
@@ -1261,7 +1261,7 @@ void battery_debug_init(void)
 
 	battery_dir = proc_mkdir("battery", NULL);
 	if (!battery_dir) {
-		bm_err("fail to mkdir /proc/battery\n");
+		bm_debug("fail to mkdir /proc/battery\n");
 		return;
 	}
 
@@ -1273,7 +1273,7 @@ static ssize_t show_Battery_Temperature(
 	struct device *dev, struct device_attribute *attr,
 					       char *buf)
 {
-	bm_err("%s: %d %d\n",
+	bm_debug("%s: %d %d\n",
 		__func__,
 		battery_main.BAT_batt_temp, gm.fixed_bat_tmp);
 	return sprintf(buf, "%d\n", gm.fixed_bat_tmp);
@@ -1288,7 +1288,7 @@ static ssize_t store_Battery_Temperature(
 	if (kstrtoint(buf, 10, &temp) == 0) {
 
 		if (temp > 58 || temp < -10) {
-			bm_err(
+			bm_debug(
 				"%s: setting tmp:%d!,reject set\n",
 				__func__,
 				temp);
@@ -1307,13 +1307,13 @@ static ssize_t store_Battery_Temperature(
 			wakeup_fg_algo(FG_INTR_BAT_TMP_HT);
 		}
 		battery_main.BAT_batt_temp = force_get_tbat(true);
-		bm_err(
+		bm_debug(
 			"%s: fixed_bat_tmp:%d ,tmp:%d!\n",
 			__func__,
 			temp, battery_main.BAT_batt_temp);
 		battery_update(&battery_main);
 	} else {
-		bm_err("%s: format error!\n", __func__);
+		bm_debug("%s: format error!\n", __func__);
 	}
 	return size;
 }
@@ -1325,7 +1325,7 @@ static ssize_t show_UI_SOC(
 	struct device *dev, struct device_attribute *attr,
 					       char *buf)
 {
-	bm_err("%s: %d %d\n",
+	bm_debug("%s: %d %d\n",
 		__func__,
 		gm.ui_soc, gm.fixed_uisoc);
 	return sprintf(buf, "%d\n", gm.fixed_uisoc);
@@ -1341,7 +1341,7 @@ static ssize_t store_UI_SOC(
 
 		gm.fixed_uisoc = temp;
 
-		bm_err("%s: %d %d\n",
+		bm_debug("%s: %d %d\n",
 			__func__,
 			gm.ui_soc, gm.fixed_uisoc);
 
@@ -1365,14 +1365,14 @@ void fg_custom_data_check(void)
 	p = &fg_cust_data;
 	fgauge_get_profile_id();
 
-	bm_err("FGLOG MultiGauge0[%d] BATID[%d] pmic_min_vol[%d,%d,%d,%d,%d]\n",
+	bm_debug("FGLOG MultiGauge0[%d] BATID[%d] pmic_min_vol[%d,%d,%d,%d,%d]\n",
 		p->multi_temp_gauge0, gm.battery_id,
 		fg_table_cust_data.fg_profile[0].pmic_min_vol,
 		fg_table_cust_data.fg_profile[1].pmic_min_vol,
 		fg_table_cust_data.fg_profile[2].pmic_min_vol,
 		fg_table_cust_data.fg_profile[3].pmic_min_vol,
 		fg_table_cust_data.fg_profile[4].pmic_min_vol);
-	bm_err("FGLOG pon_iboot[%d,%d,%d,%d,%d] qmax_sys_vol[%d %d %d %d %d]\n",
+	bm_debug("FGLOG pon_iboot[%d,%d,%d,%d,%d] qmax_sys_vol[%d %d %d %d %d]\n",
 		fg_table_cust_data.fg_profile[0].pon_iboot,
 		fg_table_cust_data.fg_profile[1].pon_iboot,
 		fg_table_cust_data.fg_profile[2].pon_iboot,
@@ -1545,7 +1545,7 @@ int BattVoltToTemp(int dwVolt, int volt_cali)
 #endif
 
 	if (vbif28 > 3000 || vbif28 < 2500)
-		bm_err(
+		bm_debug(
 			"[RBAT_PULL_UP_VOLT_BY_BIF] vbif28:%d\n",
 			pmic_get_vbif28_volt());
 #else
@@ -1697,7 +1697,7 @@ int force_get_tbat_internal(bool update)
 				(abs(pre_bat_temperature_val2 -
 				bat_temperature_val) >= 50)) ||
 				bat_temperature_val >= 580) {
-				bm_err(
+				bm_debug(
 				"[force_get_tbat][err] current:%d,%d,%d,%d,%d,%d pre:%d,%d,%d,%d,%d,%d\n",
 					bat_temperature_volt_temp,
 					bat_temperature_volt,
@@ -1763,7 +1763,7 @@ int force_get_tbat(bool update)
 	bat_temperature_val = force_get_tbat_internal(update);
 
 	while (counts < 5 && bat_temperature_val >= 60) {
-		bm_err("[%s]over60 count=%d, bat_temp=%d\n",
+		bm_debug("[%s]over60 count=%d, bat_temp=%d\n",
 			__func__,
 			counts, bat_temperature_val);
 		bat_temperature_val = force_get_tbat_internal(true);
@@ -1772,7 +1772,7 @@ int force_get_tbat(bool update)
 
 	if (bat_temperature_val <=
 		BATTERY_TMP_TO_DISABLE_GM30 && gm.disableGM30 == false) {
-		bm_err(
+		bm_debug(
 			"battery temperature is too low %d and disable GM3.0\n",
 			bat_temperature_val);
 		disable_fg();
@@ -1791,7 +1791,7 @@ int force_get_tbat(bool update)
 		}
 
 		gm.ntc_disable_nafg = true;
-		bm_err("[%s] ntc_disable_nafg %d %d\n",
+		bm_debug("[%s] ntc_disable_nafg %d %d\n",
 			__func__,
 			bat_temperature_val,
 			DEFAULT_BATTERY_TMP_WHEN_DISABLE_NAFG);
@@ -1857,7 +1857,7 @@ static void nl_send_to_user(u32 pid, int seq, struct fgd_nl_msg_t *reply_msg)
 
 	ret = netlink_unicast(gm.daemo_nl_sk, skb, pid, MSG_DONTWAIT);
 	if (ret < 0) {
-		bm_err("[Netlink] send failed %d\n", ret);
+		bm_debug("[Netlink] send failed %d\n", ret);
 		return;
 	}
 	/*bm_debug("[Netlink] reply_user: netlink_unicast- ret=%d\n", ret); */
@@ -1886,19 +1886,19 @@ static void nl_data_handler(struct sk_buff *skb)
 
 	if (IS_ENABLED(CONFIG_POWER_EXT) || gm.disable_mtkbattery ||
 		IS_ENABLED(CONFIG_MTK_DISABLE_GAUGE)) {
-		bm_err("GM3 disable, nl handler rev data\n");
+		bm_debug("GM3 disable, nl handler rev data\n");
 		return;
 	}
 
 	if (fgd_msg->identity != FGD_NL_MAGIC) {
-		bm_err("[FGERR]not correct MTKFG netlink packet!%d\n",
+		bm_debug("[FGERR]not correct MTKFG netlink packet!%d\n",
 			fgd_msg->identity);
 		return;
 	}
 
 	if (gm.g_fgd_pid != pid &&
 		fgd_msg->fgd_cmd > FG_DAEMON_CMD_SET_DAEMON_PID) {
-		bm_err("drop rev netlink pid:%d:%d  cmd:%d:%d\n",
+		bm_debug("drop rev netlink pid:%d:%d  cmd:%d:%d\n",
 			pid,
 			gm.g_fgd_pid,
 			fgd_msg->fgd_cmd,
@@ -1938,7 +1938,7 @@ int wakeup_fg_algo(unsigned int flow_state)
 	update_fg_dbg_tool_value();
 
 	if (gm.disableGM30) {
-		bm_err("FG daemon is disabled\n");
+		bm_debug("FG daemon is disabled\n");
 		return -1;
 	}
 
@@ -1996,7 +1996,7 @@ int wakeup_fg_algo_cmd(unsigned int flow_state, int cmd, int para1)
 	update_fg_dbg_tool_value();
 
 	if (gm.disableGM30) {
-		bm_err("FG daemon is disabled\n");
+		bm_debug("FG daemon is disabled\n");
 		return -1;
 	}
 
@@ -2053,7 +2053,7 @@ int wakeup_fg_algo_atomic(unsigned int flow_state)
 	update_fg_dbg_tool_value();
 
 	if (gm.disableGM30) {
-		bm_err("FG daemon is disabled\n");
+		bm_debug("FG daemon is disabled\n");
 		return -1;
 	}
 
@@ -2074,7 +2074,7 @@ int wakeup_fg_algo_atomic(unsigned int flow_state)
 			fgd_msg = kmalloc(size, GFP_KERNEL);
 
 		if (!fgd_msg) {
-/* bm_err("Error: wakeup_fg_algo() vmalloc fail!!!\n"); */
+/* bm_debug("Error: wakeup_fg_algo() vmalloc fail!!!\n"); */
 			return -1;
 		}
 
@@ -2126,7 +2126,7 @@ void fg_test_ag_cmd(int cmd)
 	wakeup_fg_algo_cmd(
 		FG_INTR_KERNEL_CMD, FG_KERNEL_CMD_AG_LOG_TEST, cmd);
 
-	bm_err("[%s]FG_KERNEL_CMD_AG_LOG_TEST:%d\n",
+	bm_debug("[%s]FG_KERNEL_CMD_AG_LOG_TEST:%d\n",
 		__func__, cmd);
 }
 
@@ -2134,7 +2134,7 @@ void exec_BAT_EC(int cmd, int param)
 {
 	int i;
 
-	bm_err("exe_BAT_EC cmd %d, param %d\n", cmd, param);
+	bm_debug("exe_BAT_EC cmd %d, param %d\n", cmd, param);
 	switch (cmd) {
 	case 101:
 		{
@@ -2142,7 +2142,7 @@ void exec_BAT_EC(int cmd, int param)
 			if (param == 0xff) {
 				get_ec()->fixed_temp_en = 0;
 				get_ec()->fixed_temp_value = 25;
-				bm_err("exe_BAT_EC cmd %d, param %d, disable\n",
+				bm_debug("exe_BAT_EC cmd %d, param %d, disable\n",
 					cmd, param);
 
 			} else {
@@ -2152,7 +2152,7 @@ void exec_BAT_EC(int cmd, int param)
 						0 - (param - 100);
 				else
 					get_ec()->fixed_temp_value = param;
-				bm_err("exe_BAT_EC cmd %d, param %d, enable\n",
+				bm_debug("exe_BAT_EC cmd %d, param %d, enable\n",
 					cmd, param);
 			}
 		}
@@ -2163,13 +2163,13 @@ void exec_BAT_EC(int cmd, int param)
 			if (param == 0xff) {
 				get_ec()->debug_rac_en = 0;
 				get_ec()->debug_rac_value = 0;
-				bm_err("exe_BAT_EC cmd %d, param %d, disable\n",
+				bm_debug("exe_BAT_EC cmd %d, param %d, disable\n",
 					cmd, param);
 
 			} else {
 				get_ec()->debug_rac_en = 1;
 				get_ec()->debug_rac_value = param;
-				bm_err("exe_BAT_EC cmd %d, param %d, enable\n",
+				bm_debug("exe_BAT_EC cmd %d, param %d, enable\n",
 					cmd, param);
 			}
 		}
@@ -2180,13 +2180,13 @@ void exec_BAT_EC(int cmd, int param)
 			if (param == 0xff) {
 				get_ec()->debug_ptim_v_en = 0;
 				get_ec()->debug_ptim_v_value = 0;
-				bm_err("exe_BAT_EC cmd %d, param %d, disable\n",
+				bm_debug("exe_BAT_EC cmd %d, param %d, disable\n",
 					cmd, param);
 
 			} else {
 				get_ec()->debug_ptim_v_en = 1;
 				get_ec()->debug_ptim_v_value = param;
-				bm_err("exe_BAT_EC cmd %d, param %d, enable\n",
+				bm_debug("exe_BAT_EC cmd %d, param %d, enable\n",
 					cmd, param);
 			}
 
@@ -2198,13 +2198,13 @@ void exec_BAT_EC(int cmd, int param)
 			if (param == 0xff) {
 				get_ec()->debug_ptim_r_en = 0;
 				get_ec()->debug_ptim_r_value = 0;
-				bm_err("exe_BAT_EC cmd %d, param %d, disable\n",
+				bm_debug("exe_BAT_EC cmd %d, param %d, disable\n",
 					cmd, param);
 
 			} else {
 				get_ec()->debug_ptim_r_en = 1;
 				get_ec()->debug_ptim_r_value = param;
-				bm_err("exe_BAT_EC cmd %d, param %d, enable\n",
+				bm_debug("exe_BAT_EC cmd %d, param %d, enable\n",
 					cmd, param);
 			}
 		}
@@ -2246,7 +2246,7 @@ void exec_BAT_EC(int cmd, int param)
 				}
 				break;
 			}
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, force interrupt\n",
 				cmd, param);
 		}
@@ -2257,14 +2257,14 @@ void exec_BAT_EC(int cmd, int param)
 			if (param == 0xff) {
 				get_ec()->debug_fg_curr_en = 0;
 				get_ec()->debug_fg_curr_value = 0;
-				bm_err(
+				bm_debug(
 					"exe_BAT_EC cmd %d, param %d, disable\n",
 					cmd, param);
 
 			} else {
 				get_ec()->debug_fg_curr_en = 1;
 				get_ec()->debug_fg_curr_value = param;
-				bm_err(
+				bm_debug(
 					"exe_BAT_EC cmd %d, param %d, enable\n",
 					cmd, param);
 			}
@@ -2276,13 +2276,13 @@ void exec_BAT_EC(int cmd, int param)
 			if (param == 0xff) {
 				get_ec()->debug_bat_id_en = 0;
 				get_ec()->debug_bat_id_value = 0;
-				bm_err(
+				bm_debug(
 					"exe_BAT_EC cmd %d, param %d, disable\n",
 					cmd, param);
 			} else {
 				get_ec()->debug_bat_id_en = 1;
 				get_ec()->debug_bat_id_value = param;
-				bm_err(
+				bm_debug(
 					"exe_BAT_EC cmd %d, param %d, enable\n",
 					cmd, param);
 				fg_custom_init_from_header();
@@ -2295,14 +2295,14 @@ void exec_BAT_EC(int cmd, int param)
 			if (param == 0xff) {
 				get_ec()->debug_d0_c_en = 0;
 				get_ec()->debug_d0_c_value = 0;
-				bm_err(
+				bm_debug(
 					"exe_BAT_EC cmd %d, param %d, disable\n",
 					cmd, param);
 
 			} else {
 				get_ec()->debug_d0_c_en = 1;
 				get_ec()->debug_d0_c_value = param;
-				bm_err(
+				bm_debug(
 					"exe_BAT_EC cmd %d, param %d, enable\n",
 					cmd, param);
 			}
@@ -2314,14 +2314,14 @@ void exec_BAT_EC(int cmd, int param)
 			if (param == 0xff) {
 				get_ec()->debug_d0_v_en = 0;
 				get_ec()->debug_d0_v_value = 0;
-				bm_err(
+				bm_debug(
 					"exe_BAT_EC cmd %d, param %d, disable\n",
 					cmd, param);
 
 			} else {
 				get_ec()->debug_d0_v_en = 1;
 				get_ec()->debug_d0_v_value = param;
-				bm_err(
+				bm_debug(
 					"exe_BAT_EC cmd %d, param %d, enable\n",
 					cmd, param);
 			}
@@ -2333,14 +2333,14 @@ void exec_BAT_EC(int cmd, int param)
 			if (param == 0xff) {
 				get_ec()->debug_uisoc_en = 0;
 				get_ec()->debug_uisoc_value = 0;
-				bm_err(
+				bm_debug(
 					"exe_BAT_EC cmd %d, param %d, disable\n",
 					cmd, param);
 
 			} else {
 				get_ec()->debug_uisoc_en = 1;
 				get_ec()->debug_uisoc_value = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, enable\n",
 				cmd, param);
 			}
@@ -2349,7 +2349,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 600:
 		{
 			fg_cust_data.aging_diff_max_threshold = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, aging_diff_max_threshold:%d\n",
 				cmd, param);
 		}
@@ -2357,7 +2357,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 601:
 		{
 			fg_cust_data.aging_diff_max_level = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, aging_diff_max_level:%d\n",
 				cmd, param);
 		}
@@ -2365,7 +2365,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 602:
 		{
 			fg_cust_data.aging_factor_t_min = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, aging_factor_t_min:%d\n",
 				cmd, param);
 		}
@@ -2373,7 +2373,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 603:
 		{
 			fg_cust_data.cycle_diff = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, cycle_diff:%d\n",
 				cmd, param);
 		}
@@ -2381,7 +2381,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 604:
 		{
 			fg_cust_data.aging_count_min = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, aging_count_min:%d\n",
 				cmd, param);
 		}
@@ -2389,7 +2389,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 605:
 		{
 			fg_cust_data.default_score = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, default_score:%d\n",
 				cmd, param);
 		}
@@ -2397,7 +2397,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 606:
 		{
 			fg_cust_data.default_score_quantity = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, default_score_quantity:%d\n",
 				cmd, param);
 		}
@@ -2405,7 +2405,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 607:
 		{
 			fg_cust_data.fast_cycle_set = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fast_cycle_set:%d\n",
 				cmd, param);
 		}
@@ -2413,7 +2413,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 608:
 		{
 			fg_cust_data.level_max_change_bat = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, level_max_change_bat:%d\n",
 				cmd, param);
 		}
@@ -2421,7 +2421,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 609:
 		{
 			fg_cust_data.diff_max_change_bat = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, diff_max_change_bat:%d\n",
 				cmd, param);
 		}
@@ -2429,7 +2429,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 610:
 		{
 			fg_cust_data.aging_tracking_start = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, aging_tracking_start:%d\n",
 				cmd, param);
 		}
@@ -2437,7 +2437,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 611:
 		{
 			fg_cust_data.max_aging_data = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, max_aging_data:%d\n",
 				cmd, param);
 		}
@@ -2445,7 +2445,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 612:
 		{
 			fg_cust_data.max_fast_data = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, max_fast_data:%d\n",
 				cmd, param);
 		}
@@ -2453,14 +2453,14 @@ void exec_BAT_EC(int cmd, int param)
 	case 613:
 		{
 			fg_cust_data.fast_data_threshold_score = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fast_data_threshold_score:%d\n",
 				cmd, param);
 		}
 		break;
 	case 614:
 		{
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,FG_KERNEL_CMD_AG_LOG_TEST=%d\n",
 				cmd, param);
 
@@ -2471,7 +2471,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 701:
 		{
 			fg_cust_data.pseudo1_en = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, pseudo1_en\n",
 				cmd, param);
 		}
@@ -2479,7 +2479,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 702:
 		{
 			fg_cust_data.pseudo100_en = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, pseudo100_en\n",
 				cmd, param);
 		}
@@ -2487,7 +2487,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 703:
 		{
 			fg_cust_data.qmax_sel = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, qmax_sel\n",
 				cmd, param);
 		}
@@ -2495,7 +2495,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 704:
 		{
 			fg_cust_data.iboot_sel = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, iboot_sel\n",
 				cmd, param);
 		}
@@ -2508,7 +2508,7 @@ void exec_BAT_EC(int cmd, int param)
 				fg_table_cust_data.fg_profile[i].pmic_min_vol =
 					param * UNIT_TRANS_10;
 			}
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, pmic_min_vol\n",
 				cmd, param);
 		}
@@ -2521,14 +2521,14 @@ void exec_BAT_EC(int cmd, int param)
 				fg_table_cust_data.fg_profile[i].pon_iboot =
 				param * UNIT_TRANS_10;
 			}
-			bm_err("exe_BAT_EC cmd %d, param %d, poweron_system_iboot\n"
+			bm_debug("exe_BAT_EC cmd %d, param %d, poweron_system_iboot\n"
 				, cmd, param * UNIT_TRANS_10);
 		}
 		break;
 	case 707:
 		{
 			fg_cust_data.shutdown_system_iboot = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, shutdown_system_iboot\n",
 				cmd, param);
 		}
@@ -2536,7 +2536,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 708:
 		{
 			fg_cust_data.com_fg_meter_resistance = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, com_fg_meter_resistance\n",
 				cmd, param);
 		}
@@ -2544,7 +2544,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 709:
 		{
 			fg_cust_data.r_fg_value = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, r_fg_value\n",
 				cmd, param);
 		}
@@ -2552,7 +2552,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 710:
 		{
 			fg_cust_data.q_max_sys_voltage = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, q_max_sys_voltage\n",
 				cmd, param);
 		}
@@ -2560,7 +2560,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 711:
 		{
 			fg_cust_data.loading_1_en = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, loading_1_en\n",
 				cmd, param);
 		}
@@ -2568,7 +2568,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 712:
 		{
 			fg_cust_data.loading_2_en = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, loading_2_en\n",
 				cmd, param);
 		}
@@ -2576,7 +2576,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 713:
 		{
 			fg_cust_data.aging_temp_diff = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, aging_temp_diff\n",
 				cmd, param);
 		}
@@ -2584,7 +2584,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 714:
 		{
 			fg_cust_data.aging1_load_soc = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, aging1_load_soc\n",
 				cmd, param);
 		}
@@ -2592,7 +2592,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 715:
 		{
 			fg_cust_data.aging1_update_soc = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, aging1_update_soc\n",
 				cmd, param);
 		}
@@ -2600,7 +2600,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 716:
 		{
 			fg_cust_data.aging_100_en = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, aging_100_en\n",
 				cmd, param);
 		}
@@ -2608,7 +2608,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 717:
 		{
 			fg_table_cust_data.active_table_number = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, additional_battery_table_en\n",
 				cmd, param);
 		}
@@ -2616,7 +2616,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 718:
 		{
 			fg_cust_data.d0_sel = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, d0_sel\n",
 				cmd, param);
 		}
@@ -2624,7 +2624,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 719:
 		{
 			fg_cust_data.zcv_car_gap_percentage = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, param %d, zcv_car_gap_percentage\n",
 				cmd, param);
 		}
@@ -2632,7 +2632,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 720:
 		{
 			fg_cust_data.multi_temp_gauge0 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.multi_temp_gauge0=%d\n",
 				cmd, param);
 		}
@@ -2640,14 +2640,14 @@ void exec_BAT_EC(int cmd, int param)
 	case 721:
 		{
 			fg_custom_data_check();
-			bm_err("exe_BAT_EC cmd %d", cmd);
+			bm_debug("exe_BAT_EC cmd %d", cmd);
 		}
 		break;
 	case 724:
 		{
 			fg_table_cust_data.fg_profile[0].pseudo100 =
 				UNIT_TRANS_100 * param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pseudo100_t0=%d\n",
 				cmd, param);
 		}
@@ -2656,7 +2656,7 @@ void exec_BAT_EC(int cmd, int param)
 		{
 			fg_table_cust_data.fg_profile[1].pseudo100 =
 				UNIT_TRANS_100 * param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pseudo100_t1=%d\n",
 				cmd, param);
 		}
@@ -2665,7 +2665,7 @@ void exec_BAT_EC(int cmd, int param)
 		{
 			fg_table_cust_data.fg_profile[2].pseudo100 =
 				UNIT_TRANS_100 * param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pseudo100_t2=%d\n",
 				cmd, param);
 		}
@@ -2674,7 +2674,7 @@ void exec_BAT_EC(int cmd, int param)
 		{
 			fg_table_cust_data.fg_profile[3].pseudo100 =
 				UNIT_TRANS_100 * param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pseudo100_t3=%d\n",
 				cmd, param);
 		}
@@ -2683,7 +2683,7 @@ void exec_BAT_EC(int cmd, int param)
 		{
 			fg_table_cust_data.fg_profile[4].pseudo100 =
 				UNIT_TRANS_100 * param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pseudo100_t4=%d\n",
 				cmd, param);
 		}
@@ -2691,7 +2691,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 729:
 		{
 			fg_cust_data.keep_100_percent = UNIT_TRANS_100 * param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.keep_100_percent=%d\n",
 				cmd, param);
 		}
@@ -2699,7 +2699,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 730:
 		{
 			fg_cust_data.ui_full_limit_en = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_en=%d\n",
 				cmd, param);
 		}
@@ -2707,7 +2707,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 731:
 		{
 			fg_cust_data.ui_full_limit_soc0 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_soc0=%d\n",
 				cmd, param);
 		}
@@ -2715,7 +2715,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 732:
 		{
 			fg_cust_data.ui_full_limit_ith0 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_ith0=%d\n",
 				cmd, param);
 		}
@@ -2723,7 +2723,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 733:
 		{
 			fg_cust_data.ui_full_limit_soc1 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_soc1=%d\n",
 				cmd, param);
 		}
@@ -2731,7 +2731,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 734:
 		{
 			fg_cust_data.ui_full_limit_ith1 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_ith1=%d\n",
 				cmd, param);
 		}
@@ -2739,7 +2739,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 735:
 		{
 			fg_cust_data.ui_full_limit_soc2 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_soc2=%d\n",
 				cmd, param);
 		}
@@ -2747,7 +2747,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 736:
 		{
 			fg_cust_data.ui_full_limit_ith2 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_ith2=%d\n",
 				cmd, param);
 		}
@@ -2755,7 +2755,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 737:
 		{
 			fg_cust_data.ui_full_limit_soc3 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_soc3=%d\n",
 				cmd, param);
 		}
@@ -2763,7 +2763,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 738:
 		{
 			fg_cust_data.ui_full_limit_ith3 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_ith3=%d\n",
 				cmd, param);
 		}
@@ -2771,7 +2771,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 739:
 		{
 			fg_cust_data.ui_full_limit_soc4 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_soc4=%d\n",
 				cmd, param);
 		}
@@ -2779,7 +2779,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 740:
 		{
 			fg_cust_data.ui_full_limit_ith4 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_ith4=%d\n",
 				cmd, param);
 		}
@@ -2787,7 +2787,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 741:
 		{
 			fg_cust_data.ui_full_limit_time = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.ui_full_limit_time=%d\n",
 				cmd, param);
 		}
@@ -2795,7 +2795,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 743:
 		{
 			fg_table_cust_data.fg_profile[0].pmic_min_vol = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pmic_min_vol_t0=%d\n",
 				cmd, param);
 		}
@@ -2803,7 +2803,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 744:
 		{
 			fg_table_cust_data.fg_profile[1].pmic_min_vol = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pmic_min_vol_t1=%d\n",
 				cmd, param);
 		}
@@ -2811,7 +2811,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 745:
 		{
 			fg_table_cust_data.fg_profile[2].pmic_min_vol = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pmic_min_vol_t2=%d\n",
 				cmd, param);
 		}
@@ -2819,7 +2819,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 746:
 		{
 			fg_table_cust_data.fg_profile[3].pmic_min_vol = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pmic_min_vol_t3=%d\n",
 				cmd, param);
 		}
@@ -2827,7 +2827,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 747:
 		{
 			fg_table_cust_data.fg_profile[4].pmic_min_vol = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pmic_min_vol_t4=%d\n",
 				cmd, param);
 		}
@@ -2835,7 +2835,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 748:
 		{
 			fg_table_cust_data.fg_profile[0].pon_iboot = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pon_iboot_t0=%d\n",
 				cmd, param);
 		}
@@ -2843,7 +2843,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 749:
 		{
 			fg_table_cust_data.fg_profile[1].pon_iboot = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pon_iboot_t1=%d\n",
 				cmd, param);
 		}
@@ -2851,7 +2851,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 750:
 		{
 			fg_table_cust_data.fg_profile[2].pon_iboot = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pon_iboot_t2=%d\n",
 				cmd, param);
 		}
@@ -2859,7 +2859,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 751:
 		{
 			fg_table_cust_data.fg_profile[3].pon_iboot = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pon_iboot_t3=%d\n",
 				cmd, param);
 		}
@@ -2867,7 +2867,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 752:
 		{
 			fg_table_cust_data.fg_profile[4].pon_iboot = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.pon_iboot_t4=%d\n",
 				cmd, param);
 		}
@@ -2875,7 +2875,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 753:
 		{
 			fg_table_cust_data.fg_profile[0].qmax_sys_vol = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.qmax_sys_vol_t0=%d\n",
 				cmd, param);
 		}
@@ -2883,7 +2883,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 754:
 		{
 			fg_table_cust_data.fg_profile[1].qmax_sys_vol = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.qmax_sys_vol_t1=%d\n",
 				cmd, param);
 		}
@@ -2891,7 +2891,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 755:
 		{
 			fg_table_cust_data.fg_profile[2].qmax_sys_vol = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.qmax_sys_vol_t2=%d\n",
 				cmd, param);
 		}
@@ -2899,7 +2899,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 756:
 		{
 			fg_table_cust_data.fg_profile[3].qmax_sys_vol = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.qmax_sys_vol_t3=%d\n",
 				cmd, param);
 		}
@@ -2907,7 +2907,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 757:
 		{
 			fg_table_cust_data.fg_profile[4].qmax_sys_vol = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.qmax_sys_vol_t4=%d\n",
 				cmd, param);
 		}
@@ -2915,7 +2915,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 758:
 		{
 			fg_cust_data.nafg_ratio = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.nafg_ratio=%d\n",
 				cmd, param);
 		}
@@ -2923,7 +2923,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 759:
 		{
 			fg_cust_data.nafg_ratio_en = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.nafg_ratio_en=%d\n",
 				cmd, param);
 		}
@@ -2931,7 +2931,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 760:
 		{
 			fg_cust_data.nafg_ratio_tmp_thr = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.nafg_ratio_tmp_thr=%d\n",
 				cmd, param);
 		}
@@ -2939,14 +2939,14 @@ void exec_BAT_EC(int cmd, int param)
 	case 761:
 		{
 			wakeup_fg_algo(FG_INTR_BAT_CYCLE);
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, bat_cycle intr\n", cmd);
 		}
 		break;
 	case 762:
 		{
 			fg_cust_data.difference_fgc_fgv_th1 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.difference_fgc_fgv_th1=%d\n",
 				cmd, param);
 		}
@@ -2954,7 +2954,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 763:
 		{
 			fg_cust_data.difference_fgc_fgv_th2 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.difference_fgc_fgv_th1=%d\n",
 				cmd, param);
 		}
@@ -2962,7 +2962,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 764:
 		{
 			fg_cust_data.difference_fgc_fgv_th3 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.difference_fgc_fgv_th3=%d\n",
 				cmd, param);
 		}
@@ -2970,7 +2970,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 765:
 		{
 			fg_cust_data.difference_fullocv_ith = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.difference_fullocv_ith=%d\n",
 				cmd, param);
 		}
@@ -2978,7 +2978,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 766:
 		{
 			fg_cust_data.difference_fgc_fgv_th_soc1 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.difference_fgc_fgv_th_soc1=%d\n",
 				cmd, param);
 		}
@@ -2986,7 +2986,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 767:
 		{
 			fg_cust_data.difference_fgc_fgv_th_soc2 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.difference_fgc_fgv_th_soc2=%d\n",
 				cmd, param);
 		}
@@ -2994,7 +2994,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 768:
 		{
 			fg_cust_data.embedded_sel = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.embedded_sel=%d\n",
 				cmd, param);
 		}
@@ -3002,7 +3002,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 769:
 		{
 			fg_cust_data.car_tune_value = param * UNIT_TRANS_10;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.car_tune_value=%d\n",
 				cmd, param * UNIT_TRANS_10);
 		}
@@ -3010,7 +3010,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 770:
 		{
 			fg_cust_data.shutdown_1_time = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.shutdown_1_time=%d\n",
 				cmd, param);
 		}
@@ -3018,7 +3018,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 771:
 		{
 			fg_cust_data.tnew_told_pon_diff = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.tnew_told_pon_diff=%d\n",
 				cmd, param);
 		}
@@ -3026,7 +3026,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 772:
 		{
 			fg_cust_data.tnew_told_pon_diff2 = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.tnew_told_pon_diff2=%d\n",
 				cmd, param);
 		}
@@ -3034,7 +3034,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 773:
 		{
 			fg_cust_data.swocv_oldocv_diff = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.swocv_oldocv_diff=%d\n",
 				cmd, param);
 		}
@@ -3042,7 +3042,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 774:
 		{
 			fg_cust_data.hwocv_oldocv_diff = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.hwocv_oldocv_diff=%d\n",
 				cmd, param);
 		}
@@ -3050,7 +3050,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 775:
 		{
 			fg_cust_data.hwocv_swocv_diff = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, fg_cust_data.hwocv_swocv_diff=%d\n",
 				cmd, param);
 		}
@@ -3058,7 +3058,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 776:
 		{
 			get_ec()->debug_kill_daemontest = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, debug_kill_daemontest=%d\n",
 				cmd, param);
 		}
@@ -3066,14 +3066,14 @@ void exec_BAT_EC(int cmd, int param)
 	case 777:
 		{
 			fg_cust_data.swocv_oldocv_diff_emb = param;
-			bm_err("exe_BAT_EC cmd %d, swocv_oldocv_diff_emb=%d\n",
+			bm_debug("exe_BAT_EC cmd %d, swocv_oldocv_diff_emb=%d\n",
 				cmd, param);
 		}
 		break;
 	case 778:
 		{
 			fg_cust_data.vir_oldocv_diff_emb_lt = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, vir_oldocv_diff_emb_lt=%d\n",
 				cmd, param);
 		}
@@ -3081,7 +3081,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 779:
 		{
 			fg_cust_data.vir_oldocv_diff_emb_tmp = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, vir_oldocv_diff_emb_tmp=%d\n",
 				cmd, param);
 		}
@@ -3089,7 +3089,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 780:
 		{
 			fg_cust_data.vir_oldocv_diff_emb = param;
-			bm_err("exe_BAT_EC cmd %d, vir_oldocv_diff_emb=%d\n",
+			bm_debug("exe_BAT_EC cmd %d, vir_oldocv_diff_emb=%d\n",
 				cmd, param);
 		}
 		break;
@@ -3097,14 +3097,14 @@ void exec_BAT_EC(int cmd, int param)
 		{
 			get_ec()->debug_kill_daemontest = 1;
 			fg_cust_data.dod_init_sel = 12;
-			bm_err("exe_BAT_EC cmd %d,force goto dod_init12=%d\n",
+			bm_debug("exe_BAT_EC cmd %d,force goto dod_init12=%d\n",
 				cmd, param);
 		}
 		break;
 	case 782:
 		{
 			fg_cust_data.charge_pseudo_full_level = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,fg_cust_data.charge_pseudo_full_level=%d\n",
 				cmd, param);
 		}
@@ -3112,14 +3112,14 @@ void exec_BAT_EC(int cmd, int param)
 	case 783:
 		{
 			fg_cust_data.full_tracking_bat_int2_multiply = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,fg_cust_data.full_tracking_bat_int2_multiply=%d\n",
 				cmd, param);
 		}
 		break;
 	case 784:
 		{
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,DAEMON_PID=%d\n",
 				cmd, gm.g_fgd_pid);
 		}
@@ -3127,7 +3127,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 785:
 		{
 			gm.bat_cycle_thr = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,thr=%d\n",
 				cmd, gm.bat_cycle_thr);
 		}
@@ -3136,7 +3136,7 @@ void exec_BAT_EC(int cmd, int param)
 		{
 			gm.bat_cycle_ncar = param;
 
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,thr=%d\n",
 				cmd, gm.bat_cycle_ncar);
 		}
@@ -3144,7 +3144,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 787:
 		{
 			fg_ocv_query_soc(param);
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,[fg_ocv_query_soc]ocv=%d\n",
 				cmd, param);
 		}
@@ -3153,7 +3153,7 @@ void exec_BAT_EC(int cmd, int param)
 		{
 			fg_cust_data.record_log = param;
 
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,record_log=%d\n",
 				cmd, fg_cust_data.record_log);
 		}
@@ -3168,14 +3168,14 @@ void exec_BAT_EC(int cmd, int param)
 				zcv_avg_current);
 			gauge_set_zcv_interrupt_en(1);
 
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,zcv_avg_current =%d\n",
 				cmd, param);
 		}
 		break;
 	case 790:
 		{
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,force DLPT shutdown", cmd);
 
 			notify_fg_dlpt_sd();
@@ -3184,7 +3184,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 791:
 		{
 			gm.enable_tmp_intr_suspend = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,gm.enable_tmp_intr_suspend =%d\n",
 				cmd, param);
 		}
@@ -3196,7 +3196,7 @@ void exec_BAT_EC(int cmd, int param)
 				FG_KERNEL_CMD_BUILD_SEL_BATTEMP,
 				param);
 
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,req bat table temp =%d\n",
 				cmd, param);
 
@@ -3210,7 +3210,7 @@ void exec_BAT_EC(int cmd, int param)
 				FG_KERNEL_CMD_UPDATE_AVG_BATTEMP,
 				param);
 
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,update mavg temp\n",
 				cmd);
 
@@ -3223,7 +3223,7 @@ void exec_BAT_EC(int cmd, int param)
 				FG_KERNEL_CMD_SAVE_DEBUG_PARAM,
 				param);
 
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,FG_KERNEL_CMD_SAVE_DEBUG_PARAM\n",
 				cmd);
 		}
@@ -3235,14 +3235,14 @@ void exec_BAT_EC(int cmd, int param)
 				FG_KERNEL_CMD_REQ_CHANGE_AGING_DATA,
 				param * 100);
 
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,change aging to=%d\n",
 				cmd, param);
 		}
 		break;
 	case 796:
 		{
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,FG_KERNEL_CMD_AG_LOG_TEST=%d\n",
 				cmd, param);
 
@@ -3254,7 +3254,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 797:
 		{
 			gm.soc_decimal_rate = param;
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,soc_decimal_rate=%d\n",
 				cmd, param);
 
@@ -3262,7 +3262,7 @@ void exec_BAT_EC(int cmd, int param)
 		break;
 	case 798:
 		{
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,FG_KERNEL_CMD_CHG_DECIMAL_RATE=%d\n",
 				cmd, param);
 
@@ -3275,7 +3275,7 @@ void exec_BAT_EC(int cmd, int param)
 		break;
 	case 799:
 		{
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, Send INTR_CHR_FULL to daemon, force_full =%d\n",
 				cmd, param);
 
@@ -3286,7 +3286,7 @@ void exec_BAT_EC(int cmd, int param)
 	case 800:
 		{
 
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, charge_power_sel =%d\n",
 				cmd, param);
 
@@ -3295,7 +3295,7 @@ void exec_BAT_EC(int cmd, int param)
 		break;
 	case 801:
 		{
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d, charge_power_sel =%d\n",
 				cmd, param);
 
@@ -3306,7 +3306,7 @@ void exec_BAT_EC(int cmd, int param)
 		{
 			fg_cust_data.zcv_com_vol_limit = param;
 
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,zcv_com_vol_limit =%d\n",
 				cmd, param);
 		}
@@ -3315,7 +3315,7 @@ void exec_BAT_EC(int cmd, int param)
 		{
 			fg_cust_data.sleep_current_avg = param;
 
-			bm_err(
+			bm_debug(
 				"exe_BAT_EC cmd %d,sleep_current_avg =%d\n",
 				cmd, param);
 		}
@@ -3323,7 +3323,7 @@ void exec_BAT_EC(int cmd, int param)
 
 
 	default:
-		bm_err(
+		bm_debug(
 			"exe_BAT_EC cmd %d, param %d, default\n",
 			cmd, param);
 		break;
@@ -3342,7 +3342,7 @@ static ssize_t store_FG_daemon_disable(
 	struct device *dev, struct device_attribute *attr,
 					const char *buf, size_t size)
 {
-	bm_err("[disable FG daemon]\n");
+	bm_debug("[disable FG daemon]\n");
 	disable_fg();
 	if (gm.disableGM30 == true)
 		battery_main.BAT_CAPACITY = 50;
@@ -3369,14 +3369,14 @@ static ssize_t store_FG_meter_resistance(
 	unsigned long val = 0;
 	int ret;
 
-	bm_err("[%s]\n", __func__);
+	bm_debug("[%s]\n", __func__);
 
 	if (buf != NULL && size != 0) {
-		bm_err("[%s] buf is %s\n",
+		bm_debug("[%s] buf is %s\n",
 			__func__, buf);
 		ret = kstrtoul(buf, 10, &val);
 		if (val < 0) {
-			bm_err(
+			bm_debug(
 				"[%s] val is %d ??\n",
 				__func__,
 				(int)val);
@@ -3384,7 +3384,7 @@ static ssize_t store_FG_meter_resistance(
 		} else
 			fg_cust_data.com_fg_meter_resistance = val;
 
-		bm_err(
+		bm_debug(
 			"[%s] com FG_meter_resistance = %d\n",
 			__func__,
 			(int)val);
@@ -3411,14 +3411,14 @@ static ssize_t store_FG_nafg_disable(
 	unsigned long val = 0;
 	int ret;
 
-	bm_err("[%s]\n", __func__);
+	bm_debug("[%s]\n", __func__);
 
 	if (buf != NULL && size != 0) {
-		bm_err("[%s] buf is %s\n",
+		bm_debug("[%s] buf is %s\n",
 			__func__, buf);
 		ret = kstrtoul(buf, 10, &val);
 		if (val < 0) {
-			bm_err(
+			bm_debug(
 				"[%s] val is %d ??\n",
 				__func__,
 				(int)val);
@@ -3433,7 +3433,7 @@ static ssize_t store_FG_nafg_disable(
 		wakeup_fg_algo_cmd(
 			FG_INTR_KERNEL_CMD, FG_KERNEL_CMD_DISABLE_NAFG, val);
 
-		bm_err(
+		bm_debug(
 			"[%s] FG_nafg_disable = %d\n",
 			__func__,
 			(int)val);
@@ -3460,13 +3460,13 @@ static ssize_t store_FG_ntc_disable_nafg(
 	unsigned long val = 0;
 	int ret;
 
-	bm_err("[%s]\n",  __func__);
+	bm_debug("[%s]\n",  __func__);
 
 	if (buf != NULL && size != 0) {
-		bm_err("[%s] buf is %s\n", __func__, buf);
+		bm_debug("[%s] buf is %s\n", __func__, buf);
 		ret = kstrtoul(buf, 10, &val);
 		if (val < 0) {
-			bm_err(
+			bm_debug(
 				"[%s] val is %d ??\n",  __func__,
 				(int)val);
 			val = 0;
@@ -3484,7 +3484,7 @@ static ssize_t store_FG_ntc_disable_nafg(
 			wakeup_fg_algo(FG_INTR_NAG_C_DLTV);
 		}
 
-		bm_err(
+		bm_debug(
 			"[%s]val=%d, temp:%d %d, %d\n",
 			 __func__,
 			(int)val,
@@ -3516,14 +3516,14 @@ static ssize_t store_uisoc_update_type(
 	unsigned long val = 0;
 	int ret;
 
-	bm_err("[%s]\n", __func__);
+	bm_debug("[%s]\n", __func__);
 
 	if (buf != NULL && size != 0) {
-		bm_err("[%s] buf is %s\n",
+		bm_debug("[%s] buf is %s\n",
 			__func__, buf);
 		ret = kstrtoul(buf, 10, &val);
 		if (val < 0) {
-			bm_err(
+			bm_debug(
 				"[%s] val is %d ??\n",
 				__func__,
 				(int)val);
@@ -3536,12 +3536,12 @@ static ssize_t store_uisoc_update_type(
 				FG_INTR_KERNEL_CMD,
 				FG_KERNEL_CMD_UISOC_UPDATE_TYPE,
 				val);
-			bm_err(
+			bm_debug(
 				"[%s] type = %d\n",
 				__func__,
 				(int)val);
 		} else
-			bm_err(
+			bm_debug(
 			"[%s] invalid type:%d\n",
 			__func__,
 			(int)val);
@@ -3560,7 +3560,7 @@ static ssize_t show_FG_daemon_log_level(
 
 	loglevel_count++;
 	if (loglevel_count % 5 == 0)
-		bm_err(
+		bm_debug(
 		"[FG] show FG_daemon_log_level : %d\n",
 		fg_cust_data.daemon_log_level);
 
@@ -3574,13 +3574,13 @@ static ssize_t store_FG_daemon_log_level(
 	unsigned long val = 0;
 	int ret;
 
-	bm_err("[FG_daemon_log_level]\n");
+	bm_debug("[FG_daemon_log_level]\n");
 
 	if (buf != NULL && size != 0) {
-		bm_err("[FG_daemon_log_level] buf is %s\n", buf);
+		bm_debug("[FG_daemon_log_level] buf is %s\n", buf);
 		ret = kstrtoul(buf, 10, &val);
 		if (val < 0) {
-			bm_err(
+			bm_debug(
 				"[FG_daemon_log_level] val is %d ??\n",
 				(int)val);
 			val = 0;
@@ -3602,7 +3602,7 @@ static ssize_t store_FG_daemon_log_level(
 		else
 			gauge_coulomb_set_log_level(0);
 
-		bm_err(
+		bm_debug(
 			"[FG_daemon_log_level]fg_cust_data.daemon_log_level=%d\n",
 			fg_cust_data.daemon_log_level);
 	}
@@ -3628,13 +3628,13 @@ static ssize_t store_shutdown_cond_enable(
 	unsigned long val = 0;
 	int ret;
 
-	bm_err("[%s]\n", __func__);
+	bm_debug("[%s]\n", __func__);
 	if (buf != NULL && size != 0) {
-		bm_err("[%s] buf is %s\n",
+		bm_debug("[%s] buf is %s\n",
 			__func__, buf);
 		ret = kstrtoul(buf, 10, &val);
 		if (val < 0) {
-			bm_err(
+			bm_debug(
 				"[%s] val is %d ??\n",
 				__func__,
 				(int)val);
@@ -3643,7 +3643,7 @@ static ssize_t store_shutdown_cond_enable(
 
 		set_shutdown_cond_flag(val);
 
-		bm_err(
+		bm_debug(
 			"[%s] shutdown_cond_enabled=%d\n",
 			__func__,
 			get_shutdown_cond_flag());
@@ -3671,13 +3671,13 @@ static ssize_t store_reset_battery_cycle(
 	unsigned long val = 0;
 	int ret;
 
-	bm_err("[%s]\n", __func__);
+	bm_debug("[%s]\n", __func__);
 	if (buf != NULL && size != 0) {
-		bm_err("[%s] buf is %s\n",
+		bm_debug("[%s] buf is %s\n",
 			__func__, buf);
 		ret = kstrtoul(buf, 10, &val);
 		if (val < 0) {
-			bm_err(
+			bm_debug(
 				"[%s] val is %d ??\n",
 				__func__,
 				(int)val);
@@ -3689,7 +3689,7 @@ static ssize_t store_reset_battery_cycle(
 			gm.is_reset_battery_cycle = true;
 			wakeup_fg_algo(FG_INTR_BAT_CYCLE);
 		}
-		bm_err(
+		bm_debug(
 			"%s=%d\n",
 			__func__,
 			gm.is_reset_battery_cycle);
@@ -3717,13 +3717,13 @@ static ssize_t store_reset_aging_factor(
 	unsigned long val = 0;
 	int ret;
 
-	bm_err("[%s]\n", __func__);
+	bm_debug("[%s]\n", __func__);
 	if (buf != NULL && size != 0) {
-		bm_err("[%s] buf is %s\n",
+		bm_debug("[%s] buf is %s\n",
 			__func__, buf);
 		ret = kstrtoul(buf, 10, &val);
 		if (val < 0) {
-			bm_err(
+			bm_debug(
 				"[%s] val is %d ??\n",
 				__func__,
 				(int)val);
@@ -3736,7 +3736,7 @@ static ssize_t store_reset_aging_factor(
 			wakeup_fg_algo_cmd(FG_INTR_KERNEL_CMD,
 				FG_KERNEL_CMD_RESET_AGING_FACTOR, 0);
 		}
-		bm_err(
+		bm_debug(
 			"%s=%d\n",
 			__func__,
 			gm.is_reset_aging_factor);
@@ -3753,7 +3753,7 @@ static DEVICE_ATTR(
 static ssize_t show_BAT_EC(
 	struct device *dev, struct device_attribute *attr, char *buf)
 {
-	bm_err("%s\n", __func__);
+	bm_debug("%s\n", __func__);
 
 	return sprintf(buf, "%d:%d\n", gm.BAT_EC_cmd, gm.BAT_EC_param);
 }
@@ -3765,18 +3765,18 @@ static ssize_t store_BAT_EC(
 	int ret1 = 0, ret2 = 0;
 	char cmd_buf[4], param_buf[16];
 
-	bm_err("%s\n", __func__);
+	bm_debug("%s\n", __func__);
 	cmd_buf[3] = '\0';
 	param_buf[15] = '\0';
 
 	if (size < 4 || size > 20) {
-		bm_err("%s error, size mismatch\n",
+		bm_debug("%s error, size mismatch\n",
 			__func__);
 		return -1;
 	}
 
 	if (buf != NULL && size != 0) {
-		bm_err("buf is %s\n", buf);
+		bm_debug("buf is %s\n", buf);
 		cmd_buf[0] = buf[0];
 		cmd_buf[1] = buf[1];
 		cmd_buf[2] = buf[2];
@@ -3785,7 +3785,7 @@ static ssize_t store_BAT_EC(
 		if ((size - 4) > 0) {
 			strncpy(param_buf, buf + 4, size - 4);
 			param_buf[size - 4 - 1] = '\0';
-			bm_err("[FG_IT]cmd_buf %s, param_buf %s\n",
+			bm_debug("[FG_IT]cmd_buf %s, param_buf %s\n",
 				cmd_buf, param_buf);
 			ret2 = kstrtouint(param_buf, 10, &gm.BAT_EC_param);
 		}
@@ -3793,11 +3793,11 @@ static ssize_t store_BAT_EC(
 		ret1 = kstrtouint(cmd_buf, 10, &gm.BAT_EC_cmd);
 
 		if (ret1 != 0 || ret2 != 0) {
-			bm_err("ERROR! not valid number! %d %d\n",
+			bm_debug("ERROR! not valid number! %d %d\n",
 				ret1, ret2);
 			return -1;
 		}
-		bm_err("CMD is:%d, param:%d\n",
+		bm_debug("CMD is:%d, param:%d\n",
 			gm.BAT_EC_cmd, gm.BAT_EC_param);
 	}
 
@@ -3813,7 +3813,7 @@ static DEVICE_ATTR(BAT_EC, 0664, show_BAT_EC, store_BAT_EC);
 static ssize_t show_BAT_HEALTH(
 	struct device *dev, struct device_attribute *attr, char *buf)
 {
-	bm_err("%s\n", __func__);
+	bm_debug("%s\n", __func__);
 
 	return 0;
 }
@@ -3830,10 +3830,10 @@ static ssize_t store_BAT_HEALTH(
 	int i = 0, j = 0, count = 0, value[50];
 
 
-	bm_err("%s, size =%d, str=%s\n", __func__, size, buf);
+	bm_debug("%s, size =%d, str=%s\n", __func__, size, buf);
 
 	if (size < 90 || size > 350) {
-		bm_err("%s error, size mismatch\n", __func__);
+		bm_debug("%s error, size mismatch\n", __func__);
 		return -1;
 	} else {
 		for (i = 0; i < strlen(buf); i++) {
@@ -3841,13 +3841,13 @@ static ssize_t store_BAT_HEALTH(
 				j++;
 		}
 		if (j != 46) {
-			bm_err("%s error, invalid input\n", __func__);
+			bm_debug("%s error, invalid input\n", __func__);
 			return -1;
 		}
 	}
 
 	strncpy(buf_str, buf, size);
-	/* bm_err("%s, copy str=%s\n", __func__, buf_str); */
+	/* bm_debug("%s, copy str=%s\n", __func__, buf_str); */
 
 	if (buf != NULL && size != 0) {
 
@@ -3863,7 +3863,7 @@ static ssize_t store_BAT_HEALTH(
 				strncpy(copy_str, s+1, chr_size-1);
 
 			kstrtoint(copy_str, 10, &value[count]);
-			/* bm_err("::%s::count:%d,%d\n", copy_str, count, value[count]); */
+			/* bm_debug("::%s::count:%d,%d\n", copy_str, count, value[count]); */
 			s = pch;
 			pch = strchr(pch + 1, ',');
 			count++;
@@ -3877,7 +3877,7 @@ static ssize_t store_BAT_HEALTH(
 		for (i = 0; i < 3; i++)
 			gm.bh_data.times[i].tv_sec = value[i+43];
 
-	bm_err("%s count=%d,serial=%d,source=%d,42:%d, value43:[%d, %ld],value45[%d %ld]\n",
+	bm_debug("%s count=%d,serial=%d,source=%d,42:%d, value43:[%d, %ld],value45[%d %ld]\n",
 		__func__,
 		count, gm.bh_data.data[0], gm.bh_data.data[1],
 		gm.bh_data.data[42],
@@ -3889,9 +3889,9 @@ static ssize_t store_BAT_HEALTH(
 			FG_KERNEL_CMD_SEND_BH_DATA, 0);
 
 		mdelay(4);
-		bm_err("%s wakeup DONE~~~\n", __func__);
+		bm_debug("%s wakeup DONE~~~\n", __func__);
 	} else
-		bm_err("%s count=%d, number not match\n", __func__, count);
+		bm_debug("%s count=%d, number not match\n", __func__, count);
 
 
 	return size;
@@ -3907,7 +3907,7 @@ struct device *dev, struct device_attribute *attr,
 	int ret_value = 8888;
 
 	ret_value = battery_get_bat_avg_current();
-	bm_err("[EM] FG_Battery_CurrentConsumption : %d .1mA\n", ret_value);
+	bm_debug("[EM] FG_Battery_CurrentConsumption : %d .1mA\n", ret_value);
 	return sprintf(buf, "%d\n", ret_value);
 }
 
@@ -3915,7 +3915,7 @@ static ssize_t store_FG_Battery_CurrentConsumption(struct device *dev,
 	struct device_attribute *attr, const char *buf,
 	size_t size)
 {
-	bm_err("[EM] Not Support Write Function\n");
+	bm_debug("[EM] Not Support Write Function\n");
 	return size;
 }
 
@@ -3932,7 +3932,7 @@ struct device *dev, struct device_attribute *attr, char *buf)
 	int ret_value = 1;
 
 	ret_value = 3450;
-	bm_err("[EM] Power_On_Voltage : %d\n", ret_value);
+	bm_debug("[EM] Power_On_Voltage : %d\n", ret_value);
 	return sprintf(buf, "%u\n", ret_value);
 }
 
@@ -3940,7 +3940,7 @@ static ssize_t store_Power_On_Voltage(
 	struct device *dev, struct device_attribute *attr,
 				      const char *buf, size_t size)
 {
-	bm_err("[EM] Not Support Write Function\n");
+	bm_debug("[EM] Not Support Write Function\n");
 	return size;
 }
 
@@ -3956,7 +3956,7 @@ struct device *dev, struct device_attribute *attr, char *buf)
 	int ret_value = 1;
 
 	ret_value = 3400;
-	bm_err("[EM] Power_Off_Voltage : %d\n", ret_value);
+	bm_debug("[EM] Power_Off_Voltage : %d\n", ret_value);
 	return sprintf(buf, "%u\n", ret_value);
 }
 
@@ -3964,7 +3964,7 @@ static ssize_t store_Power_Off_Voltage(
 	struct device *dev, struct device_attribute *attr,
 				       const char *buf, size_t size)
 {
-	bm_err("[EM] Not Support Write Function\n");
+	bm_debug("[EM] Not Support Write Function\n");
 	return size;
 }
 
@@ -3976,7 +3976,7 @@ static DEVICE_ATTR(
 static int battery_callback(
 	struct notifier_block *nb, unsigned long event, void *v)
 {
-	bm_err("%s:%ld\n",
+	bm_debug("%s:%ld\n",
 		__func__, event);
 	switch (event) {
 	case CHARGER_NOTIFY_EOC:
@@ -4052,7 +4052,7 @@ struct file *filp, unsigned int cmd, unsigned long arg)
 	bm_notice("%s 32bit IOCTL, cmd=0x%08x\n",
 		__func__, cmd);
 	if (!filp->f_op || !filp->f_op->unlocked_ioctl) {
-		bm_err("%s file has no f_op or no f_op->unlocked_ioctl.\n",
+		bm_debug("%s file has no f_op or no f_op->unlocked_ioctl.\n",
 			__func__);
 		return -ENOTTY;
 	}
@@ -4079,7 +4079,7 @@ struct file *filp, unsigned int cmd, unsigned long arg)
 	}
 		break;
 	default:
-		bm_err("%s unknown IOCTL: 0x%08x, %d\n",
+		bm_debug("%s unknown IOCTL: 0x%08x, %d\n",
 			__func__, cmd, adc_out_datas[0]);
 		break;
 	}
@@ -4105,7 +4105,7 @@ static long adc_cali_ioctl(
 	user_data_addr = (int *)arg;
 	ret = copy_from_user(adc_in_data, user_data_addr, sizeof(adc_in_data));
 	if (adc_in_data[1] < 0) {
-		bm_err("%s unknown data: %d\n", __func__, adc_in_data[1]);
+		bm_debug("%s unknown data: %d\n", __func__, adc_in_data[1]);
 		mutex_unlock(&gm.fg_mutex);
 		return -EFAULT;
 	}
@@ -4279,7 +4279,7 @@ static long adc_cali_ioctl(
 
 	case Get_META_BAT_CAR_TUNE_VALUE:
 		adc_out_data[0] = fg_cust_data.car_tune_value;
-		bm_err("Get_BAT_CAR_TUNE_VALUE, res=%d\n", adc_out_data[0]);
+		bm_debug("Get_BAT_CAR_TUNE_VALUE, res=%d\n", adc_out_data[0]);
 
 		if (copy_to_user(user_data_addr, adc_out_data,
 			sizeof(adc_out_data))) {
@@ -4300,7 +4300,7 @@ static long adc_cali_ioctl(
 		if (temp_car_tune >= 900 && temp_car_tune <= 1100)
 			fg_cust_data.car_tune_value = temp_car_tune;
 		else
-			bm_err("car_tune_value invalid:%d\n",
+			bm_debug("car_tune_value invalid:%d\n",
 			temp_car_tune);
 
 		adc_out_data[0] = temp_car_tune;
@@ -4312,7 +4312,7 @@ static long adc_cali_ioctl(
 		}
 
 
-		bm_err("**** unlocked_ioctl Set_BAT_CAR_TUNE_VALUE[%d], result=%d, ret=%d\n",
+		bm_debug("**** unlocked_ioctl Set_BAT_CAR_TUNE_VALUE[%d], result=%d, ret=%d\n",
 			adc_in_data[1], adc_out_data[0], ret);
 
 		break;
@@ -4341,11 +4341,11 @@ static long adc_cali_ioctl(
 		if (temp_car_tune > 500 && temp_car_tune < 1500)
 			fg_cust_data.car_tune_value = temp_car_tune;
 
-		bm_err("**** unlocked_ioctl Set_CARTUNE_TO_KERNEL[%d,%d], ret=%d\n",
+		bm_debug("**** unlocked_ioctl Set_CARTUNE_TO_KERNEL[%d,%d], ret=%d\n",
 			adc_in_data[0], adc_in_data[1], ret);
 		break;
 	default:
-		bm_err("**** unlocked_ioctl unknown IOCTL: 0x%08x\n", cmd);
+		bm_debug("**** unlocked_ioctl unknown IOCTL: 0x%08x\n", cmd);
 		g_ADC_Cali = false;
 		mutex_unlock(&gm.fg_mutex);
 		return -EINVAL;
@@ -4439,11 +4439,11 @@ static int __init battery_probe(struct platform_device *dev)
 		power_supply_register(
 			&(dev->dev), &battery_main.psd, NULL);
 	if (IS_ERR(battery_main.psy)) {
-		bm_err("[BAT_probe] power_supply_register Battery Fail !!\n");
+		bm_debug("[BAT_probe] power_supply_register Battery Fail !!\n");
 		ret = PTR_ERR(battery_main.psy);
 		return ret;
 	}
-	bm_err("[BAT_probe] power_supply_register Battery Success !!\n");
+	bm_debug("[BAT_probe] power_supply_register Battery Success !!\n");
 #endif
 	ret = device_create_file(&(dev->dev), &dev_attr_Battery_Temperature);
 	ret = device_create_file(&(dev->dev), &dev_attr_UI_SOC);
@@ -4484,12 +4484,12 @@ static int __init battery_probe(struct platform_device *dev)
 			bat_node, "atag,fg_swocv_v",
 			&fg_swocv_v_len);
 	if (fg_swocv_v == NULL) {
-		bm_err(" fg_swocv_v == NULL len = %d\n", fg_swocv_v_len);
+		bm_debug(" fg_swocv_v == NULL len = %d\n", fg_swocv_v_len);
 	} else {
 		snprintf(fg_swocv_v_tmp, (fg_swocv_v_len + 1),
 			"%s", fg_swocv_v);
 		ret = kstrtoint(fg_swocv_v_tmp, 10, &gm.ptim_lk_v);
-		bm_err(" fg_swocv_v = %s len %d fg_swocv_v_tmp %s ptim_lk_v[%d]\n",
+		bm_debug(" fg_swocv_v = %s len %d fg_swocv_v_tmp %s ptim_lk_v[%d]\n",
 			fg_swocv_v, fg_swocv_v_len,
 			fg_swocv_v_tmp, gm.ptim_lk_v);
 	}
@@ -4498,14 +4498,14 @@ static int __init battery_probe(struct platform_device *dev)
 		fg_swocv_i = of_get_flat_dt_prop(
 		bat_node, "atag,fg_swocv_i", &fg_swocv_i_len);
 	if (fg_swocv_i == NULL) {
-		bm_err(" fg_swocv_i == NULL len = %d\n", fg_swocv_i_len);
+		bm_debug(" fg_swocv_i == NULL len = %d\n", fg_swocv_i_len);
 	} else {
 		snprintf(
 			fg_swocv_i_tmp, (fg_swocv_i_len + 1),
 			"%s", fg_swocv_i);
 		ret = kstrtoint(fg_swocv_i_tmp, 10, &gm.ptim_lk_i);
 
-		bm_err(" fg_swocv_i = %s len %d fg_swocv_i_tmp %s ptim_lk_i[%d]\n",
+		bm_debug(" fg_swocv_i = %s len %d fg_swocv_i_tmp %s ptim_lk_i[%d]\n",
 			fg_swocv_i, fg_swocv_i_len,
 			fg_swocv_i_tmp, gm.ptim_lk_i);
 	}
@@ -4517,14 +4517,14 @@ static int __init battery_probe(struct platform_device *dev)
 				"atag,shutdown_time",
 				&shutdown_time_len);
 	if (shutdown_time == NULL) {
-		bm_err(" shutdown_time == NULL len = %d\n", shutdown_time_len);
+		bm_debug(" shutdown_time == NULL len = %d\n", shutdown_time_len);
 	} else {
 		snprintf(shutdown_time_tmp,
 			(shutdown_time_len + 1),
 			"%s", shutdown_time);
 		ret = kstrtoint(shutdown_time_tmp, 10, &gm.pl_shutdown_time);
 
-		bm_err(" shutdown_time = %s len %d shutdown_time_tmp %s pl_shutdown_time[%d]\n",
+		bm_debug(" shutdown_time = %s len %d shutdown_time_tmp %s pl_shutdown_time[%d]\n",
 			shutdown_time, shutdown_time_len,
 			shutdown_time_tmp, gm.pl_shutdown_time);
 	}
@@ -4535,14 +4535,14 @@ static int __init battery_probe(struct platform_device *dev)
 			bat_node, "atag,boot_voltage",
 			&boot_voltage_len);
 	if (boot_voltage == NULL) {
-		bm_err(" boot_voltage == NULL len = %d\n", boot_voltage_len);
+		bm_debug(" boot_voltage == NULL len = %d\n", boot_voltage_len);
 	} else {
 		snprintf(
 			boot_voltage_tmp, (boot_voltage_len + 1),
 			"%s", boot_voltage);
 		ret = kstrtoint(boot_voltage_tmp, 10, &gm.pl_bat_vol);
 
-		bm_err(
+		bm_debug(
 			"boot_voltage=%s len %d boot_voltage_tmp %s pl_bat_vol[%d]\n",
 			boot_voltage, boot_voltage_len,
 			boot_voltage_tmp, gm.pl_bat_vol);
@@ -4560,7 +4560,7 @@ static int __init battery_probe(struct platform_device *dev)
 
 	if (IS_ENABLED(CONFIG_POWER_EXT) || gm.disable_mtkbattery ||
 		IS_ENABLED(CONFIG_MTK_DISABLE_GAUGE)) {
-		bm_err("disable GM 3.0\n");
+		bm_debug("disable GM 3.0\n");
 		disable_fg();
 	} else if (is_recovery_mode())
 		battery_recovery_init();
@@ -4587,7 +4587,7 @@ void battery_shutdown(struct platform_device *dev)
 	}
 	gauge_dev_get_info(gm.gdev, GAUGE_SHUTDOWN_CAR, &verify_car);
 
-	bm_err("******** %s!! car=[o:%d,new:%d,diff:%d v:%d]********\n",
+	bm_debug("******** %s!! car=[o:%d,new:%d,diff:%d v:%d]********\n",
 		__func__,
 		gm.d_saved_car, fg_coulomb, shut_car_diff, verify_car);
 
@@ -4596,7 +4596,7 @@ void battery_shutdown(struct platform_device *dev)
 
 static int battery_suspend(struct platform_device *dev, pm_message_t state)
 {
-	bm_err("******** %s!! iavg=%d ***GM3 disable:%d %d %d %d tmp_intr:%d***\n",
+	bm_debug("******** %s!! iavg=%d ***GM3 disable:%d %d %d %d tmp_intr:%d***\n",
 		__func__,
 		gm.hw_status.iavg_intr_flag,
 		gm.disableGM30,
@@ -4627,7 +4627,7 @@ static int battery_resume(struct platform_device *dev)
 	zcv_filter_dump(&gm.zcvf);
 	zcv_check(&gm.zcvf);
 
-	bm_err("******** %s!! iavg=%d ***GM3 disable:%d %d %d %d***\n",
+	bm_debug("******** %s!! iavg=%d ***GM3 disable:%d %d %d %d***\n",
 		__func__,
 		gm.hw_status.iavg_intr_flag,
 		gm.disableGM30,
@@ -4692,13 +4692,13 @@ static int __init battery_init(void)
 	int ret;
 
 	gm.daemo_nl_sk = netlink_kernel_create(&init_net, NETLINK_FGD, &cfg);
-	bm_err("netlink_kernel_create protol= %d\n", NETLINK_FGD);
+	bm_debug("netlink_kernel_create protol= %d\n", NETLINK_FGD);
 
 	if (gm.daemo_nl_sk == NULL) {
-		bm_err("netlink_kernel_create error\n");
+		bm_debug("netlink_kernel_create error\n");
 		return -1;
 	}
-	bm_err("netlink_kernel_create ok\n");
+	bm_debug("netlink_kernel_create ok\n");
 
 #ifdef CONFIG_OF
 	/* register battery_device by DTS */
@@ -4708,7 +4708,7 @@ static int __init battery_init(void)
 
 	ret = platform_driver_register(&battery_driver_probe);
 
-	bm_err("[%s] Initialization : DONE\n",
+	bm_debug("[%s] Initialization : DONE\n",
 		__func__);
 
 	return 0;
