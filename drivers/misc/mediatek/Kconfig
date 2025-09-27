@@ -1,5 +1,3 @@
-source "drivers/misc/mediatek/Kconfig.default"
-
 config MTK_PLATFORM
 	string "MTK platform name"
 
