@@ -149,9 +149,9 @@ static int ocp81375_flash_read(struct i2c_client *client, u8 reg)
 	mutex_lock(&chip->lock);
 	ret = i2c_smbus_read_byte_data(client, reg);
 	mutex_unlock(&chip->lock);
-	pr_info("%s reg:0x%x val:0x%x\n", __func__, reg, ret);
+	pr_debug("%s reg:0x%x val:0x%x\n", __func__, reg, ret);
 	if (ret < 0)
-		pr_info("failed reading at 0x%02x\n", reg);
+		pr_debug("failed reading at 0x%02x\n", reg);
 
 	return ret;
 }
@@ -172,7 +172,7 @@ static int ocp81375_flash_write(struct i2c_client *client, u8 reg, u8 val)
 	mutex_unlock(&chip->lock);
 
 	if (ret < 0)
-		pr_info("failed writing at 0x%02x\n", reg);
+		pr_debug("failed writing at 0x%02x\n", reg);
 
 	return ret;
 
@@ -186,11 +186,11 @@ static int ocp81375_pinctrl_init(struct platform_device *pdev)
 {
 	int ret = 0;
 
-	pr_info("%s in\n", __func__);
+	pr_debug("%s in\n", __func__);
 	/* get pinctrl */
 	ocp81375_pinctrl = devm_pinctrl_get(&pdev->dev);
 	if (IS_ERR(ocp81375_pinctrl)) {
-		pr_info("Failed to get flashlight pinctrl.\n");
+		pr_debug("Failed to get flashlight pinctrl.\n");
 		ret = PTR_ERR(ocp81375_pinctrl);
 		return ret;
 	}
@@ -199,17 +199,17 @@ static int ocp81375_pinctrl_init(struct platform_device *pdev)
 	ocp81375_hwen_high = pinctrl_lookup_state(ocp81375_pinctrl,
 		OCP81375_PINCTRL_STATE_HWEN_HIGH);
 	if (IS_ERR(ocp81375_hwen_high)) {
-		pr_info("Failed to init (%s)\n",
+		pr_debug("Failed to init (%s)\n",
 			OCP81375_PINCTRL_STATE_HWEN_HIGH);
 		ret = PTR_ERR(ocp81375_hwen_high);
 	}
 	ocp81375_hwen_low = pinctrl_lookup_state(ocp81375_pinctrl,
 		OCP81375_PINCTRL_STATE_HWEN_LOW);
 	if (IS_ERR(ocp81375_hwen_low)) {
-		pr_info("Failed to init (%s)\n", OCP81375_PINCTRL_STATE_HWEN_LOW);
+		pr_debug("Failed to init (%s)\n", OCP81375_PINCTRL_STATE_HWEN_LOW);
 		ret = PTR_ERR(ocp81375_hwen_low);
 	}
-	pr_info("%s out\n", __func__);
+	pr_debug("%s out\n", __func__);
 	return ret;
 }
 
@@ -218,10 +218,10 @@ static int ocp81375_pinctrl_set(int pin, int state)
 {
 	int ret = 0;
 
-	pr_info("%s in\n", __func__);
+	pr_debug("%s in\n", __func__);
 
 	if (IS_ERR(ocp81375_pinctrl)) {
-		pr_info("pinctrl is not available\n");
+		pr_debug("pinctrl is not available\n");
 		return -1;
 	}
 
@@ -236,14 +236,14 @@ static int ocp81375_pinctrl_set(int pin, int state)
 			pinctrl_select_state(ocp81375_pinctrl, ocp81375_hwen_high);
 			hwen_count = 0;
 		} else
-			pr_info("set err, pin(%d) state(%d)\n", pin, state);
+			pr_debug("set err, pin(%d) state(%d)\n", pin, state);
 		break;
 	default:
-		pr_info("set err, pin(%d) state(%d)\n", pin, state);
+		pr_debug("set err, pin(%d) state(%d)\n", pin, state);
 		break;
 	}
-	pr_info("pin(%d) state(%d)\n", pin, state);
-	pr_info("%s out\n", __func__);
+	pr_debug("pin(%d) state(%d)\n", pin, state);
+	pr_debug("%s out\n", __func__);
 	return ret;
 }
 
@@ -280,7 +280,7 @@ static int ocp81375_set_torch_brightness(int channel,int regval)
 		ocp81375_flash_write(OCP81375_i2c_client,
 			OCP81375_REG_TORCH_LEVEL_LED2,regval);
 	} else {
-		pr_info("Error channel\n");
+		pr_debug("Error channel\n");
 		return -1;
 	}
 	mdelay(OCP81375_WAIT_TIME);
@@ -314,7 +314,7 @@ static int ocp81375_set_strobe_brightness(int channel,int regval)
 		ocp81375_flash_write(OCP81375_i2c_client,
 			OCP81375_REG_FLASH_LEVEL_LED2,regval);
 	} else {
-		pr_info("Error channel\n");
+		pr_debug("Error channel\n");
 		return -1;
 	}
 	mdelay(OCP81375_WAIT_TIME);
@@ -384,7 +384,7 @@ static int ocp81375_enable(int channel)
 /* flashlight disable function */
 static int ocp81375_disable(void)
 {
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 	if (hwen_count != 1)
 		ocp81375_flash_write(OCP81375_i2c_client, OCP81375_REG_ENABLE, 0x00);
 	return 0;
@@ -421,7 +421,7 @@ static int ocp81375_set_scenario(int scenario)
 /* flashlight init */
 static int ocp81375_init(void)
 {
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 	/* clear flashlight state */
 	ocp81375_en_ch1 = OCP81375_DISABLE;
 	ocp81375_en_ch2 = OCP81375_DISABLE;
@@ -487,7 +487,7 @@ static int ocp81375_timer_start(int channel, ktime_t ktime)
 	else if (channel == OCP81375_CHANNEL_CH2)
 		hrtimer_start(&ocp81375_timer_ch2, ktime, HRTIMER_MODE_REL);
 	else {
-		pr_info("Error channel\n");
+		pr_debug("Error channel\n");
 		return -1;
 	}
 
@@ -501,7 +501,7 @@ static int ocp81375_timer_cancel(int channel)
 	else if (channel == OCP81375_CHANNEL_CH2)
 		hrtimer_cancel(&ocp81375_timer_ch2);
 	else {
-		pr_info("Error channel\n");
+		pr_debug("Error channel\n");
 		return -1;
 	}
 
@@ -517,7 +517,7 @@ static int ocp81375_get_hw_fault(int num)
 		return ocp81375_flash_read(OCP81375_i2c_client,
 						OCP81375_REG_FLAG2);
 
-	pr_info("Error num\n");
+	pr_debug("Error num\n");
 	return 0;
 }
 
@@ -537,7 +537,7 @@ static int ocp81375_operate(int channel, int enable)
 		if (ocp81375_en_ch2 && ocp81375_para[channel].flashmode)
 			ocp81375_en_ch2 = OCP81375_ENABLE_FLASH;
 	} else {
-		pr_info("Error channel\n");
+		pr_debug("Error channel\n");
 		return -1;
 	}
 
@@ -629,13 +629,13 @@ static int ocp81375_ioctl(unsigned int cmd, unsigned long arg)
 		break;
 	case FLASH_IOC_GET_DUTY_NUMBER:
 		channel = (channel==0?1:0);
-		pr_info("FLASH_IOC_GET_DUTY_NUMBER(%d)\n",
+		pr_debug("FLASH_IOC_GET_DUTY_NUMBER(%d)\n",
 			g_project_current_config[0].duty_num);
 		fl_arg->arg = g_project_current_config[channel].duty_num;
 		break;
 
 	case FLASH_IOC_GET_MAX_TORCH_DUTY:
-		pr_info("FLASH_IOC_GET_MAX_TORCH_DUTY(%d)\n",
+		pr_debug("FLASH_IOC_GET_MAX_TORCH_DUTY(%d)\n",
 			ocp81375_para[channel].min_flash_duty);
 		fl_arg->arg = ocp81375_para[channel].min_flash_duty;
 		break;
@@ -658,7 +658,7 @@ static int ocp81375_ioctl(unsigned int cmd, unsigned long arg)
 		fl_arg->arg = ocp81375_get_hw_fault(2);
 		break;
 	default:
-		pr_info("No such command and arg(%d): (%d, %d)\n",
+		pr_debug("No such command and arg(%d): (%d, %d)\n",
 				channel, _IOC_NR(cmd), (int)fl_arg->arg);
 		return -ENOTTY;
 	}
@@ -682,7 +682,7 @@ static int ocp81375_release(void)
 		use_count = 0;
 	mutex_unlock(&ocp81375_mutex);
 
-	pr_info("Release: %d\n", use_count);
+	pr_debug("Release: %d\n", use_count);
 
 	return 0;
 }
@@ -772,10 +772,10 @@ static int ocp81375_i2c_probe(struct i2c_client *client,
 	struct ocp81375_platform_data *pdata = client->dev.platform_data;
 	int err;
 
-	pr_info("%s start.\n", __func__);
+	pr_debug("%s start.\n", __func__);
 	/* check i2c */
 	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
-		pr_info("Failed to check i2c functionality.\n");
+		pr_debug("Failed to check i2c functionality.\n");
 		err = -ENODEV;
 		goto err_out;
 	}
@@ -822,7 +822,7 @@ static int ocp81375_i2c_probe(struct i2c_client *client,
 
 	/* clear usage count */
 	use_count = 0;
-	pr_info("Probe done.\n");
+	pr_debug("Probe done.\n");
 
 	return 0;
 
@@ -838,7 +838,7 @@ static int ocp81375_i2c_remove(struct i2c_client *client)
 {
 	struct ocp81375_chip_data *chip = i2c_get_clientdata(client);
 
-	pr_info("Remove start.\n");
+	pr_debug("Remove start.\n");
 	/* flush work queue */
 	flush_work(&ocp81375_work_ch1);
 	flush_work(&ocp81375_work_ch2);
@@ -850,7 +850,7 @@ static int ocp81375_i2c_remove(struct i2c_client *client)
 		kfree(chip->pdata);
 	kfree(chip);
 
-	pr_info("Remove done.\n");
+	pr_debug("Remove done.\n");
 
 	return 0;
 }
@@ -888,15 +888,15 @@ static int ocp81375_probe(struct platform_device *dev)
 {
 	int i = 0;
 
-	pr_info("ocp81375_platform_probe start.\n");
+	pr_debug("ocp81375_platform_probe start.\n");
 	/* init pinctrl */
 	if (ocp81375_pinctrl_init(dev)) {
-		pr_info("Failed to init pinctrl.\n");
+		pr_debug("Failed to init pinctrl.\n");
 		return -1;
 	}
 
 	if (i2c_add_driver(&ocp81375_i2c_driver)) {
-		pr_info("Failed to add i2c driver.\n");
+		pr_debug("Failed to add i2c driver.\n");
 		return -1;
 	}
 	for(;i<OCP81375_CHANNEL_NUM;i++){
@@ -908,7 +908,7 @@ static int ocp81375_probe(struct platform_device *dev)
 		memset(&ocp81375_para[i].duty_reg_code[0], 0,
 			sizeof(ocp81375_para[i].duty_reg_code));
 	}
-	pr_info("%s done.\n", __func__);
+	pr_debug("%s done.\n", __func__);
 
 	return 0;
 }
@@ -956,19 +956,19 @@ static int __init flashlight_ocp81375_init(void)
 {
 	int ret;
 
-	pr_info("flashlight_ocp81375_initInit start.\n");
+	pr_debug("flashlight_ocp81375_initInit start.\n");
 
 #ifndef CONFIG_OF
 	ret = platform_device_register(&ocp81375_platform_device);
 	if (ret) {
-		pr_info("Failed to register platform device\n");
+		pr_debug("Failed to register platform device\n");
 		return ret;
 	}
 #endif
 
 	ret = platform_driver_register(&ocp81375_platform_driver);
 	if (ret) {
-		pr_info("Failed to register platform driver\n");
+		pr_debug("Failed to register platform driver\n");
 		return ret;
 	}
 
