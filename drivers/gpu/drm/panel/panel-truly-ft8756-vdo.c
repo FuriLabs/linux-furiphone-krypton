@@ -556,10 +556,13 @@ static int jdi_unprepare(struct drm_panel *panel)
 	if (!ctx->prepared)
 		return 0;
 
+	if (ctx->backlight)
+		backlight_device_set_brightness(ctx->backlight, 0);
+
 	jdi_dcs_write_seq_static(ctx, 0x28);
-	msleep(50);
+	msleep(25);
 	jdi_dcs_write_seq_static(ctx, 0x10);
-	msleep(150);
+	msleep(75);
 
 	ctx->error = 0;
 	ctx->prepared = false;
@@ -584,7 +587,7 @@ static int jdi_unprepare(struct drm_panel *panel)
 	gpiod_set_value(ctx->bias_neg, 0);
 	devm_gpiod_put(ctx->dev, ctx->bias_neg);
 
-	udelay(1000);
+	udelay(500);
 
 	ctx->bias_pos = devm_gpiod_get_index(ctx->dev,
 		"bias", 0, GPIOD_OUT_HIGH);
