@@ -18,15 +18,13 @@
 
 #define MTK_DRM_TRACE_MSG_LEN	1024
 
+#ifdef CONFIG_TRACING
 static noinline int mtk_drm_tracing_mark_write(const char *buf)
 {
-#ifdef CONFIG_TRACING
 	trace_puts(buf);
-#endif
 	return 0;
 }
 
-#ifdef CONFIG_TRACING
 void mtk_drm_print_trace(char *fmt, ...)
 {
 	char buf[MTK_DRM_TRACE_MSG_LEN];
