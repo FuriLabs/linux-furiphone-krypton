@@ -190,7 +190,6 @@ config TOUCHSCREEN_HIMAX_CHIPSET
 	report 10 touches at a time.
 
 	If unsure, say N.
-source "drivers/input/touchscreen/mediatek/hxchipset_hx83102p/Kconfig"
 
 config TOUCHSCREEN_GOODIX_BRL
 	tristate "Goodix berlin touchscreen"
