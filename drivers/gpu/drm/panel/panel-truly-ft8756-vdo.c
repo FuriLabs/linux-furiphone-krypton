@@ -88,11 +88,11 @@ static void jdi_panel_get_data(struct jdi *ctx)
 	u8 buffer[3] = { 0 };
 	static int ret;
 
-	pr_info("%s+\n", __func__);
+	pr_debug("%s+\n", __func__);
 
 	if (ret == 0) {
 		ret = jdi_dcs_read(ctx, 0x0A, buffer, 1);
-		pr_info("%s  0x%08x\n", __func__, buffer[0] | (buffer[1] << 8));
+		pr_debug("%s  0x%08x\n", __func__, buffer[0] | (buffer[1] << 8));
 		dev_info(ctx->dev, "return %d data(0x%08x) to dsi engine\n",
 			 ret, buffer[0] | (buffer[1] << 8));
 	}
@@ -526,7 +526,7 @@ static void jdi_panel_init(struct jdi *ctx)
 	jdi_dcs_write_seq_static(ctx, 0x35,0x00);
 	msleep(300);	
 
-	pr_info("%s-\n", __func__);
+	pr_debug("%s-\n", __func__);
 }
 
 static int jdi_disable(struct drm_panel *panel)
@@ -551,7 +551,7 @@ static int jdi_unprepare(struct drm_panel *panel)
 
 	struct jdi *ctx = panel_to_jdi(panel);
 
-	pr_info("%s\n", __func__);
+	pr_debug("%s\n", __func__);
 
 	if (!ctx->prepared)
 		return 0;
@@ -605,7 +605,7 @@ static int jdi_prepare(struct drm_panel *panel)
 	struct jdi *ctx = panel_to_jdi(panel);
 	int ret;
 	LCM_DATA_T2 i2c_data;
-	pr_info("%s+\n", __func__);
+	pr_debug("%s+\n", __func__);
 	if (ctx->prepared)
 		return 0;
 #if 0
@@ -668,7 +668,7 @@ static int jdi_prepare(struct drm_panel *panel)
 	jdi_panel_get_data(ctx);
 #endif
 
-	pr_info("%s-\n", __func__);
+	pr_debug("%s-\n", __func__);
 	return ret;
 }
 
@@ -916,18 +916,18 @@ static int jdi_probe(struct mipi_dsi_device *dsi)
 		if (endpoint) {
 			remote_node = of_graph_get_remote_port_parent(endpoint);
 			if (!remote_node) {
-				pr_info("No panel connected,skip probe lcm\n");
+				pr_debug("No panel connected,skip probe lcm\n");
 				return -ENODEV;
 			}
-			pr_info("device node name:%s\n", remote_node->name);
+			pr_debug("device node name:%s\n", remote_node->name);
 		}
 	}
 	if (remote_node != dev->of_node) {
-		pr_info("%s+ skip probe due to not current lcm\n", __func__);
+		pr_debug("%s+ skip probe due to not current lcm\n", __func__);
 		return -ENODEV;
 	}
 
-	pr_info("%s+\n", __func__);
+	pr_debug("%s+\n", __func__);
 	ctx = devm_kzalloc(dev, sizeof(struct jdi), GFP_KERNEL);
 	if (!ctx)
 		return -ENOMEM;
@@ -998,7 +998,7 @@ static int jdi_probe(struct mipi_dsi_device *dsi)
 		return ret;
 #endif
 	check_is_need_fake_resolution(dev);
-	pr_info("%s-\n", __func__);
+	pr_debug("%s-\n", __func__);
 
 	return ret;
 }
