@@ -707,6 +707,8 @@ static int log_store(int facility, int level,
 	static bool initialized;
 #endif
 
+	size = msg_used_size(text_len, dict_len, &pad_len);
+
 	if (log_make_free_space(size)) {
 		/* truncate the message if it is too long for empty buffer */
 		size = truncate_msg(&text_len, &trunc_msg_len,
