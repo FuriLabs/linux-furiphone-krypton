@@ -70,6 +70,7 @@ struct mt6877_log_helper mt6877_logger_help = {
 	.prev = 0,
 };
 
+#ifdef CONFIG_MTK_AEE_IPANIC
 static char *mt6877_spm_cond_cg_str[PLAT_SPM_COND_MAX] = {
 	[PLAT_SPM_COND_MTCMOS_1]	= "MTCMOS_1",
 	[PLAT_SPM_COND_MTCMOS_2]	= "MTCMOS_2",
@@ -88,6 +89,7 @@ static char *mt6877_spm_cond_cg_str[PLAT_SPM_COND_MAX] = {
 	[PLAT_SPM_COND_CG_MMSYS_6]	= "MMSYS_6",
 	[PLAT_SPM_COND_CG_MMSYS_7]	= "MMSYS_7",
 };
+#endif
 
 const char *mt6877_wakesrc_str[32] = {
 	[0] = " R12_PCM_TIMER",
@@ -319,6 +321,7 @@ static void mt6877_save_sleep_info(void)
 			+ spm_26M_off_count;
 }
 
+#ifdef CONFIG_MTK_AEE_IPANIC
 static void mt6877_suspend_show_detailed_wakeup_reason
 	(struct mt6877_spm_wake_status *wakesta)
 {
@@ -480,10 +483,12 @@ static u32 is_blocked_cnt;
 
 	printk_deferred("[name:spm&][SPM] %s", log_buf);
 }
+#endif
 
 static int mt6877_show_message(struct mt6877_spm_wake_status *wakesrc, int type,
 					const char *prefix, void *data)
 {
+#ifdef CONFIG_MTK_AEE_IPANIC
 #undef LOG_BUF_SIZE
 	#define LOG_BUF_SIZE		256
 	#define LOG_BUF_OUT_SZ		768
@@ -700,6 +705,9 @@ static int mt6877_show_message(struct mt6877_spm_wake_status *wakesrc, int type,
 		pr_debug("[name:spm&][SPM] %s", log_buf);
 
 	return wr;
+#else
+	return 0;
+#endif
 }
 
 int mt6877_issuer_func(int type, const char *prefix, void *data)
