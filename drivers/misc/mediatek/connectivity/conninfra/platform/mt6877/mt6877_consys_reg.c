@@ -280,6 +280,7 @@ static void consys_bus_hang_dump_b(void)
 		bus_clock, ip_version, irq_b, irq_vndr, irq_axi, irq_conninfra, wifi_irq);
 }
 
+#ifdef CONFIG_TRACING
 static void consys_bus_hang_dump_c(bool offclock)
 {
 	unsigned int c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, c12, c13, c14, c15;
@@ -480,6 +481,7 @@ static void consys_bus_hang_dump_c(bool offclock)
 			CONSYS_REG_READ(CONN_BUS_CR_CONN_INFRA_LOW_POWER_LAYER_CTRL_ADDR));
 	}
 }
+#endif
 
 static int consys_is_bus_hang(void)
 {
@@ -536,7 +538,9 @@ static int consys_is_bus_hang(void)
 		ret = CONNINFRA_INFRA_BUS_HANG_IRQ;
 	}
 
+#ifdef CONFIG_TRACING
 	consys_bus_hang_dump_c(offclk_ok);
+#endif
 	return ret;
 }
 
