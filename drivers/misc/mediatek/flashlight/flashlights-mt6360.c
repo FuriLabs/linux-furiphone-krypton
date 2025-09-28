@@ -50,6 +50,8 @@
 #define MT6360_WDT_TIMEOUT 1248 /* ms */
 #define MT6360_HW_TIMEOUT 400 /* ms */
 
+#define MT6360_LED1_LED2_SAME 1
+
 /* define mutex, work queue and timer */
 static DEFINE_MUTEX(mt6360_mutex);
 static struct work_struct mt6360_work_ch1;
@@ -121,16 +123,16 @@ static const int mt6360_current[MT6360_LEVEL_NUM] = {
 };
 
 static const unsigned char mt6360_torch_level[MT6360_LEVEL_TORCH] = {
-	0x00, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02,
-	0x02, 0x02, 0x02, 0x02, 0x02, 0x02
+	0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E, 0x10, 0x12,
+	0x14, 0x16, 0x18, 0x1A, 0x1C, 0x1E
 };
 
 /* 0x00~0x74 6.25mA/step 0x75~0xB1 12.5mA/step */
 static const unsigned char mt6360_strobe_level[MT6360_LEVEL_FLASH] = {
-	0x00, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-	0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-	0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04, 0x04,
-	0x04, 0x04
+	0x00, 0x04, 0x08, 0x0C, 0x10, 0x14, 0x18, 0x1C, 0x20, 0x24,
+	0x28, 0x2C, 0x30, 0x34, 0x38, 0x3C, 0x44, 0x4C, 0x54, 0x5C,
+	0x64, 0x6C, 0x74, 0x78, 0x7C, 0x80, 0x84, 0x88, 0x8C, 0x90,
+	0x94, 0x98
 };
 
 static int mt6360_decouple_mode;
@@ -184,6 +186,29 @@ static int mt6360_enable(void)
 
 	pr_debug("enable(%d,%d), mode:%d.\n",
 		mt6360_en_ch1, mt6360_en_ch2, mode);
+#if MT6360_LED1_LED2_SAME
+if (mt6360_en_ch1 != MT6360_DISABLE && mt6360_en_ch2 != MT6360_DISABLE) {
+	pr_debug("dual flash mode mode=%d\n",mode);
+	if (mode == FLASHLIGHT_MODE_TORCH) {
+		ret |= flashlight_set_mode(
+			flashlight_dev_ch1, FLASHLIGHT_MODE_DUAL_TORCH);
+		ret |= flashlight_set_mode(
+			flashlight_dev_ch2, FLASHLIGHT_MODE_DUAL_TORCH);
+	}
+	else {
+		ret |= flashlight_set_mode(
+			flashlight_dev_ch1, FLASHLIGHT_MODE_DUAL_FLASH);
+		ret |= flashlight_set_mode(
+			flashlight_dev_ch2, FLASHLIGHT_MODE_DUAL_FLASH);
+	}
+} else {
+		pr_debug("set off\n");
+		ret |= flashlight_set_mode(
+			flashlight_dev_ch1, FLASHLIGHT_MODE_OFF);
+		ret |= flashlight_set_mode(
+			flashlight_dev_ch2, FLASHLIGHT_MODE_OFF);
+}
+#else
 
 	/* enable channel 1 and channel 2 */
 	if (mt6360_decouple_mode == FLASHLIGHT_SCENARIO_COUPLE &&
@@ -210,6 +235,7 @@ static int mt6360_enable(void)
 			ret |= flashlight_set_mode(
 				flashlight_dev_ch2, FLASHLIGHT_MODE_OFF);
 	}
+#endif
 	if (ret < 0)
 		pr_debug("Failed to enable.\n");
 
@@ -336,6 +362,16 @@ static int mt6360_set_level_ch2(int level)
 
 static int mt6360_set_level(int channel, int level)
 {
+#if	MT6360_LED1_LED2_SAME
+	if (channel == MT6360_CHANNEL_ALL) {
+		mt6360_set_level_ch1(level);
+		mt6360_set_level_ch2(level);
+	}
+	else {
+		pr_debug("Error channel\n");
+		return -1;
+	}
+#else
 	if (channel == MT6360_CHANNEL_CH1)
 		mt6360_set_level_ch1(level);
 	else if (channel == MT6360_CHANNEL_CH2)
@@ -344,7 +380,7 @@ static int mt6360_set_level(int channel, int level)
 		pr_debug("Error channel\n");
 		return -1;
 	}
-
+#endif
 	return 0;
 }
 
@@ -489,6 +525,21 @@ static int mt6360_operate(int channel, int enable)
 	unsigned int ns;
 
 	/* setup enable/disable */
+#if MT6360_LED1_LED2_SAME
+	pr_debug("mt6360_operate channel:%d, enable:%d\n",channel, enable);
+	if (channel == MT6360_CHANNEL_ALL) {
+		mt6360_en_ch1 = enable;
+		if (mt6360_en_ch1) {
+			if (mt6360_is_torch(mt6360_level_ch1))
+				mt6360_en_ch1 = MT6360_ENABLE_FLASH;
+			mt6360_en_ch2 = enable;
+		}
+		if (mt6360_en_ch2) {
+			if (mt6360_is_torch(mt6360_level_ch2))
+				mt6360_en_ch2 = MT6360_ENABLE_FLASH;
+		}
+	}
+#else
 	if (channel == MT6360_CHANNEL_CH1) {
 		mt6360_en_ch1 = enable;
 		if (mt6360_en_ch1)
@@ -503,7 +554,8 @@ static int mt6360_operate(int channel, int enable)
 		pr_debug("Error channel\n");
 		return -1;
 	}
-
+#endif
+#ifndef MT6360_LED1_LED2_SAME
 	/* decouple mode */
 	if (mt6360_decouple_mode) {
 		if (channel == MT6360_CHANNEL_CH1) {
@@ -514,11 +566,42 @@ static int mt6360_operate(int channel, int enable)
 			mt6360_timeout_ms[MT6360_CHANNEL_CH1] = 0;
 		}
 	}
-
+#endif
 	pr_debug("en_ch(%d,%d), decouple:%d\n",
 		mt6360_en_ch1, mt6360_en_ch2, mt6360_decouple_mode);
 
 	/* operate flashlight and setup timer */
+#if MT6360_LED1_LED2_SAME
+	if ((mt6360_en_ch1 != MT6360_NONE) && (mt6360_en_ch2 != MT6360_NONE)) {
+		if ((mt6360_en_ch1 == MT6360_DISABLE) &&
+				(mt6360_en_ch2 == MT6360_DISABLE)) {
+			mt6360_disable(MT6360_CHANNEL_ALL);
+			mt6360_timer_cancel(MT6360_CHANNEL_CH1);
+			mt6360_timer_cancel(MT6360_CHANNEL_CH2);
+			}
+		else {
+			if (mt6360_timeout_ms[MT6360_CHANNEL_CH1] &&
+				mt6360_en_ch1 != MT6360_DISABLE) {
+				s = mt6360_timeout_ms[MT6360_CHANNEL_CH1] /
+					1000;
+				ns = mt6360_timeout_ms[MT6360_CHANNEL_CH1] %
+					1000 * 1000000;
+				ktime = ktime_set(s, ns);
+				mt6360_timer_start(MT6360_CHANNEL_CH1, ktime);
+			}
+			if (mt6360_timeout_ms[MT6360_CHANNEL_CH2] &&
+				mt6360_en_ch2 != MT6360_DISABLE) {
+				s = mt6360_timeout_ms[MT6360_CHANNEL_CH2] /
+					1000;
+				ns = mt6360_timeout_ms[MT6360_CHANNEL_CH2] %
+					1000 * 1000000;
+				ktime = ktime_set(s, ns);
+				mt6360_timer_start(MT6360_CHANNEL_CH2, ktime);
+			}
+			mt6360_enable();
+		}
+	}
+#else
 	if ((mt6360_en_ch1 != MT6360_NONE) && (mt6360_en_ch2 != MT6360_NONE)) {
 		if ((mt6360_en_ch1 == MT6360_DISABLE) &&
 				(mt6360_en_ch2 == MT6360_DISABLE)) {
@@ -561,7 +644,7 @@ static int mt6360_operate(int channel, int enable)
 		mt6360_en_ch1 = MT6360_NONE;
 		mt6360_en_ch2 = MT6360_NONE;
 	}
-
+#endif
 	return 0;
 }
 
@@ -586,13 +669,22 @@ static int mt6360_ioctl(unsigned int cmd, unsigned long arg)
 	case FLASH_IOC_SET_TIME_OUT_TIME_MS:
 		pr_debug("FLASH_IOC_SET_TIME_OUT_TIME_MS(%d): %d\n",
 				channel, (int)fl_arg->arg);
+	#if MT6360_LED1_LED2_SAME
+		mt6360_timeout_ms[MT6360_CHANNEL_CH1] = fl_arg->arg;
+		mt6360_timeout_ms[MT6360_CHANNEL_CH2] = fl_arg->arg;
+	#else
 		mt6360_timeout_ms[channel] = fl_arg->arg;
+	#endif
 		break;
 
 	case FLASH_IOC_SET_DUTY:
 		pr_debug("FLASH_IOC_SET_DUTY(%d): %d\n",
 				channel, (int)fl_arg->arg);
+	#if MT6360_LED1_LED2_SAME
+		mt6360_set_level(MT6360_CHANNEL_ALL, fl_arg->arg);
+	#else
 		mt6360_set_level(channel, fl_arg->arg);
+	#endif
 		break;
 
 	case FLASH_IOC_SET_SCENARIO:
@@ -604,7 +696,11 @@ static int mt6360_ioctl(unsigned int cmd, unsigned long arg)
 	case FLASH_IOC_SET_ONOFF:
 		pr_debug("FLASH_IOC_SET_ONOFF(%d): %d\n",
 				channel, (int)fl_arg->arg);
+	#if MT6360_LED1_LED2_SAME
+		mt6360_operate(MT6360_CHANNEL_NUM, fl_arg->arg);
+	#else
 		mt6360_operate(channel, fl_arg->arg);
+	#endif
 		break;
 
 	case FLASH_IOC_IS_CHARGER_READY:
@@ -803,63 +899,6 @@ err_node_put:
 	return -EINVAL;
 }
 
-int switch_node_status = -1;
-static ssize_t switch_node_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-    int len = 0;
-    len = sprintf(buf, "%d\n", switch_node_status);
-    return len;
-}
-
-static ssize_t switch_node_store(struct device *dev, struct device_attribute *attr,
-                                                         const char *buf, size_t size)
-{
-   char *pvalue = NULL;
-
-   if (buf != NULL && size != 0)
-   {
-       switch_node_status = simple_strtoul(buf, &pvalue, 10);
-       if (switch_node_status == 0){
-
-       }else if(switch_node_status == 1){
-
-	}
-       else {
-	     
-       }
-   }
-   return size;
-}
-static DEVICE_ATTR(switch_node, 0664, switch_node_show, switch_node_store);
-
-int switch_rom_status = -1;
-static ssize_t switch_rom_show(struct device *dev, struct device_attribute *attr, char *buf)
-{
-    int len = 0;
-    len = sprintf(buf, "%d\n", switch_rom_status);
-    return len;
-}
-
-static ssize_t switch_rom_store(struct device *dev, struct device_attribute *attr,
-                                                         const char *buf, size_t size)
-{
-   char *pvalue = NULL;
-
-   if (buf != NULL && size != 0)
-   {
-       switch_rom_status = simple_strtoul(buf, &pvalue, 10);
-       if (switch_rom_status == 0){
-
-       }else if(switch_rom_status == 1){
-
-	}
-       else {
-	     
-       }
-   }
-   return size;
-}
-static DEVICE_ATTR(switch_rom, 0664, switch_rom_show, switch_rom_store);
 static int mt6360_probe(struct platform_device *pdev)
 {
 	struct mt6360_platform_data *pdata = dev_get_platdata(&pdev->dev);
@@ -934,8 +973,6 @@ static int mt6360_probe(struct platform_device *pdev)
 		if (flashlight_dev_register(MT6360_NAME, &mt6360_ops))
 			return -EFAULT;
 	}
-	device_create_file(&(pdev->dev), &dev_attr_switch_node);
-	device_create_file(&(pdev->dev), &dev_attr_switch_rom);
 
 	pr_debug("Probe done.\n");
 
