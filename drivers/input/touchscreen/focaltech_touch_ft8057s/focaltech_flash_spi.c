@@ -953,7 +953,7 @@ static int fts_fw_resume(bool need_reset, enum FW_TYPE fw_type)
     if (FTS_FW_REQUEST_SUPPORT) {
         snprintf(fwname, FILE_NAME_LENGTH, "%s_8057.bin", \
                  FTS_FW_NAME_PREX_WITH_REQUEST/*, upg->module_info->vendor_name*/);
-	printk("vendor_name:%s\n",upg->module_info->vendor_name);
+	pr_debug("vendor_name:%s\n",upg->module_info->vendor_name);
         ret = request_firmware(&fw, fwname, upg->ts_data->dev);
         if (ret == 0) {
             FTS_INFO("firmware(%s) request successfully", fwname);
