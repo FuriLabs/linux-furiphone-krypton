@@ -138,7 +138,6 @@ source "drivers/misc/mediatek/lpm/Kconfig"
 source "drivers/misc/mediatek/apusys/Kconfig"
 source "drivers/misc/mediatek/base/power/Kconfig"
 source "drivers/misc/mediatek/pmic/Kconfig"
-source "drivers/misc/mediatek/pmic_wrap/Kconfig"
 
 endmenu # Power
 
@@ -219,7 +218,6 @@ source "drivers/misc/mediatek/mmp/Kconfig"
 source "drivers/misc/mediatek/lcm/Kconfig"
 source "drivers/misc/mediatek/sync/Kconfig"
 source "drivers/misc/mediatek/video/Kconfig"
-source "drivers/misc/mediatek/vdec_fmt/Kconfig"
 source "drivers/misc/mediatek/pseudo_m4u/Kconfig"
 source "drivers/misc/mediatek/flashlight/Kconfig"
 source "drivers/misc/mediatek/flashlight/richtek/Kconfig"
