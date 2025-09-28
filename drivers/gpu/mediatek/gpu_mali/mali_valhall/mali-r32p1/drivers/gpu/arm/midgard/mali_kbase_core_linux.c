@@ -5328,6 +5328,9 @@ static int kbase_platform_device_probe(struct platform_device *pdev)
 #if defined(MTK_GPU_BM_2) && !defined(GPU_BM_PORTING)
 		mtk_bandwith_resource_init(kbdev);
 #endif
+
+	kbdev->js_ctx_scheduling_mode = KBASE_JS_PROCESS_LOCAL_PRIORITY_MODE;
+
 		dev_info(kbdev->dev,
 			"Probed as %s\n", dev_name(kbdev->mdev.this_device));
 #endif /* MALI_KBASE_BUILD */
