@@ -29,6 +29,3 @@ else
   obj-y += camera_isp.o
   obj-y += camera_sysram.o
 endif
-
-
-$(info cameraisp drv by platform $(platform_drv))

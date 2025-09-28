@@ -30,6 +30,3 @@ ccflags-$(CONFIG_IOMMU_API) += -I$(srctree)/drivers/iommu
 ccflags-$(CONFIG_IOMMU_API) += -I$(srctree)/drivers/misc/mediatek/include/mt-plat/$(MTK_PLATFORM)/include
 
 obj-y += camera_isp.o
-
-
-$(info cameraisp drv by platform $(platform_drv))
