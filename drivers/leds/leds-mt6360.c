@@ -211,7 +211,7 @@ static int mt6360_led_brightness_set(struct led_classdev *cdev,
 		ret = regmap_update_bits(mli->regmap,
 				   MT6360_PMU_RGB_EN, MT6360_CHRIND_MASK, 0xff);
 		if (ret < 0)
-			dev_err(cdev->dev, "disable chrind func fail\n");
+			dev_dbg(cdev->dev, "disable chrind func fail\n");
 	}
 	if (brightness == LED_OFF) {
 		ret = regmap_update_bits(mli->regmap,
@@ -225,7 +225,7 @@ static int mt6360_led_brightness_set(struct led_classdev *cdev,
 		ret = regmap_update_bits(mli->regmap, mtled_cdev->mode_reg,
 			     mtled_cdev->mode_mask, MT6360_LEDMODE_CC << shift);
 		if (ret < 0)
-			dev_err(cdev->dev, "config cc mode fail\n");
+			dev_dbg(cdev->dev, "config cc mode fail\n");
 		goto out_bright_set;
 	}
 	shift = ffs(mtled_cdev->currsel_mask) - 1;
@@ -263,14 +263,14 @@ static enum led_brightness mt6360_led_brightness_get(struct led_classdev *cdev)
 
 	ret = regmap_read(mli->regmap, MT6360_LEDEN_REG, &regval);
 	if (ret < 0) {
-		dev_err(cdev->dev, "%s: get enable fail\n", __func__);
+		dev_dbg(cdev->dev, "%s: get enable fail\n", __func__);
 		return LED_OFF;
 	}
 	if (!(regval & mtled_cdev->enable_mask))
 		return LED_OFF;
 	ret = regmap_read(mli->regmap, mtled_cdev->currsel_reg, &regval);
 	if (ret < 0) {
-		dev_err(cdev->dev, "%s: get isink fail\n", __func__);
+		dev_dbg(cdev->dev, "%s: get isink fail\n", __func__);
 		return LED_OFF;
 	}
 	regval &= mtled_cdev->currsel_mask;
@@ -300,7 +300,7 @@ static int mt6360_led_blink_set(struct led_classdev *cdev,
 			break;
 	}
 	if (freq == ARRAY_SIZE(dim_freqs)) {
-		dev_err(cdev->dev, "exceed pwm frequency max\n");
+		dev_dbg(cdev->dev, "exceed pwm frequency max\n");
 		return -EINVAL;
 	}
 	/* invert */
@@ -310,7 +310,7 @@ static int mt6360_led_blink_set(struct led_classdev *cdev,
 	ret = regmap_update_bits(mli->regmap, mtled_cdev->pwmfreq_reg,
 				 mtled_cdev->pwmfreq_mask, freq << shift);
 	if (ret < 0) {
-		dev_err(cdev->dev, "Failed to set pwmfreq\n");
+		dev_dbg(cdev->dev, "Failed to set pwmfreq\n");
 		return ret;
 	}
 	duty = 255 * (*delay_on) / sum;
@@ -318,7 +318,7 @@ static int mt6360_led_blink_set(struct led_classdev *cdev,
 	ret = regmap_update_bits(mli->regmap, mtled_cdev->pwmduty_reg,
 				 mtled_cdev->pwmduty_mask, duty << shift);
 	if (ret < 0) {
-		dev_err(cdev->dev, "Failed to set pwmduty\n");
+		dev_dbg(cdev->dev, "Failed to set pwmduty\n");
 		return ret;
 	}
 	dev_dbg(cdev->dev, "final duty [%d]\n", duty);
@@ -418,20 +418,20 @@ static int mt6360_fled_strobe_set(
 		return 0;
 	}
 	if (mt6360_fled_check_flags_if_any(&mli->fl_torch_flags)) {
-		dev_err(led_cdev->dev,
+		dev_dbg(led_cdev->dev,
 			"Disable all leds torch [%lu]\n", mli->fl_torch_flags);
 		return -EINVAL;
 	}
 	ret = regmap_update_bits(mli->regmap, mtfled_cdev->cs_enable_reg,
 				 mtfled_cdev->cs_enable_mask, state ? 0xff : 0);
 	if (ret < 0) {
-		dev_err(led_cdev->dev, "Fail to set cs enable [%d]\n", state);
+		dev_dbg(led_cdev->dev, "Fail to set cs enable [%d]\n", state);
 		goto out_strobe_set;
 	}
 	ret = regmap_update_bits(mli->regmap, mtfled_cdev->strobe_enable_reg,
 			     mtfled_cdev->strobe_enable_mask, state ? 0xff : 0);
 	if (ret < 0) {
-		dev_err(led_cdev->dev, "Fail to set strb enable [%d]\n", state);
+		dev_dbg(led_cdev->dev, "Fail to set strb enable [%d]\n", state);
 		goto out_strobe_set;
 	}
 	if (state) {
@@ -512,7 +512,7 @@ static int mt6360_fled_brightness_set(struct led_classdev *led_cdev,
 	dev_dbg(led_cdev->dev,
 		"%s: id [%d], brightness %d\n", __func__, id, brightness);
 	if (mt6360_fled_check_flags_if_any(&mli->fl_strobe_flags)) {
-		dev_err(led_cdev->dev,
+		dev_dbg(led_cdev->dev,
 		       "Disable all leds strobe [%lu]\n", mli->fl_strobe_flags);
 		return -EINVAL;
 	}
@@ -524,14 +524,14 @@ static int mt6360_fled_brightness_set(struct led_classdev *led_cdev,
 					 mtfled_cdev->torch_enable_mask,
 					 keep ? 0xff : 0);
 		if (ret < 0) {
-			dev_err(led_cdev->dev, "Fail to set torch disable\n");
+			dev_dbg(led_cdev->dev, "Fail to set torch disable\n");
 			goto out_bright_set;
 		}
 		ret = regmap_update_bits(mli->regmap,
 					 mtfled_cdev->cs_enable_reg,
 					 mtfled_cdev->cs_enable_mask, 0);
 		if (ret < 0)
-			dev_err(led_cdev->dev, "Fail to set torch disable\n");
+			dev_dbg(led_cdev->dev, "Fail to set torch disable\n");
 		goto out_bright_set;
 	}
 	shift = ffs(mtfled_cdev->torch_bright_mask) - 1;
@@ -539,14 +539,14 @@ static int mt6360_fled_brightness_set(struct led_classdev *led_cdev,
 	ret = regmap_update_bits(mli->regmap, mtfled_cdev->torch_bright_reg,
 			   mtfled_cdev->torch_bright_mask, brightness << shift);
 	if (ret < 0) {
-		dev_err(led_cdev->dev,
+		dev_dbg(led_cdev->dev,
 			"Fail to set torch bright [%d]\n", brightness);
 		goto out_bright_set;
 	}
 	ret = regmap_update_bits(mli->regmap, mtfled_cdev->cs_enable_reg,
 				 mtfled_cdev->cs_enable_mask, 0xff);
 	if (ret < 0) {
-		dev_err(led_cdev->dev, "Fail to set cs enable\n");
+		dev_dbg(led_cdev->dev, "Fail to set cs enable\n");
 		goto out_bright_set;
 	}
 	ret = regmap_update_bits(mli->regmap, mtfled_cdev->torch_enable_reg,
@@ -570,7 +570,7 @@ static enum led_brightness mt6360_fled_brightness_get(
 		return LED_OFF;
 	ret = regmap_read(mli->regmap, mtfled_cdev->torch_bright_reg, &regval);
 	if (ret < 0) {
-		dev_err(led_cdev->dev, "%s: Fail to get torb reg\n", __func__);
+		dev_dbg(led_cdev->dev, "%s: Fail to get torb reg\n", __func__);
 		return LED_OFF;
 	}
 	shift = ffs(mtfled_cdev->torch_bright_mask) - 1;
@@ -637,7 +637,7 @@ static int mt6360_fled_external_strobe_set(
 		return 0;
 	}
 	if (mt6360_fled_check_flags_if_any(&mli->fl_torch_flags)) {
-		dev_err(led_cdev->dev,
+		dev_dbg(led_cdev->dev,
 			"Disable all leds torch [%lu]\n", mli->fl_torch_flags);
 		return -EINVAL;
 	}
@@ -687,7 +687,7 @@ static irqreturn_t mt6360_pmu_fled_lvf_evt_handler(int irq, void *data)
 {
 	struct mt6360_led_info *mli = data;
 
-	dev_err(mli->dev, "%s\n", __func__);
+	dev_dbg(mli->dev, "%s\n", __func__);
 	mli->mtfled_cdev[MT6360_FLED_CH1].faults |= LED_FAULT_UNDER_VOLTAGE;
 	mli->mtfled_cdev[MT6360_FLED_CH2].faults |= LED_FAULT_UNDER_VOLTAGE;
 	return IRQ_HANDLED;
@@ -697,7 +697,7 @@ static irqreturn_t mt6360_pmu_fled2_short_evt_handler(int irq, void *data)
 {
 	struct mt6360_led_info *mli = data;
 
-	dev_err(mli->dev, "%s\n", __func__);
+	dev_dbg(mli->dev, "%s\n", __func__);
 	mli->mtfled_cdev[MT6360_FLED_CH2].faults |= LED_FAULT_SHORT_CIRCUIT;
 	return IRQ_HANDLED;
 }
@@ -706,7 +706,7 @@ static irqreturn_t mt6360_pmu_fled1_short_evt_handler(int irq, void *data)
 {
 	struct mt6360_led_info *mli = data;
 
-	dev_err(mli->dev, "%s\n", __func__);
+	dev_dbg(mli->dev, "%s\n", __func__);
 	mli->mtfled_cdev[MT6360_FLED_CH1].faults |= LED_FAULT_SHORT_CIRCUIT;
 	return IRQ_HANDLED;
 }
@@ -766,7 +766,7 @@ static int mt6360_fled_irq_register(struct platform_device *pdev)
 						irq_desc->name,
 						platform_get_drvdata(pdev));
 		if (ret < 0) {
-			dev_err(&pdev->dev,
+			dev_dbg(&pdev->dev,
 				"request %s irq fail\n", irq_desc->name);
 			return ret;
 		}
@@ -790,11 +790,11 @@ static int mt6360_iled_parse_dt(struct device *dev,
 	for_each_available_child_of_node(iled_np, child) {
 		ret = of_property_read_u32(child, "reg", &val);
 		if (ret) {
-			dev_err(dev, "Fail to read reg property\n");
+			dev_dbg(dev, "Fail to read reg property\n");
 			continue;
 		}
 		if (val >= MT6360_LED_MAX) {
-			dev_err(dev, "Invalid iled reg [%u]\n", val);
+			dev_dbg(dev, "Invalid iled reg [%u]\n", val);
 			ret = -EINVAL;
 			goto out_iled_dt;
 		}
@@ -830,11 +830,11 @@ static int mt6360_fled_parse_dt(struct device *dev,
 	for_each_available_child_of_node(fled_np, child) {
 		ret = of_property_read_u32(child, "reg", &val);
 		if (ret) {
-			dev_err(dev, "Fail to read reg property\n");
+			dev_dbg(dev, "Fail to read reg property\n");
 			continue;
 		}
 		if (val >= MT6360_FLED_MAX) {
-			dev_err(dev, "Invalid fled reg [%u]\n", val);
+			dev_dbg(dev, "Invalid fled reg [%u]\n", val);
 			ret = -EINVAL;
 			goto out_fled_dt;
 		}
@@ -935,12 +935,12 @@ static int mt6360_led_probe(struct platform_device *pdev)
 			return -ENOMEM;
 		ret = mt6360_led_parse_dt_data(&pdev->dev, pdata);
 		if (ret < 0) {
-			dev_err(&pdev->dev, "parse dt fail\n");
+			dev_dbg(&pdev->dev, "parse dt fail\n");
 			return ret;
 		}
 	}
 	if (!pdata) {
-		dev_err(&pdev->dev, "no platform data specified\n");
+		dev_dbg(&pdev->dev, "no platform data specified\n");
 		return -EINVAL;
 	}
 	mli->dev = &pdev->dev;
@@ -950,20 +950,20 @@ static int mt6360_led_probe(struct platform_device *pdev)
 	/* get parent regmap */
 	mli->regmap = dev_get_regmap(pdev->dev.parent, NULL);
 	if (!mli->regmap) {
-		dev_err(&pdev->dev, "Failed to get parent regmap\n");
+		dev_dbg(&pdev->dev, "Failed to get parent regmap\n");
 		return -ENODEV;
 	}
 	/* apply platform data */
 	ret = mt6360_led_apply_pdata(mli, pdata);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "apply pdata fail\n");
+		dev_dbg(&pdev->dev, "apply pdata fail\n");
 		return ret;
 	}
 	/* iled register */
 	memcpy(mli->mtled_cdev, def_led_classdev, sizeof(def_led_classdev));
 	ret = mt6360_iled_parse_dt(&pdev->dev, mli);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Fail to parse iled dt\n");
+		dev_dbg(&pdev->dev, "Fail to parse iled dt\n");
 		return ret;
 	}
 	for (i = 0; i < MT6360_LED_MAX; i++) {
@@ -971,7 +971,7 @@ static int mt6360_led_probe(struct platform_device *pdev)
 		ret = devm_led_classdev_register(&pdev->dev,
 						 &(mtled_cdev->cdev));
 		if (ret < 0) {
-			dev_err(&pdev->dev, "Failed to register led[%d]\n", i);
+			dev_dbg(&pdev->dev, "Failed to register led[%d]\n", i);
 			return ret;
 		}
 		mtled_cdev->cdev.dev->of_node = mtled_cdev->np;
@@ -980,7 +980,7 @@ static int mt6360_led_probe(struct platform_device *pdev)
 	memcpy(mli->mtfled_cdev, def_fled_classdev, sizeof(def_fled_classdev));
 	ret = mt6360_fled_parse_dt(&pdev->dev, mli);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Fail to parse fled dt\n");
+		dev_dbg(&pdev->dev, "Fail to parse fled dt\n");
 		return ret;
 	}
 	for (i = 0; i < MT6360_FLED_MAX; i++) {
@@ -988,7 +988,7 @@ static int mt6360_led_probe(struct platform_device *pdev)
 		ret = led_classdev_flash_register(&pdev->dev,
 						  &mtfled_cdev->fl_cdev);
 		if (ret < 0) {
-			dev_err(&pdev->dev, "Failed to register fled[%d]\n", i);
+			dev_dbg(&pdev->dev, "Failed to register fled[%d]\n", i);
 			goto out_fled_cdev;
 		}
 	}
@@ -1001,17 +1001,17 @@ static int mt6360_led_probe(struct platform_device *pdev)
 					      &mtfled_cdev->fl_cdev,
 					      &v4l2_flash_ops, &v4l2_config);
 		if (IS_ERR(mtfled_cdev->v4l2_flash)) {
-			dev_err(&pdev->dev, "Failed to register v4l2_sd\n");
+			dev_dbg(&pdev->dev, "Failed to register v4l2_sd\n");
 			ret = PTR_ERR(mtfled_cdev->v4l2_flash);
 			goto out_v4l2_sd;
 		}
 	}
 	ret = mt6360_fled_irq_register(pdev);
 	if (ret < 0) {
-		dev_err(&pdev->dev, "Failed to register irqs\n");
+		dev_dbg(&pdev->dev, "Failed to register irqs\n");
 		goto out_v4l2_sd;
 	}
-	dev_info(&pdev->dev, "Successfully probed\n");
+	dev_dbg(&pdev->dev, "Successfully probed\n");
 	return 0;
 out_v4l2_sd:
 	while (--i >= 0) {
