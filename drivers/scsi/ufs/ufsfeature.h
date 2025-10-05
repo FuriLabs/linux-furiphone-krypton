@@ -59,14 +59,14 @@
 #define GET_BYTE_6(num)			(((num) >> 48) & 0xff)
 #define GET_BYTE_7(num)			(((num) >> 56) & 0xff)
 
-#define INFO_MSG(msg, args...)		printk(KERN_INFO "%s:%d " msg "\n", \
+#define INFO_MSG(msg, args...)		pr_debug(KERN_INFO "%s:%d " msg "\n", \
 					       __func__, __LINE__, ##args)
 #define INIT_INFO(msg, args...)		INFO_MSG(msg, ##args)
 #define RELEASE_INFO(msg, args...)	INFO_MSG(msg, ##args)
 #define SYSFS_INFO(msg, args...)	INFO_MSG(msg, ##args)
-#define ERR_MSG(msg, args...)		printk(KERN_ERR "%s:%d " msg "\n", \
+#define ERR_MSG(msg, args...)		pr_debug(KERN_ERR "%s:%d " msg "\n", \
 					       __func__, __LINE__, ##args)
-#define WARNING_MSG(msg, args...)	printk(KERN_WARNING "%s:%d " msg "\n", \
+#define WARNING_MSG(msg, args...)	pr_debug(KERN_WARNING "%s:%d " msg "\n", \
 					       __func__, __LINE__, ##args)
 
 #define seq_scan_lu(lun) for (lun = 0; lun < UFS_UPIU_MAX_GENERAL_LUN; lun++)
