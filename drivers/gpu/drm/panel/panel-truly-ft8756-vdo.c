@@ -245,17 +245,17 @@ static void jdi_panel_init(struct jdi *ctx)
 
 	//VFP=180
 	jdi_dcs_write_seq_static(ctx, 0x00, 0x70);
-	jdi_dcs_write_seq_static(ctx, 0xC0, 0x00 ,0xFC ,0x00 ,0xB3 ,0x00 ,0x22);
+	jdi_dcs_write_seq_static(ctx, 0xC0, 0x00 ,0xA0 ,0x01 ,0x09 ,0x00 ,0x24);
 
 	//normal mode VB term2£º 1.4ms
 	jdi_dcs_write_seq_static(ctx, 0x00, 0xD1);
-	jdi_dcs_write_seq_static(ctx, 0xCE, 0x00 ,0x15 ,0x01 ,0x01 ,0x00 ,0x99 ,0x01);
+	jdi_dcs_write_seq_static(ctx, 0xCE, 0x00 ,0x14 ,0x01 ,0x01 ,0x00 ,0xF0 ,0x01);
 	//LPF/FIFO mode VB term2£º 1.4ms
 	jdi_dcs_write_seq_static(ctx, 0x00, 0xE8);
-	jdi_dcs_write_seq_static(ctx, 0xCE, 0x00 ,0x99 ,0x00 ,0x99);
+	jdi_dcs_write_seq_static(ctx, 0xCE, 0x00 ,0xF0 ,0x00 ,0xF0);
 
 	jdi_dcs_write_seq_static(ctx, 0x00, 0xB0);
-	jdi_dcs_write_seq_static(ctx, 0xC0, 0x00 ,0xFC ,0x00 ,0xB3 ,0x22);
+	jdi_dcs_write_seq_static(ctx, 0xC0, 0x00 ,0xA0 ,0x01 ,0x0A ,0x24);
 
 	jdi_dcs_write_seq_static(ctx, 0x00, 0x80);
 	jdi_dcs_write_seq_static(ctx, 0xC1, 0x00 ,0x00 );
@@ -264,20 +264,20 @@ static void jdi_panel_init(struct jdi *ctx)
 	jdi_dcs_write_seq_static(ctx, 0xC1, 0x01);
 
 	jdi_dcs_write_seq_static(ctx, 0x00, 0xF1);
-	jdi_dcs_write_seq_static(ctx, 0xCF, 0x3C);
+	jdi_dcs_write_seq_static(ctx, 0xCF, 0x5A);
 
 	jdi_dcs_write_seq_static(ctx, 0x00, 0xF5);
-	jdi_dcs_write_seq_static(ctx, 0xCF, 0x02);
+	jdi_dcs_write_seq_static(ctx, 0xCF, 0x01);
 
 	jdi_dcs_write_seq_static(ctx, 0x00, 0xF6);
-	jdi_dcs_write_seq_static(ctx, 0xCF, 0x3C);
+	jdi_dcs_write_seq_static(ctx, 0xCF, 0x5A);
 
 	//Mode switch by CMD2
 	jdi_dcs_write_seq_static(ctx, 0x00, 0xF7);
 	jdi_dcs_write_seq_static(ctx, 0xCF, 0x11);
 	// fifo mode Vstart&Vmid int
 	jdi_dcs_write_seq_static(ctx, 0x00, 0x70);
-	jdi_dcs_write_seq_static(ctx, 0xCF, 0x06 ,0x06 ,0x66 ,0x6A ,0x02 ,0x02 ,0x3E ,0x42);
+	jdi_dcs_write_seq_static(ctx, 0xCF, 0x06 ,0x06 ,0x68 ,0x6C ,0x02 ,0x02 ,0x3E ,0x42);
 	//fifo mode Vend int
 	jdi_dcs_write_seq_static(ctx, 0x00, 0xC0);
 	jdi_dcs_write_seq_static(ctx, 0xCF, 0x04 ,0x04 ,0x16 ,0x1A);
@@ -692,12 +692,12 @@ static int jdi_enable(struct drm_panel *panel)
 	return 0;
 }
 
-#define HFP (80)
+#define HFP (16)
 #define HSA (4)
-#define HBP (80)
-#define VFP (180)
-#define VSA (8)
-#define VBP (26)
+#define HBP (14)
+#define VFP (266)
+#define VSA (6)
+#define VBP (30)
 #define VAC (1600)
 #define HAC (720)
 static u32 fake_heigh = VAC;
@@ -705,7 +705,7 @@ static u32 fake_width = HAC;
 static bool need_fake_resolution;
 
 static struct drm_display_mode default_mode = {
-	.clock = 96214,
+	.clock = 129034,
 	.hdisplay = HAC,
 	.hsync_start = HAC + HFP,
 	.hsync_end = HAC + HFP + HSA,
@@ -714,7 +714,7 @@ static struct drm_display_mode default_mode = {
 	.vsync_start = VAC + VFP,
 	.vsync_end = VAC + VFP + VSA,
 	.vtotal = VAC + VFP + VSA + VBP,
-	.vrefresh = 60,
+	.vrefresh = 90,
 };
 
 #if defined(CONFIG_MTK_PANEL_EXT)
@@ -791,14 +791,52 @@ static int jdi_get_virtual_width(void)
 }
 
 static struct mtk_panel_params ext_params = {
-	.pll_clk = 288,
-	//.vfp_low_power = 750,
+	.pll_clk = 425,
+	.vfp_low_power = VFP,
 	.cust_esd_check = 0,
 	.esd_check_enable = 0,
 	.lcm_esd_check_table[0] = {
-		.cmd = 0x0a,
-		.count = 1,
-		.para_list[0] = 0x9c,
+		.cmd = 0x0A, .count = 1, .para_list[0] = 0x9C,
+	},
+	.output_mode = MTK_PANEL_DSC_SINGLE_PORT,
+	.dsc_params = {
+		.enable = 0,
+		.ver = 17,
+		.slice_mode = 1,
+		.rgb_swap = 0,
+		.dsc_cfg = 34,
+		.rct_on = 1,
+		.bit_per_channel = 8,
+		.dsc_line_buf_depth = 9,
+		.bp_enable = 1,
+		.bit_per_pixel = 128,
+		.pic_height = 1600,
+		.pic_width = 720,
+		.slice_height = 8,
+		.slice_width = 540,
+		.chunk_size = 540,
+		.xmit_delay = 170,
+		.dec_delay = 526,
+		.scale_value = 32,
+		.increment_interval = 43,
+		.decrement_interval = 7,
+		.line_bpg_offset = 12,
+		.nfl_bpg_offset = 3511,
+		.slice_bpg_offset = 3255,
+		.initial_offset = 6144,
+		.final_offset = 7072,
+		.flatness_minqp = 3,
+		.flatness_maxqp = 12,
+		.rc_model_size = 8192,
+		.rc_edge_factor = 6,
+		.rc_quant_incr_limit0 = 11,
+		.rc_quant_incr_limit1 = 11,
+		.rc_tgt_offset_hi = 3,
+		.rc_tgt_offset_lo = 3,
+		},
+	.data_rate = 850,
+	.dyn_fps = {
+		.switch_en = 1, .vact_timing_fps = 90,
 	},
 };
 
