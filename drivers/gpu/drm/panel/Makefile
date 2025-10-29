@@ -65,6 +65,7 @@ obj-$(CONFIG_DRM_PANEL_SC_NT36672C_VDO_90HZ) += panel-sc-nt36672c-vdo-90hz.o
 obj-$(CONFIG_DRM_PANEL_SC_NT36672C_VDO_60HZ) += panel-sc-nt36672c-vdo-60hz.o
 obj-$(CONFIG_DRM_PANEL_SAMSUNG_S68FC01_VDO_AOD) += panel-samsung-s68fc01-vdo-aod.o
 obj-$(CONFIG_DRM_PANEL_TRULY_FT8756_VDO) += panel-truly-ft8756-vdo.o
+obj-$(CONFIG_DRM_PANEL_TRULY_FT8756_VDO_90HZ) += panel-truly-ft8756-vdo-90hz.o
 obj-$(CONFIG_DRM_PANEL_TRULY_ICNL9951R_VDO) += panel-truly-icnl9951r-vdo.o
 obj-$(CONFIG_DRM_PANEL_TRULY_JD9366TS_VDO) += panel-truly-jd9366ts-vdo.o
 obj-$(CONFIG_DRM_PANEL_TRULY_NT35595_CMD) += panel-truly-nt35595-cmd.o
