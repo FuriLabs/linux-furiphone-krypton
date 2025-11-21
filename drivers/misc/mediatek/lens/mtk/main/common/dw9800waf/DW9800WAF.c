@@ -20,7 +20,7 @@
 #define AF_DRVNAME "DW9800WAF_DRV"
 #define AF_I2C_SLAVE_ADDR        0x0e
 
-#define AF_DEBUG
+// #define AF_DEBUG
 #ifdef AF_DEBUG
 #define LOG_INF(format, args...) \
 	pr_info(AF_DRVNAME " [%s] " format, __func__, ##args)
