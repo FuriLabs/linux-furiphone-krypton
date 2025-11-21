@@ -18,7 +18,7 @@
 
 
 #define AF_DRVNAME "DW9800WAF_DRV"
-#define AF_I2C_SLAVE_ADDR        0x1c
+#define AF_I2C_SLAVE_ADDR        0x0e
 
 #define AF_DEBUG
 #ifdef AF_DEBUG
@@ -83,8 +83,6 @@ static int s4AF_WriteReg(u16 a_u2Data)
 		(char)(a_u2Data & 0xFF) };
 
 	g_pstAF_I2Cclient->addr = AF_I2C_SLAVE_ADDR;
-
-	g_pstAF_I2Cclient->addr = g_pstAF_I2Cclient->addr >> 1;
 
 	i4RetValue = i2c_master_send(g_pstAF_I2Cclient, puSendCmd, 3);
 
