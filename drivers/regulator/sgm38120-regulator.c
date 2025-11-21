@@ -573,6 +573,7 @@ static int sgm38120_of_parse_cb(struct device_node *node,
     .uV_step = _step_uV, \
     .enable_reg = SGM38120_REG_ENABLE, \
     .enable_mask = BIT(_id), \
+    .enable_time = 2000, \
     .vsel_reg = SGM38120_REG_VSEL_BASE + _id, \
     .vsel_mask = SGM38120_LDO_VSEL_MASK, \
 }
@@ -595,6 +596,7 @@ static const struct regulator_desc sgm38120_regulators[] = {
         .n_voltages = LDO57_N_VOLTAGES,
         .enable_reg = SGM38120_REG_ENABLE,
         .enable_mask = BIT(4),
+        .enable_time = 2000,
     },
     SGM38120_REGULATOR_DESC(LDO6, 5, &sgm38120_ldo_ops, LDO346_N_VOLTAGES, LDO346_MIN_UV, LDO346_STEP_UV, "sgm38120-base"),
     {
@@ -610,6 +612,7 @@ static const struct regulator_desc sgm38120_regulators[] = {
         .n_voltages = LDO57_N_VOLTAGES,
         .enable_reg = SGM38120_REG_ENABLE,
         .enable_mask = BIT(6),
+        .enable_time = 2000,
     },
 };
 
