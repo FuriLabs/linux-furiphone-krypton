@@ -269,6 +269,23 @@ bool is_battery_init_done(void)
 	return gm.is_probe_done;
 }
 
+bool is_kpoc_mode(void)
+{
+	int boot_mode = battery_get_boot_mode();
+
+	if (is_fg_disabled())
+		return false;
+
+	bm_debug("mtk_battery boot mode = %d\n", boot_mode);
+
+	if (boot_mode == KERNEL_POWER_OFF_CHARGING_BOOT ||
+	    boot_mode == LOW_POWER_OFF_CHARGING_BOOT) {
+		return true;
+	}
+
+	return false;
+}
+
 bool is_recovery_mode(void)
 {
 	int boot_mode = battery_get_boot_mode();
@@ -1942,7 +1959,7 @@ int wakeup_fg_algo(unsigned int flow_state)
 		return -1;
 	}
 
-	if (is_recovery_mode()) {
+	if (is_recovery_mode() || is_kpoc_mode()) {
 		wakeup_fg_algo_recovery(flow_state);
 		return 0;
 	}
@@ -2000,7 +2017,7 @@ int wakeup_fg_algo_cmd(unsigned int flow_state, int cmd, int para1)
 		return -1;
 	}
 
-	if (is_recovery_mode()) {
+	if (is_recovery_mode() || is_kpoc_mode()) {
 		wakeup_fg_algo_recovery(flow_state);
 		return 0;
 	}
@@ -2057,7 +2074,7 @@ int wakeup_fg_algo_atomic(unsigned int flow_state)
 		return -1;
 	}
 
-	if (is_recovery_mode()) {
+	if (is_recovery_mode() || is_kpoc_mode()) {
 		wakeup_fg_algo_recovery(flow_state);
 		return 0;
 	}
@@ -4562,7 +4579,7 @@ static int __init battery_probe(struct platform_device *dev)
 		IS_ENABLED(CONFIG_MTK_DISABLE_GAUGE)) {
 		bm_debug("disable GM 3.0\n");
 		disable_fg();
-	} else if (is_recovery_mode())
+	} else if (is_recovery_mode() || is_kpoc_mode())
 		battery_recovery_init();
 
 	mtk_battery_last_init(dev);
