@@ -3102,104 +3102,8 @@ out:
 		inode_unlock(inode);
 
 	fuse_flush_time_update(inode);
-	return err;
-}
-
-static ssize_t __fuse_copy_file_range(struct file *file_in, loff_t pos_in,
-				      struct file *file_out, loff_t pos_out,
-				      size_t len, unsigned int flags)
-{
-	struct fuse_file *ff_in = file_in->private_data;
-	struct fuse_file *ff_out = file_out->private_data;
-	struct inode *inode_in = file_inode(file_in);
-	struct inode *inode_out = file_inode(file_out);
-	struct fuse_inode *fi_out = get_fuse_inode(inode_out);
-	struct fuse_conn *fc = ff_in->fc;
-	FUSE_ARGS(args);
-	struct fuse_copy_file_range_in inarg = {
-		.fh_in = ff_in->fh,
-		.off_in = pos_in,
-		.nodeid_out = ff_out->nodeid,
-		.fh_out = ff_out->fh,
-		.off_out = pos_out,
-		.len = len,
-		.flags = flags
-	};
-	struct fuse_write_out outarg;
-	ssize_t err;
-	/* mark unstable when write-back is not used, and file_out gets
-	 * extended */
-	bool is_unstable = (!fc->writeback_cache) &&
-			   ((pos_out + len) > inode_out->i_size);
-
-	if (fc->no_copy_file_range)
-		return -EOPNOTSUPP;
-
-	if (fc->writeback_cache) {
-		inode_lock(inode_in);
-		err = fuse_writeback_range(inode_in, pos_in, pos_in + len);
-		inode_unlock(inode_in);
-		if (err)
-			return err;
-	}
-
-	inode_lock(inode_out);
-
-	if (fc->writeback_cache) {
-		err = fuse_writeback_range(inode_out, pos_out, pos_out + len);
-		if (err)
-			goto out;
-	}
-
-	if (is_unstable)
-		set_bit(FUSE_I_SIZE_UNSTABLE, &fi_out->state);
-
-	args.in.h.opcode = FUSE_COPY_FILE_RANGE;
-	args.in.h.nodeid = ff_in->nodeid;
-	args.in.numargs = 1;
-	args.in.args[0].size = sizeof(inarg);
-	args.in.args[0].value = &inarg;
-	args.out.numargs = 1;
-	args.out.args[0].size = sizeof(outarg);
-	args.out.args[0].value = &outarg;
-	err = fuse_simple_request(fc, &args);
-	if (err == -ENOSYS) {
-		fc->no_copy_file_range = 1;
-		err = -EOPNOTSUPP;
-	}
-	if (err)
-		goto out;
-
-	if (fc->writeback_cache) {
-		fuse_write_update_size(inode_out, pos_out + outarg.size);
-		file_update_time(file_out);
-	}
-
-	fuse_invalidate_attr(inode_out);
-
-	err = outarg.size;
-out:
-	if (is_unstable)
-		clear_bit(FUSE_I_SIZE_UNSTABLE, &fi_out->state);
-
-	inode_unlock(inode_out);
 
 	return err;
-}
-
-static ssize_t fuse_copy_file_range(struct file *src_file, loff_t src_off,
-				    struct file *dst_file, loff_t dst_off,
-				    size_t len, unsigned int flags)
-{
-	ssize_t ret;
-
-	ret = __fuse_copy_file_range(src_file, src_off, dst_file, dst_off,
-				     len, flags);
-
-	if (ret == -EOPNOTSUPP)
-		ret = generic_copy_file_range(src_file, src_off, dst_file,
-					      dst_off, len, flags);
-	return ret;
 }
 
 static const struct file_operations fuse_file_operations = {
@@ -3235,7 +3139,7 @@ static const struct file_operations fuse_direct_io_file_operations = {
 	.compat_ioctl	= fuse_file_compat_ioctl,
 	.poll		= fuse_file_poll,
 	.fallocate	= fuse_file_fallocate,
-	.copy_file_range = fuse_copy_file_range,
+	/* no splice_read */
 };
 
 static const struct address_space_operations fuse_file_aops  = {
