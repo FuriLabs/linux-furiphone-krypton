@@ -1632,11 +1632,15 @@ ssize_t vfs_copy_file_range(struct file *file_in, loff_t pos_in,
 	 * Try cloning first, this is supported by more file systems, and
 	 * more efficient if both clone and copy are supported (e.g. NFS).
 	 */
-	if (file_in->f_op->clone_file_range) {
-		ret = file_in->f_op->clone_file_range(file_in, pos_in,
-				file_out, pos_out, len);
-		if (ret == 0) {
-			ret = len;
+	if (file_in->f_op->clone_file_range &&
+	    file_inode(file_in)->i_sb == file_inode(file_out)->i_sb) {
+		loff_t cloned;
+
+		cloned = file_in->f_op->clone_file_range(file_in, pos_in,
+				file_out, pos_out,
+				min_t(loff_t, MAX_RW_COUNT, len));
+		if (cloned > 0) {
+			ret = cloned;
 			goto done;
 		}
 	}
