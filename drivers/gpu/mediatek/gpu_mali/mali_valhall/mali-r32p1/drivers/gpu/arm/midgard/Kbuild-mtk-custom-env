@@ -37,8 +37,8 @@ ccflags-y += -I$(srctree)/drivers/misc/mediatek/include/mt-plat
 ccflags-$(CONFIG_DEBUG_FS) += -DCONFIG_DEBUG_FS
 ccflags-y += -DCONFIG_PROC_FS
 
-#ccflags-y += -DCONFIG_MALI_MIDGARD_DVFS
-#ccflags-$(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT) += -DCONFIG_MTK_GPU_COMMON_DVFS
+ccflags-y += -DCONFIG_MALI_MIDGARD_DVFS
+ccflags-$(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT) += -DCONFIG_MTK_GPU_COMMON_DVFS
 
 # Enable by specific Family-ID
 ifneq (, $(findstring $(CONFIG_MTK_PLATFORM), "mt6885" "mt6873" "mt6853"))
@@ -46,13 +46,13 @@ ccflags-y += -DMTK_GPU_BM_2
 endif
 
 # Enable by specific Family-ID
-#ifneq (, $(findstring $(CONFIG_MTK_PLATFORM), "mt6885" "mt6873" "mt6853"))
-#ccflags-$(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT) += -DGED_ENABLE_DVFS_LOADING_MODE
-#endif
+ifneq (, $(findstring $(CONFIG_MTK_PLATFORM), "mt6885" "mt6873" "mt6853"))
+ccflags-$(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT) += -DGED_ENABLE_DVFS_LOADING_MODE
+endif
 
 # Enabel by specific platform
 ifeq ($(CONFIG_MACH_MT6781),y)
-#ccflags-$(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT) += -DGED_ENABLE_DVFS_LOADING_MODE
+ccflags-$(CONFIG_MTK_GPU_COMMON_DVFS_SUPPORT) += -DGED_ENABLE_DVFS_LOADING_MODE
 ccflags-y += -DMTK_GPU_BM_2
 endif
 
