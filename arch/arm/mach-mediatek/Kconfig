@@ -132,7 +132,6 @@ config MACH_MT6761
 	select ARM_CRYPTO
 	select CRYPTO_SHA2_ARM_CE
 	select CRYPTO_AES_ARM_CE
-	select MTK_DVFSRC
 	select MTK_PMQOS
 	select MTK_TINYSYS_SCP_CM4_SUPPORT
 	help
@@ -186,7 +185,6 @@ config MACH_MT6765
 	select ARM_CRYPTO
 	select CRYPTO_SHA2_ARM_CE
 	select CRYPTO_AES_ARM_CE
-	select MTK_DVFSRC
 	select MTK_PMQOS
 	select MTK_TINYSYS_SCP_CM4_SUPPORT
 	help

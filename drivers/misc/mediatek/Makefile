@@ -64,7 +64,6 @@ obj-$(CONFIG_MTK_APUSYS_SUPPORT) += apusys/
 obj-$(CONFIG_MTK_AMMS) += memory-amms/
 obj-$(CONFIG_MTK_TINYSYS_SSPM_SUPPORT) += sspm/
 obj-$(CONFIG_MTK_SPMTWAM) += twam/
-obj-$(CONFIG_MTK_DVFSRC) += dvfsrc/
 obj-$(CONFIG_MTK_CLK_BUFFER) += clkbuf/
 obj-$(CONFIG_MTK_QOS_FRAMEWORK) += qos/
 ifneq ($(CONFIG_MACH_MT6893), y)
@@ -100,11 +99,6 @@ obj-$(CONFIG_MTK_LEGACY_THERMAL) += thermal/
 #obj-$(CONFIG_THERMAL) += thermalv1/
 obj-$(CONFIG_MTK_PLAT_SRAM_FLAG) += debug_latch/
 obj-$(CONFIG_MEDIATEK_CACHE_API) += cache/
-
-ifneq ($(CONFIG_MTK_BASE_POWER), y)
-obj-$(CONFIG_MTK_STATIC_POWER) += leakage_table_v2/
-obj-$(CONFIG_MTK_UNIFY_POWER) += upower_v2/
-endif
 
 obj-$(CONFIG_MTK_LEDS) += leds/
 obj-$(CONFIG_MT6360_DBG) += subpmic/
