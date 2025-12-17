@@ -2539,6 +2539,7 @@ static ssize_t mt_gpufreq_opp_freq_proc_write(struct file *file,
 			mt_gpufreq_update_limit_idx(KIR_PROC,
 				LIMIT_IDX_DEFAULT,
 				LIMIT_IDX_DEFAULT);
+			ret = 0;
 		} else {
 			for (i = g_segment_max_opp_idx;
 				i <= g_segment_min_opp_idx;
