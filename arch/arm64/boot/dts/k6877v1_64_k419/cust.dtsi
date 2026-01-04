@@ -84,7 +84,7 @@
 &i2c5 {
 	#address-cells = <1>;
 	#size-cells = <0>;
-	clock-frequency = <3400000>;
+	clock-frequency = <1000000>;
 	mediatek,use-push-pull;
 	subpmic_mtk:subpmic@34 {
 		compatible = "mediatek,subpmic";
