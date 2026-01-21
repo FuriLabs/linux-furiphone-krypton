@@ -109,4 +109,6 @@
 
 #define SO_BINDTOIFINDEX	0x4037
 
+#define SO_PASSPIDFD		0x404A
+
 #endif /* _UAPI_ASM_SOCKET_H */

@@ -128,4 +128,6 @@
 
 #define SO_BINDTOIFINDEX	62
 
+#define SO_PASSPIDFD		76
+
 #endif /* _UAPI_ASM_SOCKET_H */

@@ -112,4 +112,6 @@
 
 #define SO_BINDTOIFINDEX	62
 
+#define SO_PASSPIDFD		76
+
 #endif /* __ASM_GENERIC_SOCKET_H */
