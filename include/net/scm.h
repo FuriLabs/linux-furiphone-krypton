@@ -9,6 +9,7 @@
 #include <linux/pid.h>
 #include <linux/nsproxy.h>
 #include <linux/sched/signal.h>
+#include <linux/file.h>
 
 /* Well, we should have at least one descriptor open
  * to accept passed FDs 8)
