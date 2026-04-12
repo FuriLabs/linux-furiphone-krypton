@@ -55,7 +55,7 @@ static imgsensor_info_struct imgsensor_info =
     .sensor_id = IMX135_SENSOR_ID,
 
     //.checksum_value = 0x215125a0,
-    .checksum_value = 0x8a5be0a7,
+    .checksum_value = 0xFFFFFFFF,
 
     .pre = {
         .pclk = 231270000,              //record different mode's pclk
@@ -1915,20 +1915,36 @@ static void slim_video_setting(void)  // VideoHDSetting
 static kal_uint32 set_test_pattern_mode(kal_bool enable)
 {
     cam_pr_debug("enable: %d\n", enable);
-    if(enable)
-    {
-        // 0x5E00[8]: 1 enable,  0 disable
-        // 0x5E00[1:0]; 00 Color bar, 01 Random Data, 10 Square, 11 BLACK
-        write_cmos_sensor(0x30D8, 0x10);
-        write_cmos_sensor(0x0600, 0x00);
-        write_cmos_sensor(0x0601, 0x02);
+    
+    if(enable) {
+        // 1. 开启 Test Pattern 功能总开关
+        write_cmos_sensor(0x30D8, 0x10); 
+        // 2. 设置 Test Pattern 模式 (0x0600)
+        write_cmos_sensor(0x0600, 0x00); 
+        // 3. 设置 Pattern 类型 (0x0601)
+        // 原来是 0x02 (Color Bar), 尝试改为 0x01 (Solid Color / 纯色模式)
+        // 如果 0x01 不生效，可以尝试 0x03
+        write_cmos_sensor(0x0601, 0x01); 
+        // 4. 设置纯色数值 (R, Gr, Gb, B) 为全 0
+        // IMX135 的 Test Pattern Data 寄存器通常在 0x0624 - 0x0627
+	write_cmos_sensor(0x0602, 0);
+	write_cmos_sensor(0x0603, 0);
+	write_cmos_sensor(0x0604, 0);
+	write_cmos_sensor(0x0605, 0);
+	write_cmos_sensor(0x0606, 0);
+	write_cmos_sensor(0x0607, 0);
+	write_cmos_sensor(0x0608, 0);
+	write_cmos_sensor(0x0609, 0);   
+    } else {
+        // ============================================================
+        // 恢复正常模式 (不要忘记之前的修复！)
+        // ============================================================
+        write_cmos_sensor(0x30D8, 0x00); // 关总开关
+        write_cmos_sensor(0x0600, 0x00); // 恢复模式
+        write_cmos_sensor(0x0601, 0x00); // 恢复类型
+        mdelay(10);
     }
-    else
-    {
-        // 0x5E00[8]: 1 enable,  0 disable
-        // 0x5E00[1:0]; 00 Color bar, 01 Random Data, 10 Square, 11 BLACK
-        write_cmos_sensor(0x30D8, 0x00);
-    }
+    
     spin_lock(&imgsensor_drv_lock);
     imgsensor.test_pattern = enable;
     spin_unlock(&imgsensor_drv_lock);
