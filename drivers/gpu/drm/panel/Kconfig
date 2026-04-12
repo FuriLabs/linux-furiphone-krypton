@@ -838,3 +838,11 @@ config DRM_RT4831A_I2C
 	depends on OF
 	help
 	  Say Y here if you want to enable support for rt4831a.
+	  
+config DRM_PANEL_ITE6151_EDP
+    tristate "ITE IT6151 MIPI to eDP Bridge Panel Driver"
+    depends on OF
+    depends on I2C
+   help
+     Enable this to support the ITE IT6151 MIPI to eDP bridge.
+	  
