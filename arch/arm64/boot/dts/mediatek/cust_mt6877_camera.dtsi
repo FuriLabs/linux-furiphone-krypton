@@ -289,7 +289,7 @@
 	/* main2 (tele) */
 	cam2_vcamio-supply = <&sgm38120_ldo6>;
 
-	cam0_enable_sensor = "imx350_mipi_raw" ;
+	cam0_enable_sensor = "imx586_mipi_raw imx350_mipi_raw" ;
 	cam1_enable_sensor = "imx135_mipi_raw";
 	cam2_enable_sensor = "gc2375h_mipi_raw";
 //	cam2_enable_sensor = "bf2257_mipi_raw";
