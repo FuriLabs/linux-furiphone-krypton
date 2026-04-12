@@ -1,6 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (c) 2015-2019 TrustKernel Incorporated
+ * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
  */
 
 #include <linux/module.h>
@@ -14,6 +24,12 @@
 #include <linux/slab.h>
 #include <linux/version.h>
 #include <linux/init.h>
+
+#ifdef CONFIG_OF
+#include <linux/of.h>
+#include <linux/of_irq.h>
+#include <linux/of_reserved_mem.h>
+#endif
 
 #include <linux/tee_core.h>
 #include <linux/tee_ioc.h>
@@ -33,7 +49,6 @@
 #include "tee_smc_xfer.h"
 
 #include "tee_procfs.h"
-#include "pm.h"
 
 #define _TEE_TZ_NAME "tkcoredrv"
 #define DEV (ptee->tee->dev)
@@ -217,127 +232,6 @@ static int check_rpmb_request(struct teesmc32_arg *arg32)
 	return 0;
 }
 
-#ifdef IN_KERNEL_RPMB_SUPPORT
-
-/*
- * Need to be in consistency with
- * struct rpmb_req {...} defined in
- * TEE implementation
- */
-struct tee_rpmb_cmd {
-	uint16_t cmd;
-	uint16_t dev_id;
-	uint32_t req_nr;
-	uint32_t resp_nr;
-};
-
-static int rpmb_exec(void *req)
-{
-	return tkcore_emmc_rpmb_execute((struct tkcore_rpmb_request *) req);
-}
-
-static void handle_rpmb_cmd(struct tee_tz *ptee,
-				struct teesmc32_arg *arg32)
-{
-	uint32_t req_size, resp_size;
-	struct teesmc32_param *params;
-
-	uint8_t *data_frame;
-	struct tee_rpmb_cmd *rpmb_req;
-	struct tkcore_rpmb_request teec_rpmb_req;
-	void *resp;
-
-	if (check_rpmb_request(arg32) < 0)
-		return;
-
-	params = TEESMC32_GET_PARAMS(arg32);
-
-	rpmb_req = (struct tee_rpmb_cmd *) tee_shm_pool_p2v(
-			   ptee->tee->dev,
-			   ptee->shm_pool,
-			   params[0].u.memref.buf_ptr);
-
-	if (rpmb_req == NULL)  {
-		pr_err("Bad RPC request buffer 0x%x.\n",
-			params[0].u.memref.buf_ptr);
-		arg32->ret = TEEC_ERROR_GENERIC;
-		return;
-	}
-
-	resp = tee_shm_pool_p2v(
-			ptee->tee->dev,
-			ptee->shm_pool,
-			params[1].u.memref.buf_ptr);
-
-	if (resp == NULL) {
-		pr_err("Bad RPC response buffer 0x%x.\n",
-			params[1].u.memref.buf_ptr);
-		arg32->ret = TEEC_ERROR_GENERIC;
-		return;
-	}
-
-	if (rpmb_req->cmd != TEE_RPMB_GET_DEV_INFO) {
-		int r;
-		uint32_t frm_size;
-
-		req_size = rpmb_req->req_nr * 512;
-		resp_size = rpmb_req->resp_nr * 512;
-		frm_size = req_size > resp_size ? req_size : resp_size;
-
-		if (frm_size & (511)) {
-			pr_err("bad RPMB frame size 0x%x\n", frm_size);
-			arg32->ret = TEEC_ERROR_BAD_PARAMETERS;
-			return;
-		}
-
-		teec_rpmb_req.type = rpmb_req->cmd;
-		teec_rpmb_req.blk_cnt = frm_size / 512;
-		/* not used by emmc_rpmb driver */
-		teec_rpmb_req.addr = (uint16_t) 0;
-
-		teec_rpmb_req.data_frame = data_frame = kmalloc(
-				frm_size,
-				GFP_KERNEL);
-
-		if (teec_rpmb_req.data_frame == NULL) {
-			arg32->ret = TEEC_ERROR_OUT_OF_MEMORY;
-			return;
-		}
-
-		memcpy(data_frame,
-			((uint8_t *) rpmb_req) + sizeof(struct tee_rpmb_cmd),
-			req_size);
-		r = tkcore_stay_awake(rpmb_exec, (void *) &teec_rpmb_req);
-
-		if (r != 0) {
-			pr_err("Bad rpmb_exec: %d\n", r);
-			arg32->ret = (uint32_t) r;
-		} else {
-			arg32->ret = TEEC_SUCCESS;
-			memcpy(resp, data_frame, resp_size);
-		}
-
-		kfree(data_frame);
-	} else {
-		struct tee_rpmb_dev_info *dev_info;
-
-		teec_rpmb_req.type = rpmb_req->cmd;
-		teec_rpmb_req.blk_cnt = 1;
-		/* not used by emmc_rpmb driver */
-		teec_rpmb_req.addr = (uint16_t) 0;
-		teec_rpmb_req.data_frame = (uint8_t *) resp;
-
-		dev_info = (struct tee_rpmb_dev_info *) resp;
-
-		dev_info->ret_code =
-			(uint8_t) tkcore_emmc_rpmb_execute(&teec_rpmb_req);
-
-		arg32->ret = TEEC_SUCCESS;
-	}
-}
-
-#else
-
 static void handle_rpmb_cmd(struct tee_tz *ptee,
 				struct teesmc32_arg *arg32)
 {
@@ -401,8 +295,6 @@ static void handle_rpmb_cmd(struct tee_tz *ptee,
 	 */
 	tee_shm_realloc_from_rpc(ptee->tee, shm);
 }
-
-#endif
 
 #else
 
@@ -697,8 +589,9 @@ static int tz_open(struct tee_session *sess, struct tee_cmd *cmd)
 	uint8_t *ta;
 	struct TEEC_UUID *uuid;
 
-	WARN_ON(!sess->ctx->tee);
-	WARN_ON(!sess->ctx->tee->priv);
+	if (WARN_ON(!sess->ctx->tee || !sess->ctx->tee->priv))
+		return -1;
+
 	tee = sess->ctx->tee;
 	ptee = tee->priv;
 
@@ -973,13 +866,14 @@ static void tz_free(struct tee_shm *shm)
 	tee = shm->tee;
 	ptee = tee->priv;
 
-
 	ret = tkcore_shm_pool_free(tee->dev, ptee->shm_pool,
 		shm->resv.paddr, &size);
 	if (!ret) {
 		devm_kfree(tee->dev, shm);
 		shm = NULL;
 	}
+
+	//TODO free driver
 }
 
 static int tz_shm_inc_ref(struct tee_shm *shm)
@@ -995,183 +889,312 @@ static int tz_shm_inc_ref(struct tee_shm *shm)
 	return tee_shm_pool_incref(tee->dev, ptee->shm_pool, shm->resv.paddr);
 }
 
-#ifdef CONFIG_OUTER_CACHE
-/*
- * Synchronised outer cache maintenance support
- */
-#ifndef CONFIG_ARM_TZ_SUPPORT
-/* weak outer_tz_mutex in case not supported by kernel */
-bool __weak outer_tz_mutex(unsigned long *p)
+#define DEFAULT_SHM_LENGTH_SHIFT	22
+
+#ifdef CONFIG_OF
+
+#define TZDRV_RESERVED_MEM_COMPAT "trustkernel,shared_mem"
+
+static struct reserved_mem *tee_shared_mem = NULL;
+
+#if !defined(MODULE)
+
+static int __init tkcore_shared_mem_setup(struct reserved_mem *rmem)
 {
-	if (p != NULL)
-		return false;
-	return true;
+	tee_shared_mem = rmem;
+	return 0;
 }
+
+RESERVEDMEM_OF_DECLARE(tkcore_shared_mem, TZDRV_RESERVED_MEM_COMPAT,
+		tkcore_shared_mem_setup);
+
+static void init_tkcore_shared_mem(void)
+{
+	// do nothing when built-in linux
+}
+
+#else
+
+static void init_tkcore_shared_mem(void)
+{
+	struct device_node *rmem_node;
+	struct reserved_mem *rmem;
+
+	/* Get reserved memory */
+	rmem_node = of_find_compatible_node(NULL, NULL, TZDRV_RESERVED_MEM_COMPAT);
+	if (!rmem_node) {
+		pr_err("tkcoredrv: no node for reserved memory\n");
+		return;
+	}
+
+	rmem = of_reserved_mem_lookup(rmem_node);
+	if (!rmem) {
+		pr_err("tkcoredrv: cannot lookup reserved memory\n");
+		return;
+	}
+
+	tee_shared_mem = rmem;
+}
+
 #endif
 
-/* register_outercache_mutex - Negotiate/Disable outer cache shared mutex */
-static int register_outercache_mutex(struct tee_tz *ptee, bool reg)
-{
-	unsigned long *vaddr = NULL;
-	int ret = 0;
-	struct smc_param param;
-	uintptr_t paddr = 0;
-
-	WARN_ON(!CAPABLE(ptee->tee));
-
-	if ((reg == true) && (ptee->tz_outer_cache_mutex != NULL)) {
-		pr_err("outer cache shared mutex already registered\n");
-		return -EINVAL;
-	}
-	if ((reg == false) && (ptee->tz_outer_cache_mutex == NULL))
-		return 0;
-
-	if (reg == false) {
-		vaddr = ptee->tz_outer_cache_mutex;
-		ptee->tz_outer_cache_mutex = NULL;
-		goto out;
-	}
-
-	memset(&param, 0, sizeof(param));
-	param.a0 = TEESMC32_ST_FASTCALL_L2CC_MUTEX;
-	param.a1 = TEESMC_ST_L2CC_MUTEX_GET_ADDR;
-	smc_xfer(&param);
-
-	if (param.a0 != TEESMC_RETURN_OK) {
-		pr_err("no TZ l2cc mutex service supported\n");
-		goto out;
-	}
-	paddr = param.a2;
-
-	vaddr = tee_map_cached_shm(paddr, sizeof(u32));
-	if (vaddr == NULL) {
-		pr_err("TZ l2cc mutex disabled: ioremap failed\n");
-		ret = -ENOMEM;
-		goto out;
-	}
-
-	if (outer_tz_mutex(vaddr) == false) {
-		pr_err("TZ l2cc mutex disabled: outer cache refused\n");
-		goto out;
-	}
-
-	memset(&param, 0, sizeof(param));
-	param.a0 = TEESMC32_ST_FASTCALL_L2CC_MUTEX;
-	param.a1 = TEESMC_ST_L2CC_MUTEX_ENABLE;
-	smc_xfer(&param);
-
-	if (param.a0 != TEESMC_RETURN_OK) {
-		pr_warn("TZ l2cc mutex disabled: TZ enable failed\n");
-		goto out;
-	}
-	ptee->tz_outer_cache_mutex = vaddr;
-
-out:
-	if (ptee->tz_outer_cache_mutex == NULL) {
-		memset(&param, 0, sizeof(param));
-		param.a0 = TEESMC32_ST_FASTCALL_L2CC_MUTEX;
-		param.a1 = TEESMC_ST_L2CC_MUTEX_DISABLE;
-		smc_xfer(&param);
-		outer_tz_mutex(NULL);
-		if (vaddr)
-			iounmap(vaddr);
-
-	}
-
-	return ret;
-}
 #endif
+
+static int get_shared_memory(unsigned long *base,
+		size_t *length,
+		bool *allocated)
+{
+#ifdef CONFIG_OF
+
+	init_tkcore_shared_mem();
+
+	if (!tee_shared_mem)
+		goto alloc_shm;
+
+	*base = tee_shared_mem->base;
+	*length = tee_shared_mem->size;
+
+	pr_info("tkcoredrv: reserved shared memory: [ 0x%lx 0x%lx ]\n",
+			*base, (unsigned long) *length);
+
+	*allocated = false;
+#endif
+
+	return 0;
+
+alloc_shm:
+	pr_info("tkcoredrv: alloc shared memory\n");
+
+	*base = __get_free_pages(GFP_DMA32 | GFP_DMA,
+			DEFAULT_SHM_LENGTH_SHIFT - PAGE_SHIFT);
+
+	if (*base == 0)
+		return -ENOMEM;
+
+	*allocated = true;
+	*length = 1ul << DEFAULT_SHM_LENGTH_SHIFT;
+
+	return 0;
+}
+
+static unsigned long register_shared_mem(unsigned long base,
+											unsigned long length,
+											bool cacheable)
+{
+	struct smc_param cmd;
+
+#if defined(ARM64)
+	cmd.a0 = TEESMC64_TKCORE_FASTCALL_ADD_SHM;
+#else
+	cmd.a0 = TEESMC32_TKCORE_FASTCALL_ADD_SHM;
+#endif
+	cmd.a1 = base;
+	cmd.a2 = length;
+	cmd.a3 = cacheable; // whether shared memory is cached
+
+	smc_xfer(&cmd);
+
+	return cmd.a0;
+}
+
+static unsigned long register_log_buffer(unsigned long base,
+										unsigned long length,
+										bool cacheable)
+{
+	struct smc_param cmd = { 0 };
+
+#if defined(ARM64)
+	cmd.a0 = TEESMC64_TKCORE_FASTCALL_SET_LOG_BUFFER ;
+#else
+	cmd.a0 = TEESMC32_TKCORE_FASTCALL_SET_LOG_BUFFER ;
+#endif
+	cmd.a1 = base;
+	cmd.a2 = length;
+	cmd.a3 = cacheable;
+
+	smc_xfer(&cmd);
+
+	return cmd.a0;
+}
+
+static int init_avb_root_of_trust(struct tee *tee)
+{
+	struct smc_param param = { 0 };
+
+#define TKCORE_GET_ROOT_OF_TRUST_INFO 0xBF000202
+	(void) tee;
+
+	param.a0 = TKCORE_GET_ROOT_OF_TRUST_INFO;
+	smc_xfer(&param);
+
+	return param.a0;
+}
+
+static int retrieve_tos_revision(uint32_t *maj,
+								uint32_t *mid,
+								uint32_t *min)
+{
+	struct smc_param cmd = { 0 };
+
+	/* get os revision */
+#if defined(ARM64)
+	cmd.a0 = TEESMC64_CALL_GET_OS_REVISION;
+#else
+	cmd.a0 = TEESMC32_CALL_GET_OS_REVISION;
+#endif
+
+	smc_xfer(&cmd);
+
+	if (cmd.a3 == 0) {
+		*maj = 0;
+		*mid = cmd.a0;
+		*min = cmd.a1;
+	} else {
+		*maj = cmd.a0;
+		*mid = cmd.a1;
+		*min = cmd.a2;
+	}
+
+	return 0;
+}
+
+static void init_tos_version(struct tee *tee)
+{
+	retrieve_tos_revision(&tee->version.maj,
+						&tee->version.mid,
+						&tee->version.min);
+
+	pr_info("tkcoreos-rev: %d.%d.%d-gp\n",
+			tee->version.maj, tee->version.mid ,tee->version.min);
+}
 
 /* configure_shm - Negotiate Shared Memory configuration with teetz. */
 static int configure_shm(struct tee_tz *ptee)
 {
-	struct smc_param param = { 0 };
-	size_t shm_size = -1;
 	int ret = 0;
 
-	WARN_ON(!CAPABLE(ptee->tee));
+	unsigned long shm_base;
+	size_t shm_length;
+	bool shm_alloced = false;
 
-	param.a0 = TEESMC32_ST_FASTCALL_GET_SHM_CONFIG;
-	smc_xfer(&param);
-
-	if (param.a0 != TEESMC_RETURN_OK) {
-		pr_err("shm service not available: 0x%x",
-			(uint) param.a0);
-		ret = -EINVAL;
-		goto out;
+	if (get_shared_memory(&shm_base, &shm_length, &shm_alloced)) {
+		return -ENOMEM;
 	}
 
-	ptee->shm_paddr = param.a1;
-	shm_size = param.a2;
-	ptee->shm_cached = (bool)param.a3;
+	ptee->shm_cached = true;
 
-	if (ptee->shm_cached)
-		ptee->shm_vaddr = tee_map_cached_shm(ptee->shm_paddr, shm_size);
-	else
-		ptee->shm_vaddr = ioremap_nocache(ptee->shm_paddr, shm_size);
-
-	if (ptee->shm_vaddr == NULL) {
-		pr_err("shm ioremap failed\n");
-		ret = -ENOMEM;
-		goto out;
+	if (shm_alloced) {
+		ptee->shm_vaddr = (void *) shm_base;
+		ptee->shm_paddr = __pa(shm_base);
+	} else {
+		ptee->shm_paddr = shm_base;
+		ptee->shm_vaddr = tee_map_cached_shm(ptee->shm_paddr,
+				shm_length);
+		if (ptee->shm_vaddr == NULL) {
+			pr_warn("tkcoredev: map shared mem failed\n");
+			ret = -ENOMEM;
+			goto out;
+		}
 	}
 
-	ptee->shm_pool = tee_shm_pool_create(DEV, shm_size,
+	ptee->shm_pool = tee_shm_pool_create(DEV, shm_length,
 		ptee->shm_vaddr, ptee->shm_paddr);
-
 	if (!ptee->shm_pool) {
-		pr_err("shm pool creation failed (%zu)", shm_size);
+		pr_warn("tkcoredrv: create shm pool failed (%zu)", shm_length);
 		ret = -EINVAL;
+
 		goto out;
 	}
 
 	if (ptee->shm_cached)
 		tee_shm_pool_set_cached(ptee->shm_pool);
+
+	/*
+	 * currently shared memory is
+	 * hard coded to cacheable
+	 */
+	ret = (int) register_shared_mem(ptee->shm_paddr, shm_length, true);
+	if (ret != TEESMC_RETURN_OK) {
+		pr_warn("tkcoredrv: register shm failed: %d", ret);
+		ret = -EINVAL;
+		goto out;
+	}
+
 out:
+	if (ret != 0 && shm_alloced)
+		free_pages(shm_base, DEFAULT_SHM_LENGTH_SHIFT - PAGE_SHIFT);
+
+	return ret;
+}
+
+#define LOG_BUFFER_SIZE_SHIFT   (17)  //128KiB
+
+static int init_log(struct tee *tee)
+{
+	int ret = 0, irq_num;
+
+	unsigned long va;
+	size_t length = 1ul << LOG_BUFFER_SIZE_SHIFT;
+
+#ifdef CONFIG_OF
+	struct device_node *node;
+
+	node = of_find_compatible_node(NULL, NULL,
+						"trustkernel,tkcore");
+	if (node) {
+		irq_num = irq_of_parse_and_map(node, 0);
+	} else {
+		pr_err("tkcoredrv: node not found\n");
+		irq_num = 0;
+	}
+#else
+	irq_num = 0;
+#endif
+
+	va = __get_free_pages(GFP_DMA32 | GFP_DMA, LOG_BUFFER_SIZE_SHIFT - PAGE_SHIFT);
+	if (va == 0ul) {
+		pr_warn("tkcoredrv: alloc log buffer failed");
+		ret = -ENOMEM;
+		goto err;
+	}
+
+	ret = (int) register_log_buffer(__pa(va), length, true);
+	if (ret)
+		goto err;
+
+	tee->log.buffer = (void *) va;
+	tee->log.length = length;
+	tee->log.irq = irq_num;
+
+	return 0;
+
+err:
+	tee->log.buffer = NULL;
+	tee->log.length = 0;
+	tee->log.irq = 0;
+
 	return ret;
 }
 
 static int tz_start(struct tee *tee)
 {
-	struct tee_tz *ptee;
 	int ret;
+	struct tee_tz *ptee;
 
-	WARN_ON(!tee || !tee->priv);
+	if (WARN_ON(!tee || !tee->priv))
+		return -EINVAL;
 
-	if (!CAPABLE(tee)) {
-		pr_err("not capable\n");
+	if (WARN_ON(!CAPABLE(tee)))
 		return -EBUSY;
-	}
 
 	ptee = tee->priv;
 	WARN_ON(ptee->started);
+
 	ptee->started = true;
 
 	ret = configure_shm(ptee);
 	if (ret)
 		goto exit;
-
-	{
-#define TKCORE_GET_ROOT_OF_TRUST_INFO 0xBF000202
-		struct smc_param param = { 0 };
-
-		/* tell tos to get root of trust
-		 *
-		 * we are not insterested in the
-		 * return value. the availability
-		 * of RoT will affect the behavior of
-		 * other trust apps anyhow
-		 */
-
-		param.a0 = TKCORE_GET_ROOT_OF_TRUST_INFO;
-		smc_xfer(&param);
-	}
-
-#ifdef CONFIG_OUTER_CACHE
-	ret = register_outercache_mutex(ptee, true);
-	if (ret)
-		goto exit;
-#endif
 
 exit:
 	if (ret)
@@ -1193,19 +1216,11 @@ static int tz_stop(struct tee *tee)
 		return -EBUSY;
 	}
 
-#ifdef CONFIG_OUTER_CACHE
-	register_outercache_mutex(ptee, false);
-#endif
 	tee_shm_pool_destroy(tee->dev, ptee->shm_pool);
 	iounmap(ptee->shm_vaddr);
 	ptee->started = false;
 
 	return 0;
-}
-
-static void __tee_smc_call(struct smc_param *p)
-{
-	tee_smc_call(p);
 }
 
 /******************************************************************************/
@@ -1222,9 +1237,7 @@ const struct tee_ops tee_tz_fops = {
 	.alloc = tz_alloc,
 	.free = tz_free,
 	.shm_inc_ref = tz_shm_inc_ref,
-
 	.call_tee = smc_xfer,
-	.raw_call_tee = __tee_smc_call,
 };
 
 static int tz_tee_init(struct platform_device *pdev)
@@ -1244,6 +1257,28 @@ static int tz_tee_init(struct platform_device *pdev)
 		pr_err("dev=%s, Secure failed (%d)\n",
 			tee->name, ret);
 	}
+
+	init_tos_version(tee);
+
+	ret = init_log(tee);
+	if (ret != 0) {
+		pr_warn("tkcoredrv: init log buffer failed: %d\n", ret);
+		/*
+		 * initialization failed of
+		 * log buffer shouldn't affect
+		 * initialization of teedrv
+		 */
+		ret = 0;
+	}
+
+	/* tell tos to get root of trust
+	 *
+	 * we are not insterested in the
+	 * return value. the availability
+	 * of RoT will affect the behavior of
+	 * other trust apps anyhow
+	 */
+	init_avb_root_of_trust(tee);
 
 	return ret;
 }
