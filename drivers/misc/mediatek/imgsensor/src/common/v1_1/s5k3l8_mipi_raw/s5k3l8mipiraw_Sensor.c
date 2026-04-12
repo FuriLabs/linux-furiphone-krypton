@@ -56,9 +56,7 @@ static DEFINE_SPINLOCK(imgsensor_drv_lock);
 static MUINT32 g_sync_mode = SENSOR_NO_SYNC_MODE;
 static struct imgsensor_info_struct imgsensor_info = {
 	.sensor_id = S5K3L8_SENSOR_ID,		//Sensor ID Value: 0x30C8//record sensor id defined in Kd_imgsensor.h
-
-	.checksum_value = 0x49c09f86,		//checksum value for Camera Auto Test
-
+	.checksum_value = 0xbc866def,		//checksum value for Camera Auto Test
 	.pre = {
 		.pclk = 560000000,				//record different mode's pclk
 		.linelength  = 5808,				//record different mode's linelength
