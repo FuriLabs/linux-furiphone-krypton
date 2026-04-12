@@ -37,6 +37,7 @@ struct jdi {
 	struct drm_panel panel;
 	struct backlight_device *backlight;
 	struct gpio_desc *reset_gpio;
+	struct gpio_desc *tp_reset_gpio;
 	struct gpio_desc *bias_pos;
 	struct gpio_desc *bias_neg;
 	bool prepared;
@@ -131,7 +132,7 @@ static void jdi_panel_init(struct jdi *ctx)
 	gpiod_set_value(ctx->reset_gpio, 0);
 	udelay(15 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 1);
-	udelay(1 * 1000);
+	udelay(10 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 0);
 	udelay(10 * 1000);
 	gpiod_set_value(ctx->reset_gpio, 1);
@@ -224,13 +225,17 @@ static int jdi_unprepare(struct drm_panel *panel)
 	if (!ctx->prepared)
 		return 0;
 
+	msleep(20);
 	jdi_dcs_write_seq_static(ctx, 0x28);
 	msleep(50);
 	jdi_dcs_write_seq_static(ctx, 0x10);
-	msleep(150);
+	msleep(120);
+	jdi_dcs_write_seq_static(ctx, 0x4F,0x01);
 
 	ctx->error = 0;
 	ctx->prepared = false;
+
+#if 0
 	ctx->reset_gpio =
 		devm_gpiod_get(ctx->dev, "reset", GPIOD_OUT_HIGH);
 	if (IS_ERR(ctx->reset_gpio)) {
@@ -240,7 +245,18 @@ static int jdi_unprepare(struct drm_panel *panel)
 	}
 	gpiod_set_value(ctx->reset_gpio, 0);
 	devm_gpiod_put(ctx->dev, ctx->reset_gpio);
+#endif
 
+	ctx->tp_reset_gpio = devm_gpiod_get(ctx->dev,
+		"tp-reset", GPIOD_OUT_HIGH);
+	if (IS_ERR(ctx->tp_reset_gpio)) {
+		dev_warn(ctx->dev, "%s: cannot get tp-reset %ld\n",
+			__func__, PTR_ERR(ctx->tp_reset_gpio));
+		return PTR_ERR(ctx->tp_reset_gpio);
+	}
+	printk("%s tp_reset_gpio 0\n", __func__);
+	gpiod_set_value(ctx->tp_reset_gpio, 0);
+	devm_gpiod_put(ctx->dev, ctx->tp_reset_gpio);
 
 	ctx->bias_neg = devm_gpiod_get_index(ctx->dev,
 		"bias", 1, GPIOD_OUT_HIGH);
@@ -322,6 +338,18 @@ static int jdi_prepare(struct drm_panel *panel)
 	mdelay(15);
 #endif
 	jdi_panel_init(ctx);
+	mdelay(12);
+
+	ctx->tp_reset_gpio = devm_gpiod_get(ctx->dev,
+		"tp-reset", GPIOD_OUT_HIGH);
+	if (IS_ERR(ctx->tp_reset_gpio)) {
+		dev_warn(ctx->dev, "%s: cannot get tp-reset %ld\n",
+			__func__, PTR_ERR(ctx->tp_reset_gpio));
+		return PTR_ERR(ctx->tp_reset_gpio);
+	}
+	printk("%s tp_reset_gpio 1\n", __func__);
+	gpiod_set_value(ctx->tp_reset_gpio, 1);
+	devm_gpiod_put(ctx->dev, ctx->tp_reset_gpio);
 
 	ret = ctx->error;
 	if (ret < 0)
@@ -650,6 +678,16 @@ static int jdi_probe(struct mipi_dsi_device *dsi)
 		return PTR_ERR(ctx->bias_neg);
 	}
 	devm_gpiod_put(dev, ctx->bias_neg);
+
+	ctx->tp_reset_gpio = devm_gpiod_get(ctx->dev,
+		"tp-reset", GPIOD_OUT_HIGH);
+	if (IS_ERR(ctx->tp_reset_gpio)) {
+		dev_warn(ctx->dev, "%s: cannot get tp-reset %ld\n",
+			__func__, PTR_ERR(ctx->tp_reset_gpio));
+		return PTR_ERR(ctx->tp_reset_gpio);
+	}
+	printk("%s tp_reset_gpio 1\n", __func__);
+	devm_gpiod_put(ctx->dev, ctx->tp_reset_gpio);
 
 	ctx->prepared = true;
 	ctx->enabled = true;
