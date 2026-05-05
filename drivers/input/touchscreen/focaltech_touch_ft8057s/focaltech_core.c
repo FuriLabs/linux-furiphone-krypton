@@ -942,7 +942,7 @@ static int fts_input_report_touch(struct fts_ts_data *ts_data, u8 *touch_buf)
 
     if (event_num == 0) {
         FTS_INFO("no touch point information(%02x)", touch_buf[2]);
-        return -EIO;
+        return 0;
     }
     ts_data->touch_event_num = event_num;
 
