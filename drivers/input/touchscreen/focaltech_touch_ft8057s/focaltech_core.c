@@ -1345,6 +1345,8 @@ static int fts_input_init(struct fts_ts_data *ts_data)
         return -ENOMEM;
     }
 
+    input_set_events_per_packet(input_dev, 128);
+
     /* Init and register Input device */
     input_dev->name = FTS_DRIVER_NAME;
     if (ts_data->bus_type == BUS_TYPE_I2C)
