@@ -26,7 +26,7 @@
 #define LOG_1 LOG_INF("IMX586,MIPI 4LANE\n")
 /****************************   Modify end	**************************/
 
-#define LOG_INF(format, args...) pr_err(PFX "[%s] " format, __func__, ##args)
+#define LOG_INF(format, args...) pr_debug(PFX "[%s] " format, __func__, ##args)
 
 
 #ifdef VENDOR_EDIT
