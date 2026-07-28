@@ -356,6 +356,7 @@
 437	common	openat2			__x64_sys_openat2
 438	common	pidfd_getfd		__x64_sys_pidfd_getfd
 439	common	faccessat2		__x64_sys_faccessat2
+441	common	epoll_pwait2		__x64_sys_epoll_pwait2
 442	common	mount_setattr		__x64_sys_mount_setattr
 
 #

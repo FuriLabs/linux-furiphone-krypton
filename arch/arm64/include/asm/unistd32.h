@@ -837,14 +837,16 @@ __SYSCALL(__NR_fspick, sys_fspick)
 __SYSCALL(__NR_pidfd_open, sys_pidfd_open)
 #define __NR_clone3 435
 __SYSCALL(__NR_clone3, sys_clone3)
-#define __NR_openat2 437
-__SYSCALL(__NR_openat2, sys_openat2)
 #define __NR_close_range 436
 __SYSCALL(__NR_close_range, sys_close_range)
+#define __NR_openat2 437
+__SYSCALL(__NR_openat2, sys_openat2)
 #define __NR_pidfd_getfd 438
 __SYSCALL(__NR_pidfd_getfd, sys_pidfd_getfd)
 #define __NR_faccessat2 439
 __SYSCALL(__NR_faccessat2, sys_faccessat2)
+#define __NR_epoll_pwait2 441
+__SYSCALL(__NR_epoll_pwait2, sys_epoll_pwait2)
 #define __NR_mount_setattr 442
 __SYSCALL(__NR_mount_setattr, sys_mount_setattr)
 
