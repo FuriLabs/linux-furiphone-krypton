@@ -803,6 +803,7 @@ static int opfunc_therm_ctrl(struct msg_op_data *op)
 
 	osal_unlock_sleepable_lock(&g_conninfra_ctx.core_lock);
 
+	ratelimit_set_flags(&_rs, RATELIMIT_MSG_ON_RELEASE);
 	if (__ratelimit(&_rs))
 		_status_dump();
 	conninfra_detect_time_change();
