@@ -444,7 +444,6 @@ static int mt635x_auxadc_read_raw(struct iio_dev *indio_dev,
 	const struct auxadc_channels *auxadc_chan;
 	unsigned short auxadc_out;
 	int ret;
-	static DEFINE_RATELIMIT_STATE(ratelimit, 1 * HZ, 5);
 
 	mutex_lock(&adc_dev->lock);
 	pm_stay_awake(adc_dev->dev);
@@ -470,12 +469,10 @@ static int mt635x_auxadc_read_raw(struct iio_dev *indio_dev,
 	default:
 		return -EINVAL;
 	}
-	if (__ratelimit(&ratelimit)) {
-		dev_dbg(adc_dev->dev,
-			"name:%s, channel=%d, adc_out=0x%x, adc_result=%d\n",
-			auxadc_chan->ch_name, auxadc_chan->ch_num,
-			auxadc_out, *val);
-	}
+	dev_dbg_ratelimited(adc_dev->dev,
+			    "name:%s, channel=%d, adc_out=0x%x, adc_result=%d\n",
+			    auxadc_chan->ch_name, auxadc_chan->ch_num,
+			    auxadc_out, *val);
 	return ret;
 
 }
