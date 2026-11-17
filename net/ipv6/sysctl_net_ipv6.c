@@ -251,9 +251,16 @@ static int __net_init ipv6_sysctl_net_init(struct net *net)
 	if (!net->ipv6.sysctl.hdr)
 		goto out_ipv6_icmp_table;
 
-	vzw_hdr = register_net_sysctl(net, "net", net_table);
-	if (!vzw_hdr)
-		pr_info("[mtk_net] register net sysctl optr is fail.\n");
+	/*
+	 * optr is one global (sysctl_optr), not per-namespace state, and
+	 * nothing would unregister a copy in another namespace: register it in
+	 * init_net only, which is never torn down.
+	 */
+	if (net_eq(net, &init_net)) {
+		vzw_hdr = register_net_sysctl(net, "net", net_table);
+		if (!vzw_hdr)
+			pr_info("[mtk_net] register net sysctl optr is fail.\n");
+	}
 
 	net->ipv6.sysctl.route_hdr =
 		register_net_sysctl(net, "net/ipv6/route", ipv6_route_table);
